@@ -1,0 +1,11 @@
+c:\users\utilizador\documents\visual studio 2012\Projects\FrontListNames\FrontListNames\bin\Debug\FrontListNames.exe.config
+c:\users\utilizador\documents\visual studio 2012\Projects\FrontListNames\FrontListNames\bin\Debug\FrontListNames.exe
+c:\users\utilizador\documents\visual studio 2012\Projects\FrontListNames\FrontListNames\bin\Debug\FrontListNames.pdb
+c:\users\utilizador\documents\visual studio 2012\Projects\FrontListNames\FrontListNames\obj\Debug\FrontListNames.Properties.Resources.resources
+c:\users\utilizador\documents\visual studio 2012\Projects\FrontListNames\FrontListNames\obj\Debug\FrontListNames.csproj.GenerateResource.Cache
+c:\users\utilizador\documents\visual studio 2012\Projects\FrontListNames\FrontListNames\obj\Debug\FrontListNames.exe
+c:\users\utilizador\documents\visual studio 2012\Projects\FrontListNames\FrontListNames\obj\Debug\FrontListNames.pdb
+c:\users\utilizador\documents\visual studio 2012\Projects\FrontListNames\FrontListNames\bin\Debug\BackListaNomes.exe
+c:\users\utilizador\documents\visual studio 2012\Projects\FrontListNames\FrontListNames\bin\Debug\BackListaNomes.pdb
+c:\users\utilizador\documents\visual studio 2012\Projects\FrontListNames\FrontListNames\obj\Debug\FrontListNames.csprojResolveAssemblyReference.cache
+c:\users\utilizador\documents\visual studio 2012\Projects\FrontListNames\FrontListNames\obj\Debug\FrontListNames.ListName.resources

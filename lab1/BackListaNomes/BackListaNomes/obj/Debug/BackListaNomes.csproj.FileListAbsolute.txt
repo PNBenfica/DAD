@@ -1,0 +1,6 @@
+c:\users\utilizador\documents\visual studio 2012\Projects\BackListaNomes\BackListaNomes\bin\Debug\BackListaNomes.exe.config
+c:\users\utilizador\documents\visual studio 2012\Projects\BackListaNomes\BackListaNomes\bin\Debug\BackListaNomes.exe
+c:\users\utilizador\documents\visual studio 2012\Projects\BackListaNomes\BackListaNomes\bin\Debug\BackListaNomes.pdb
+c:\users\utilizador\documents\visual studio 2012\Projects\BackListaNomes\BackListaNomes\obj\Debug\BackListaNomes.exe
+c:\users\utilizador\documents\visual studio 2012\Projects\BackListaNomes\BackListaNomes\obj\Debug\BackListaNomes.pdb
+C:\Users\Utilizador\Documents\Visual Studio 2012\Projects\BackListaNomes\BackListaNomes\obj\Debug\BackListaNomes.csprojResolveAssemblyReference.cache

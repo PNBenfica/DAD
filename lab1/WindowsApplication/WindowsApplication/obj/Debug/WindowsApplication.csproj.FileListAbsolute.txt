@@ -7,3 +7,12 @@ c:\users\utilizador\documents\visual studio 2012\Projects\WindowsApplication\Win
 c:\users\utilizador\documents\visual studio 2012\Projects\WindowsApplication\WindowsApplication\obj\Debug\WindowsApplication.csproj.GenerateResource.Cache
 c:\users\utilizador\documents\visual studio 2012\Projects\WindowsApplication\WindowsApplication\obj\Debug\WindowsApplication.exe
 c:\users\utilizador\documents\visual studio 2012\Projects\WindowsApplication\WindowsApplication\obj\Debug\WindowsApplication.pdb
+C:\Users\Ruben\Documents\gitProjects\DAD\lab1\WindowsApplication\WindowsApplication\bin\Debug\WindowsApplication.exe.config
+C:\Users\Ruben\Documents\gitProjects\DAD\lab1\WindowsApplication\WindowsApplication\obj\Debug\WindowsApplication.exe
+C:\Users\Ruben\Documents\gitProjects\DAD\lab1\WindowsApplication\WindowsApplication\obj\Debug\WindowsApplication.pdb
+C:\Users\Ruben\Documents\gitProjects\DAD\lab1\WindowsApplication\WindowsApplication\bin\Debug\WindowsApplication.exe
+C:\Users\Ruben\Documents\gitProjects\DAD\lab1\WindowsApplication\WindowsApplication\bin\Debug\WindowsApplication.pdb
+C:\Users\Ruben\Documents\gitProjects\DAD\lab1\WindowsApplication\WindowsApplication\obj\Debug\WindowsApplication.csprojResolveAssemblyReference.cache
+C:\Users\Ruben\Documents\gitProjects\DAD\lab1\WindowsApplication\WindowsApplication\obj\Debug\WindowsApplication.Form1.resources
+C:\Users\Ruben\Documents\gitProjects\DAD\lab1\WindowsApplication\WindowsApplication\obj\Debug\WindowsApplication.Properties.Resources.resources
+C:\Users\Ruben\Documents\gitProjects\DAD\lab1\WindowsApplication\WindowsApplication\obj\Debug\WindowsApplication.csproj.GenerateResource.Cache

@@ -1,0 +1,28 @@
+1. 
+	atribuição:  a = new MyDelegate(Hello); (atribui ao delegate a o método Hello)
+	remoção: d = c - a; (remove do delegate c os métodos que estão no delegate a, atrubui o resultado ao delegate d)
+	adição:  c = a + b; (adiciona ao delegate a os métodos do delegate b)
+	invocação: a("A"); (invoca o delegate a com a string "A")
+
+2. Pela ordem em que são inseridos.
+
+3. É lançada a excepção NullReferenceException
+
+4. Sim, no exemplo ambos os métodos são estáticos.
+
+5. Sim, são invocados todos pela ordem em que foram inseridos.
+
+6. 
+	Console.WriteLine("Invoking delegate a:");
+    a("A");
+    Console.WriteLine("Invoking delegate b:");
+    b("B");
+    Console.WriteLine("Invoking delegate c:");
+    invokeDelegate(b);
+
+    ...
+
+	private static void invokeDelegate(MyDelegate b)
+    {
+        b("Ruben");
+    } 

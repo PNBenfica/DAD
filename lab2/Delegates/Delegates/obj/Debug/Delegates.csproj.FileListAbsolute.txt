@@ -1,0 +1,6 @@
+C:\Users\Ruben\Documents\gitProjects\DAD\lab2\Delegates\Delegates\bin\Debug\Delegates.exe.config
+C:\Users\Ruben\Documents\gitProjects\DAD\lab2\Delegates\Delegates\bin\Debug\Delegates.exe
+C:\Users\Ruben\Documents\gitProjects\DAD\lab2\Delegates\Delegates\bin\Debug\Delegates.pdb
+C:\Users\Ruben\Documents\gitProjects\DAD\lab2\Delegates\Delegates\obj\Debug\Delegates.csprojResolveAssemblyReference.cache
+C:\Users\Ruben\Documents\gitProjects\DAD\lab2\Delegates\Delegates\obj\Debug\Delegates.exe
+C:\Users\Ruben\Documents\gitProjects\DAD\lab2\Delegates\Delegates\obj\Debug\Delegates.pdb

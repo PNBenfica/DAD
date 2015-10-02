@@ -4,3 +4,9 @@ c:\users\utilizador\documents\visual studio 2012\Projects\HelloWorld\HelloWorld\
 c:\users\utilizador\documents\visual studio 2012\Projects\HelloWorld\HelloWorld\obj\Debug\HelloWorld.csprojResolveAssemblyReference.cache
 c:\users\utilizador\documents\visual studio 2012\Projects\HelloWorld\HelloWorld\obj\Debug\HelloWorld.exe
 c:\users\utilizador\documents\visual studio 2012\Projects\HelloWorld\HelloWorld\obj\Debug\HelloWorld.pdb
+C:\Users\Ruben\Documents\gitProjects\DAD\lab1\HelloWorld\HelloWorld\bin\Debug\HelloWorld.exe.config
+C:\Users\Ruben\Documents\gitProjects\DAD\lab1\HelloWorld\HelloWorld\obj\Debug\HelloWorld.exe
+C:\Users\Ruben\Documents\gitProjects\DAD\lab1\HelloWorld\HelloWorld\obj\Debug\HelloWorld.pdb
+C:\Users\Ruben\Documents\gitProjects\DAD\lab1\HelloWorld\HelloWorld\bin\Debug\HelloWorld.exe
+C:\Users\Ruben\Documents\gitProjects\DAD\lab1\HelloWorld\HelloWorld\bin\Debug\HelloWorld.pdb
+C:\Users\Ruben\Documents\gitProjects\DAD\lab1\HelloWorld\HelloWorld\obj\Debug\HelloWorld.csprojResolveAssemblyReference.cache

@@ -18,11 +18,16 @@ namespace App {
 
         public void produce(T obj){
             lock(this){
-                while(occupied == size)
-                  Monitor.Wait(this);
+                while (occupied == size)
+                {
+                    Console.WriteLine("Thread will wait at produce");
+                    Monitor.Wait(this);
+                    Console.WriteLine("Thread awake at produce");
+                }
                 buffer[index] = obj;
                 index = ++index % size;
                 occupied++;
+                Monitor.Pulse(this);
             }
 
         }
@@ -30,8 +35,13 @@ namespace App {
         public T consume(){
             T obj;
             lock(this){
-                while(occupied == 0)
+                while (occupied == 0)
+                {
+                    Console.WriteLine("Thread will wait at consume");
                     Monitor.Wait(this);
+                    Console.WriteLine("Thread awake at consume");
+
+                }
                 obj = buffer[exec];
                 buffer[exec] = default(T);
                 exec = ++exec % size;

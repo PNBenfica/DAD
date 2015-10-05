@@ -28,109 +28,109 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.textBox3 = new System.Windows.Forms.TextBox();
+            this.buttonSend = new System.Windows.Forms.Button();
+            this.button_connect = new System.Windows.Forms.Button();
+            this.textBox_nick = new System.Windows.Forms.TextBox();
+            this.textBox_Port = new System.Windows.Forms.TextBox();
+            this.textBox_Message = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.textBox4 = new System.Windows.Forms.TextBox();
+            this.textBox_chatMessage = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
-            // button1
+            // buttonSend
             // 
-            this.button1.Location = new System.Drawing.Point(495, 170);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 34);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "Send";
-            this.button1.UseVisualStyleBackColor = true;
+            this.buttonSend.Location = new System.Drawing.Point(301, 113);
+            this.buttonSend.Name = "buttonSend";
+            this.buttonSend.Size = new System.Drawing.Size(75, 34);
+            this.buttonSend.TabIndex = 0;
+            this.buttonSend.Text = "Send";
+            this.buttonSend.UseVisualStyleBackColor = true;
+            this.buttonSend.Click += new System.EventHandler(this.buttonSend_Click);
             // 
-            // button2
+            // button_connect
             // 
-            this.button2.Location = new System.Drawing.Point(495, 85);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 34);
-            this.button2.TabIndex = 1;
-            this.button2.Text = "Connect";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.button_connect.Location = new System.Drawing.Point(301, 42);
+            this.button_connect.Name = "button_connect";
+            this.button_connect.Size = new System.Drawing.Size(75, 34);
+            this.button_connect.TabIndex = 1;
+            this.button_connect.Text = "Connect";
+            this.button_connect.UseVisualStyleBackColor = true;
+            this.button_connect.Click += new System.EventHandler(this.buttonConnect_Click);
             // 
-            // textBox1
+            // textBox_nick
             // 
-            this.textBox1.Location = new System.Drawing.Point(105, 85);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(100, 20);
-            this.textBox1.TabIndex = 2;
+            this.textBox_nick.Location = new System.Drawing.Point(35, 50);
+            this.textBox_nick.Name = "textBox_nick";
+            this.textBox_nick.Size = new System.Drawing.Size(100, 20);
+            this.textBox_nick.TabIndex = 2;
             // 
-            // textBox2
+            // textBox_Port
             // 
-            this.textBox2.Location = new System.Drawing.Point(304, 85);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(100, 20);
-            this.textBox2.TabIndex = 3;
+            this.textBox_Port.Location = new System.Drawing.Point(172, 50);
+            this.textBox_Port.Name = "textBox_Port";
+            this.textBox_Port.Size = new System.Drawing.Size(100, 20);
+            this.textBox_Port.TabIndex = 3;
             // 
-            // textBox3
+            // textBox_Message
             // 
-            this.textBox3.Location = new System.Drawing.Point(105, 178);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(299, 20);
-            this.textBox3.TabIndex = 4;
+            this.textBox_Message.Location = new System.Drawing.Point(35, 113);
+            this.textBox_Message.Multiline = true;
+            this.textBox_Message.Name = "textBox_Message";
+            this.textBox_Message.Size = new System.Drawing.Size(237, 47);
+            this.textBox_Message.TabIndex = 4;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(102, 69);
+            this.label1.Location = new System.Drawing.Point(32, 34);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(29, 13);
             this.label1.TabIndex = 5;
             this.label1.Text = "Nick";
-            this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(301, 69);
+            this.label2.Location = new System.Drawing.Point(169, 34);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(26, 13);
             this.label2.TabIndex = 6;
             this.label2.Text = "Port";
-            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(102, 162);
+            this.label3.Location = new System.Drawing.Point(32, 97);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(50, 13);
             this.label3.TabIndex = 7;
             this.label3.Text = "Message";
             // 
-            // textBox4
+            // textBox_chatMessage
             // 
-            this.textBox4.Location = new System.Drawing.Point(105, 266);
-            this.textBox4.Multiline = true;
-            this.textBox4.Name = "textBox4";
-            this.textBox4.Size = new System.Drawing.Size(299, 258);
-            this.textBox4.TabIndex = 8;
-            this.textBox4.TextChanged += new System.EventHandler(this.textBox4_TextChanged);
+            this.textBox_chatMessage.Location = new System.Drawing.Point(35, 186);
+            this.textBox_chatMessage.Multiline = true;
+            this.textBox_chatMessage.Name = "textBox_chatMessage";
+            this.textBox_chatMessage.Size = new System.Drawing.Size(341, 310);
+            this.textBox_chatMessage.TabIndex = 8;
+            this.textBox_chatMessage.TextChanged += new System.EventHandler(this.textBox4_TextChanged);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(820, 569);
-            this.Controls.Add(this.textBox4);
+            this.ClientSize = new System.Drawing.Size(413, 529);
+            this.Controls.Add(this.textBox_chatMessage);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.textBox3);
-            this.Controls.Add(this.textBox2);
-            this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.textBox_Message);
+            this.Controls.Add(this.textBox_Port);
+            this.Controls.Add(this.textBox_nick);
+            this.Controls.Add(this.button_connect);
+            this.Controls.Add(this.buttonSend);
             this.Name = "Form1";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
@@ -141,15 +141,15 @@
 
         #endregion
 
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.TextBox textBox3;
+        private System.Windows.Forms.Button buttonSend;
+        private System.Windows.Forms.Button button_connect;
+        private System.Windows.Forms.TextBox textBox_nick;
+        private System.Windows.Forms.TextBox textBox_Port;
+        private System.Windows.Forms.TextBox textBox_Message;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox textBox4;
+        private System.Windows.Forms.TextBox textBox_chatMessage;
     }
 }
 

@@ -4,12 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ChatServer
+namespace CommonTypes
 {
-    class Program
+    public interface IChatClient
     {
-        static void Main(string[] args)
-        {
-        }
+        void receiveMsg(String nickname, String message);
     }
 }

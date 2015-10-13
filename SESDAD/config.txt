@@ -1,0 +1,15 @@
+Site sitename Parent sitename
+Site sitename Parent sitename
+Site sitename Parent sitename
+Site sitename Parent sitename
+
+Process processname Is broker On sitename URL process-url
+Process processname Is publishe On sitename URL process-url
+Process processname Is subscriber On sitename URL process-url
+
+RoutingPolicy flooding
+
+Ordering TOTAL
+
+LoggingLevel light
+

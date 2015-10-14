@@ -34,7 +34,7 @@ namespace Publisher
         {
             Console.WriteLine("Registing in broker at {0}", brokerUrl);
             this.broker = (IBroker)Activator.GetObject(typeof(IBroker), brokerUrl);
-            this.broker.registerSubscriber(this.url);
+            this.broker.registerPublisher(this.url);
         }
 
 

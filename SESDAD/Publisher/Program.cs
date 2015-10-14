@@ -34,6 +34,7 @@ namespace Publisher
             Console.WriteLine("Publisher {0} running on {1}", name, url);
 
             publisher.registerInBroker(brokerUrl);
+
             Console.ReadLine();
         }
     }

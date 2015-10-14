@@ -105,7 +105,9 @@ namespace Broker
 
         public void registerPublisher(string url)
         {
-
+            IPublisher publisher = (IPublisher)Activator.GetObject(typeof(IPublisher), url);
+            publishers.Add(publisher);
+            Console.WriteLine("New publisher registed: {0}", url);
         }
 
         /// <summary>
@@ -114,8 +116,8 @@ namespace Broker
         /// <param name="url">Url of the new subscriber</param>
         public void registerSubscriber(string url)
         {
-            ISubscriber child = (ISubscriber)Activator.GetObject(typeof(ISubscriber), url);
-            subscribers.Add(child);
+            ISubscriber subscriber = (ISubscriber)Activator.GetObject(typeof(ISubscriber), url);
+            subscribers.Add(subscriber);
             Console.WriteLine("New subscriber registed: {0}", url);
         }
     }

@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace CommonTypes
 {
-    public interface ISubscriberInterface
+    public interface IPublisher
     {
-        void Subscribe();
-        void UnSubscribe();
-        void ReceiveMessage();
+        void Publish(String topic, String content);
     }
 }

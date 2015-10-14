@@ -7,14 +7,14 @@ using CommonTypes;
 
 namespace Broker
 {
-    public class Broker : CommonTypes.IBrokerInterface
+    public class Broker : IBroker
     {
         private Broker parent;
         private List<Broker> children;
         private String url;
         private List<Event> messages;
         private SubscriptionManager subscriptionManager;
-        private PublisherManager publisherManager;
+        private List<IPublisher> publishers;
         private Router router;
         
 

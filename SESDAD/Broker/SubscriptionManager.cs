@@ -8,7 +8,7 @@ namespace Broker
 {
     public class SubscriptionManager
     {
-        List<ISubscriberInterface> subscribers;
+        List<ISubscriber> subscribers;
 
         public SubscriptionManager()
         {
@@ -25,7 +25,7 @@ namespace Broker
 
         }
 
-        public List<ISubscriberInterface> getSubscriptors(Topic topic)
+        public List<ISubscriber> getSubscriptors(Topic topic)
         {
             //still TODO
             return subscribers;

@@ -7,27 +7,28 @@ using CommonTypes;
 
 namespace Subscriber
 {
-    class Subscriber: CommonTypes.ISubscriberInterface
+    class Subscriber: ISubscriber
     {
         private List<Topic> subscriptions;
         private String subscriberId;
         private OrderStrategy orderStrategy;
         private String url;
 
-        public void Subscribe()
+
+
+        public void Subscribe(string topic)
         {
 
         }
 
-        public void UnSubscribe()
+        public void UnSubscribe(string topic)
         {
 
         }
 
-        public void ReceiveMessage()
+        public void ReceiveMessage(Event evento)
         {
 
         }
-
     }
 }

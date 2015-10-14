@@ -4,10 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CommonTypes
+namespace Broker
 {
-    public interface IPublisherInterface
+    class FloodingRouter : Router
     {
-        void Publish(String topic, String content);
+
+        public override void route()
+        {
+
+        }
+
     }
 }

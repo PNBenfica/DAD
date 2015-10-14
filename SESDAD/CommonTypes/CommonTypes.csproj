@@ -40,9 +40,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Event.cs" />
-    <Compile Include="IBrokerInterface.cs" />
-    <Compile Include="IPublisherInterface.cs" />
-    <Compile Include="ISubscriberInterface.cs" />
+    <Compile Include="IBroker.cs" />
+    <Compile Include="IPublisher.cs" />
+    <Compile Include="ISubscriber.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Topic.cs" />
   </ItemGroup>

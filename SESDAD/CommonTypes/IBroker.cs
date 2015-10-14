@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CommonTypes
 {
-    public interface IBrokerInterface
+    public interface IBroker
     {
         void Subscribe(Topic topic, String content);
         void UnSubscribe(String subscriberId, Topic topic);

@@ -7,7 +7,7 @@ using CommonTypes;
 
 namespace Publisher
 {
-    class Publisher: CommonTypes.IPublisherInterface
+    class Publisher: IPublisher
     {
         private List<Event> events;
         private String publisherId;

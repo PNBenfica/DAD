@@ -13,5 +13,6 @@ namespace CommonTypes
         void DiffuseMessage(Event even);
         void DiffuseMessageToRoot(Event even);
         void ReceiveMessage(Topic topic, String content);
+        void registerNewChild(string url);
     }
 }

@@ -7,20 +7,24 @@ using CommonTypes;
 
 namespace Broker
 {
-    public class Broker : IBroker
+    public class Broker : MarshalByRefObject, IBroker
     {
-        private Broker parent;
-        private List<Broker> children;
+        private String name;
         private String url;
+        private IBroker parent;
+        private List<IBroker> children;
+        private List<IPublisher> publishers;
+        private List<ISubscriber> subscribers;
         private List<Event> messages;
         private SubscriptionManager subscriptionManager;
-        private List<IPublisher> publishers;
         private Router router;
         
 
-        public Broker()
+        public Broker(String name, String url)
         {
-
+            this.name = name;
+            this.url = url;
+            this.children = new List<IBroker>();
         }
 
         public void Subscribe(Topic topic, String content)
@@ -50,8 +54,24 @@ namespace Broker
 
         public bool IsRoot()
         {
-            return true;
+            return parent == null;
         }
 
+
+        internal void notifyParent(string parentUrl)
+        {
+            Console.WriteLine("Registing in parent at {0}", parentUrl);
+            this.parent = (IBroker)Activator.GetObject(typeof(IBroker), parentUrl);
+            parent.registerNewChild(this.url);
+        }
+
+
+        public void registerNewChild(string url)
+        {
+            Console.WriteLine(url);
+            IBroker child = (IBroker)Activator.GetObject(typeof(IBroker), url);
+            children.Add(child);
+            Console.WriteLine("New child broker registed: {0}", url);
+        }
     }
 }

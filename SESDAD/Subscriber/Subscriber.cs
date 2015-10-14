@@ -7,14 +7,23 @@ using CommonTypes;
 
 namespace Subscriber
 {
-    class Subscriber: ISubscriber
+    class Subscriber : MarshalByRefObject, ISubscriber
     {
-        private List<Topic> subscriptions;
-        private String subscriberId;
+        private String name;
+        private String brokerUrl;
+        private IBroker broker;
         private OrderStrategy orderStrategy;
-        private String url;
 
-
+        /// <summary>
+        /// Subscriber Construtor
+        /// </summary>
+        /// <param name="name">subscriber name</param>
+        /// <param name="brokerUrl">url of the site broker</param>
+        public Subscriber(String name, String brokerUrl)
+        {
+            this.name = name;
+            this.brokerUrl = brokerUrl;
+        }
 
         public void Subscribe(string topic)
         {

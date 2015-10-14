@@ -17,12 +17,17 @@ namespace Publisher
         {
             this.publisherId = publisherId;
             this.url = url;
+            events = new List<Event>();
         }
 
 
         public void Publish(String topic, String content)
         {
+           Event e = new Event(this.publisherId,content,topic,0);
+        //   events.Add(e);
 
+           broker.DiffuseMessageToRoot(e);
+           
         }
 
         public void registerInBroker(String brokerUrl)

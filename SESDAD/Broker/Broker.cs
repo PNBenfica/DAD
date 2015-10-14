@@ -50,9 +50,22 @@ namespace Broker
             }
         }
 
+
+        /// <summary>
+        /// Diffuse the event to the root
+        /// </summary>
         public void DiffuseMessageToRoot(Event even)
         {
+            bool root = this.IsRoot();
+            if(!root)
+            {
+                this.parent.DiffuseMessageToRoot(even);
+            }
 
+            else 
+            {
+                this.DiffuseMessage(even);
+            }
         }
 
         public void ReceiveMessage(Topic topic, String content)

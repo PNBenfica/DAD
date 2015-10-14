@@ -6,21 +6,19 @@ using System.Threading.Tasks;
 
 namespace CommonTypes
 {
+    [Serializable]
     public class Topic
     {
+
+        public string Name { get; set; }
+        public Topic Parent { get; set; }
         private List<Topic> subTopics;
-        private Topic parent;
 
-        public Topic()
+        public Topic(String name)
         {
-
+            this.Name = name;
         }
 
-        public Topic Parent
-        {
-            get { return parent; }
-            set { parent = value; }
-        }
 
         public void AddTopic(Topic subTopic)
         {

@@ -28,10 +28,12 @@ namespace Subscriber
             TcpChannel channel = new TcpChannel(port);
             ChannelServices.RegisterChannel(channel, false);
 
-            Subscriber subscriber = new Subscriber(name, brokerUrl);
+            Subscriber subscriber = new Subscriber(name, url);
             RemotingServices.Marshal(subscriber, "sub", typeof(ISubscriber));
 
             Console.WriteLine("Subscriber {0} running on {1}", name, url);
+
+            subscriber.registerInBroker(brokerUrl);
             Console.ReadLine();
         }
     }

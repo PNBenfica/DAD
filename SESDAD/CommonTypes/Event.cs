@@ -6,40 +6,24 @@ using System.Threading.Tasks;
 
 namespace CommonTypes
 {
+    [Serializable]
     public class Event
     {
-        private String publisherId;
-        private String content;
-        private Topic topic;
-        private int id;
 
-        public Event()
+        public string PublisherId { get; set; }
+
+        public string Content { get; set; }
+
+        public Topic Topic { get; set; }
+
+        public int Id { get; set; }
+
+        public Event(String publisherId, String content, String topic, int id)
         {
-
-        }
-
-        public String PublisherId
-        {
-            get { return publisherId; }
-            set { publisherId = value; }
-        }
-
-        public String Content
-        {
-            get { return content; }
-            set { content = value; }
-        }
-
-        public Topic Topic
-        {
-            get { return topic; }
-            set { topic = value; }
-        }
-
-        public int Id
-        {
-            get { return id; }
-            set { id = value; }
+            this.PublisherId = publisherId;
+            this.Content = content;
+            this.Topic = new Topic(topic);
+            this.Id = id;
         }
     }
 }

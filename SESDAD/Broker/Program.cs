@@ -38,7 +38,9 @@ namespace Broker
             {
                 broker.notifyParent(args[2]);
             }
-            
+
+            //Console.ReadLine();
+            //broker.DiffuseMessage(new Event("creator", "Que post do caralho", "/benfica/campeao/do/mundo", 1));
             Console.ReadLine();
         }
     }

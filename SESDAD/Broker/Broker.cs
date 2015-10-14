@@ -12,10 +12,10 @@ namespace Broker
         private String name;
         private String url;
         private IBroker parent;
-        private List<IBroker> children;
-        private List<IPublisher> publishers;
-        private List<ISubscriber> subscribers;
-        private List<Event> messages;
+        private List<IBroker> children = new List<IBroker>();
+        private List<IPublisher> publishers = new List<IPublisher>();
+        private List<ISubscriber> subscribers = new List<ISubscriber>();
+        private List<Event> events = new List<Event>();
         private SubscriptionManager subscriptionManager;
         private Router router;
         
@@ -24,7 +24,6 @@ namespace Broker
         {
             this.name = name;
             this.url = url;
-            this.children = new List<IBroker>();
         }
 
         public void Subscribe(Topic topic, String content)
@@ -37,9 +36,18 @@ namespace Broker
 
         }
 
-        public void DiffuseMessage(Event even)
+        public void DiffuseMessage(Event e)
         {
+            Console.WriteLine("Diffusing message from {0}", e.PublisherId);
+            foreach (ISubscriber subscriber in subscribers)
+            {
+                subscriber.ReceiveMessage(e);
+            }
 
+            foreach (IBroker broker in children)
+            {
+                broker.DiffuseMessage(e);
+            }
         }
 
         public void DiffuseMessageToRoot(Event even)
@@ -52,12 +60,18 @@ namespace Broker
 
         }
 
+        /// <summary>
+        /// If the broker has no parent he is the root
+        /// </summary>
         public bool IsRoot()
         {
             return parent == null;
         }
 
-
+        /// <summary>
+        /// Notify the broker parent that he has a new born child
+        /// </summary>
+        /// <param name="parentUrl">Broker parent url</param>
         internal void notifyParent(string parentUrl)
         {
             Console.WriteLine("Registing in parent at {0}", parentUrl);
@@ -65,13 +79,31 @@ namespace Broker
             parent.registerNewChild(this.url);
         }
 
-
+        /// <summary>
+        /// Register a new child
+        /// </summary>
+        /// <param name="url">Url of the new broker child</param>
         public void registerNewChild(string url)
         {
-            Console.WriteLine(url);
             IBroker child = (IBroker)Activator.GetObject(typeof(IBroker), url);
             children.Add(child);
             Console.WriteLine("New child broker registed: {0}", url);
+        }
+
+        public void registerPublisher(string url)
+        {
+
+        }
+
+        /// <summary>
+        /// Register a new subscriber
+        /// </summary>
+        /// <param name="url">Url of the new subscriber</param>
+        public void registerSubscriber(string url)
+        {
+            ISubscriber child = (ISubscriber)Activator.GetObject(typeof(ISubscriber), url);
+            subscribers.Add(child);
+            Console.WriteLine("New subscriber registed: {0}", url);
         }
     }
 }

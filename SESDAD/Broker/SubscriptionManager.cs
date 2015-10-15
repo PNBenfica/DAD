@@ -15,33 +15,48 @@ namespace Broker
 
         }
 
-        public void Subscribe(String subscriberId, Topic topic)
+        public void Subscribe(String subscriberId, String topic)
         {
 
         }
 
-        public void SubscribeClient(String subscriberId, Topic topic)
+        public void SubscribeClient(String subscriberId, String topic)
         {
 
         }
 
-        internal void SubscribeRouting(string Id, Topic topic)
+        internal void SubscribeRouting(string Id, String topic)
         {
 
         }
 
-        public void UnSubscribe(String subscriberId, Topic topic)
+        public void UnSubscribe(String subscriberId, String topic)
         {
 
         }
 
-        public List<ISubscriber> getSubscriptors(Topic topic)
+        public List<ISubscriber> getSubscriptors(String topic)
         {
             //still TODO
             return subscribers;
         }
 
 
-      
+
+
+        internal void UnSubscribeClient(string Id, String topic)
+        {
+        }
+
+        internal void UnSubscribeRouter(string Id, String topic)
+        {
+        }
+
+        internal List<Router> getRouters(String topic)
+        {
+            //still TODO
+
+            return null;
+        }
     }
 }

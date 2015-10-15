@@ -8,14 +8,14 @@ namespace CommonTypes
 {
     public interface IBroker
     {
-        void Subscribe(String subscriberId, bool client_broker, Topic topic);
-        void UnSubscribe(String subscriberId, bool client_broker, Topic topic);
+        void Subscribe(String Id, bool client, String topic);
+        void UnSubscribe(String Id, bool client, String topic);
         void DiffuseMessage(Event even);
         void DiffuseMessageToRoot(Event even);
         void ReceiveMessage(Topic topic, String content);
         void registerNewChild(string url);
         void registerPublisher(string url);
         void registerSubscriber(string url);
-        string Name { get; set; }
+        
     }
 }

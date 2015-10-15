@@ -27,16 +27,15 @@ namespace Subscriber
 
         public void Subscribe(string topic)
         {
-            Topic top = new Topic(topic);
             bool client = true;
-            broker.Subscribe(this.name, client, top);
+            broker.Subscribe(this.name, client, topic);
         }
 
         public void UnSubscribe(string topic)
         {
-            Topic top = new Topic(topic);
+           
             bool client = true;
-            broker.UnSubscribe(this.name, client, top);
+            broker.UnSubscribe(this.name, client, topic);
         }
 
 

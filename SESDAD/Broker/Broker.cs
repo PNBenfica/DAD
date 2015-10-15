@@ -26,7 +26,7 @@ namespace Broker
             this.url = url;
         }
 
-        public void Subscribe(String Id, bool client, Topic topic)
+        public void Subscribe(String Id, bool client, String topic)
         {
             if(client)
             {
@@ -44,7 +44,7 @@ namespace Broker
             }
         }
 
-        public void UnSubscribe(String Id, bool client, Topic topic)
+        public void UnSubscribe(String Id, bool client, String topic)
         {
             if(client)
             {

@@ -19,6 +19,8 @@ namespace Broker
         {
             String name = args[0];
             String url = args[1];
+            String router = args[3];
+            String loggingLevel = args[4];
 
             char[] delimiterChars = { ':', '/' }; // "tcp://1.2.3.4:3333/broker"
             string[] urlSplit = url.Split(delimiterChars);

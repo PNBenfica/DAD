@@ -20,6 +20,7 @@ namespace Publisher
             String name = args[0];
             String url = args[1];
             String brokerUrl = args[2];
+            String loggingLevel = args[3];
 
             char[] delimiterChars = { ':', '/' }; // "tcp://1.2.3.4:3335/pub"
             string[] urlSplit = url.Split(delimiterChars);

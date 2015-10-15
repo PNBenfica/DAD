@@ -89,7 +89,10 @@ namespace PuppetMaster
                     break;
                 }
             }
-
+            if (parentSite.Equals("none"))
+            {
+                return "none";
+            }
             return getBrokerUrl(parentSite, processes);
         }
 

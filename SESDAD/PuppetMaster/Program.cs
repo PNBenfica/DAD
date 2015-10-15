@@ -30,15 +30,15 @@ namespace PuppetMaster
             {
                 if (process.Type.Equals("broker"))
                 {
-                    startBrokerProcess(process);
+                    startBrokerProcess(process, configurations.RoutingPolicy, configurations.LoggingLevel);
                 }
                 else if(process.Type.Equals("publisher"))
                 {
-                    //startPublisherProcess(process);
+                    startPublisherProcess(process, configurations.LoggingLevel);
                 }
                 else if (process.Type.Equals("subscriber"))
                 {
-                    startSubscriberProcess(process);
+                    startSubscriberProcess(process, configurations.Ordering, configurations.LoggingLevel);
                 }
                 else
                 {
@@ -49,28 +49,28 @@ namespace PuppetMaster
             
         }
 
-        private static void startSubscriberProcess(Process process)
+        private static void startSubscriberProcess(Process process, String ordering, String logginglevel)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.Arguments = "" + process.Name + " " + process.Url + " " + process.BrokerUrl;
+            startInfo.Arguments = "" + process.Name + " " + process.Url + " " + process.BrokerUrl  + " " + ordering  + " " + logginglevel;
             Console.WriteLine(startInfo.Arguments);
             startInfo.FileName = @"Subscriber.exe";
             System.Diagnostics.Process.Start(startInfo);
         }
 
-        private static void startPublisherProcess(Process process)
+        private static void startPublisherProcess(Process process, String logginglevel)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.Arguments = "" + process.Name + " " + process.Url + " " + process.BrokerUrl;
+            startInfo.Arguments = "" + process.Name + " " + process.Url + " " + process.BrokerUrl + " " + logginglevel;
             Console.WriteLine(startInfo.Arguments);
             startInfo.FileName = @"Publisher.exe";
             System.Diagnostics.Process.Start(startInfo);
         }
 
-        private static void startBrokerProcess(Process process)
+        private static void startBrokerProcess(Process process, String router, String logginglevel)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.Arguments = "" + process.Name + " " + process.Url + " " +process.BrokerUrl;
+            startInfo.Arguments = "" + process.Name + " " + process.Url + " " +process.BrokerUrl  + " " + router  + " " + logginglevel;
             Console.WriteLine(startInfo.Arguments);
             startInfo.FileName = @"Broker.exe";
             System.Diagnostics.Process.Start(startInfo);

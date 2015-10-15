@@ -20,6 +20,8 @@ namespace Subscriber
             String name = args[0];
             String url = args[1];
             String brokerUrl = args[2];
+            String ordering = args[3];
+            String loggingLevel = args[4];
 
             char[] delimiterChars = { ':', '/' }; // "tcp://1.2.3.4:3335/sub"
             string[] urlSplit = url.Split(delimiterChars);

@@ -11,6 +11,9 @@ namespace PuppetMaster
         private String type;
         private String siteName;
         private String url;
+        private String brokerUrl;
+
+       
 
         public Process(String name, String type, String site, String url)
         {
@@ -18,6 +21,12 @@ namespace PuppetMaster
             this.type = type;
             this.siteName = site;
             this.url = url;
+        }
+
+        public String BrokerUrl
+        {
+            get { return brokerUrl; }
+            set { brokerUrl = value; }
         }
 
         public String Name

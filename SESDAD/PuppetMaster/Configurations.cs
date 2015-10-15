@@ -43,7 +43,7 @@ namespace PuppetMaster
         }
 
 
-        public List<Process> Brokers
+        public List<Process> Processes
         {
             get { return processes; }
             set { processes = value; }

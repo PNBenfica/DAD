@@ -20,6 +20,16 @@ namespace Broker
 
         }
 
+        public void SubscribeClient(String subscriberId, Topic topic)
+        {
+
+        }
+
+        internal void SubscribeRouting(string Id, Topic topic)
+        {
+
+        }
+
         public void UnSubscribe(String subscriberId, Topic topic)
         {
 
@@ -31,5 +41,7 @@ namespace Broker
             return subscribers;
         }
 
+
+      
     }
 }

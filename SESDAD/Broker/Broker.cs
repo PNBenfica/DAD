@@ -26,13 +26,44 @@ namespace Broker
             this.url = url;
         }
 
-        public void Subscribe(Topic topic, String content)
+        public void Subscribe(String Id, bool client, Topic topic)
         {
-
+            if(client)
+            {
+                subscriptionManager.SubscribeClient(Id, topic);
+            }
+            else
+            {
+                subscriptionManager.SubscribeRouting(Id, topic);
+            }
+            
+            bool root = this.IsRoot();
+            if(!root)
+            {
+                parent.Subscribe(Id, false, topic);
+            }
         }
 
-        public void UnSubscribe(String subscriberId, Topic topic)
+        public void UnSubscribe(String Id, bool client, Topic topic)
         {
+            if(client)
+            {
+                subscriptionManager.UnSubscribeClient(Id, topic);
+            }
+
+            else
+            {
+                subscriptionManager.UnSubscribeRouter(Id, topic);
+            }
+            
+            bool root = this.IsRoot();
+            List<ISubscriber> subTopic = subscriptionManager.getSubscriptors(topic);
+            List<Router> routTopic = subscriptionManager.getRouters(topic);
+            bool sizeOne = subTopic.Count()  + routTopic.Count() == 1;
+            if(!root && sizeOne)
+            {
+                parent.UnSubscribe(Id, false,topic);
+            }
 
         }
 

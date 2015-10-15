@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CommonTypes;
 
+
 namespace Subscriber
 {
     class Subscriber : MarshalByRefObject, ISubscriber
@@ -26,12 +27,16 @@ namespace Subscriber
 
         public void Subscribe(string topic)
         {
-
+            Topic top = new Topic(topic);
+            bool client = true;
+            broker.Subscribe(this.name, client, top);
         }
 
         public void UnSubscribe(string topic)
         {
-
+            Topic top = new Topic(topic);
+            bool client = true;
+            broker.UnSubscribe(this.name, client, top);
         }
 
 

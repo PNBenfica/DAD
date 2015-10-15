@@ -40,7 +40,7 @@ namespace Broker
             bool root = this.IsRoot();
             if(!root)
             {
-                parent.Subscribe(Id, false, topic);
+                parent.Subscribe(this.name, false, topic);
             }
         }
 
@@ -59,10 +59,10 @@ namespace Broker
             bool root = this.IsRoot();
             List<ISubscriber> subTopic = subscriptionManager.getSubscriptors(topic);
             List<Router> routTopic = subscriptionManager.getRouters(topic);
-            bool sizeOne = subTopic.Count()  + routTopic.Count() == 1;
+            bool sizeOne = subTopic.Count() + routTopic.Count() == 1;
             if(!root && sizeOne)
             {
-                parent.UnSubscribe(Id, false,topic);
+                parent.UnSubscribe(this.name, false,topic);
             }
 
         }

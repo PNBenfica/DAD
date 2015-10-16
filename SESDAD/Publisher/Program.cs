@@ -37,6 +37,9 @@ namespace Publisher
             publisher.registerInBroker(brokerUrl);
 
             Console.ReadLine();
+            publisher.Publish("/benfica/campeao", "somos campeoes");
+            publisher.Publish("/benfica", "benfica benfica benfica");
+            Console.ReadLine();
         }
     }
 }

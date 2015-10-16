@@ -37,6 +37,9 @@ namespace Subscriber
 
             subscriber.registerInBroker(brokerUrl);
             Console.ReadLine();
+            subscriber.Subscribe("/benfica/campeao");
+            subscriber.Subscribe("/benfica");
+            Console.ReadLine();
         }
     }
 }

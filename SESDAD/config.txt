@@ -3,9 +3,9 @@ Site site1 Parent site0
 Site site2 Parent site1
 Site site3 Parent site0
 
-Process broker0 Is broker On site0 URL tcp://1.2.3.4:3333/broker 
-Process publisher0 Is publisher On site0 URL tcp://1.2.3.4:3334/subscriber
-Process subscriber0 Is subscriber On site0 URL tcp://1.2.3.4:3335/publisher
+Process broker0 Is broker On site0 URL tcp://localhost:3333/broker 
+Process publisher0 Is publisher On site0 URL tcp://localhost:3334/pub
+Process subscriber0 Is subscriber On site0 URL tcp://localhost:3335/sub
 
 RoutingPolicy flooding
 

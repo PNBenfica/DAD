@@ -23,10 +23,11 @@ namespace Publisher
 
         public void Publish(String topic, String content)
         {
-           Event e = new Event(this.publisherId,content,topic,0);
+            Console.WriteLine("Publish new event in topic {0}", topic);
+            Event e = new Event(this.publisherId,content,topic,0);
         //   events.Add(e);
 
-           broker.DiffuseMessageToRoot(e);
+            broker.DiffuseMessageToRoot(e);
            
         }
 

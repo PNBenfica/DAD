@@ -10,11 +10,11 @@ namespace CommonTypes
     public class Event
     {
 
-        public string PublisherId { get; set; }
+        public String PublisherId { get; set; }
 
-        public string Content { get; set; }
+        public String Content { get; set; }
 
-        public Topic Topic { get; set; }
+        public String Topic { get; set; }
 
         public int Id { get; set; }
 
@@ -22,7 +22,7 @@ namespace CommonTypes
         {
             this.PublisherId = publisherId;
             this.Content = content;
-            this.Topic = new Topic(topic);
+            this.Topic = topic;
             this.Id = id;
         }
     }

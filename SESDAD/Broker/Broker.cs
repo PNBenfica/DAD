@@ -9,76 +9,44 @@ namespace Broker
 {
     public class Broker : MarshalByRefObject, IBroker
     {
-        private String name;
-        private String url;
-        private IBroker parent;
-        private List<IBroker> children = new List<IBroker>();
-        private List<IPublisher> publishers = new List<IPublisher>();
-        private List<ISubscriber> subscribers = new List<ISubscriber>();
-        private List<Event> events = new List<Event>();
-        private SubscriptionManager subscriptionManager;
-        private Router router;
+        public String Name { get; set; }
+        public String URL { get; set; }
+        public IBroker Parent { get; set; }
+        public Dictionary<string, IBroker> Children { get; set; }
+        public List<IPublisher> Publishers { get; set; }
+        public Dictionary<string, ISubscriber> Subscribers { get; set; }
+        public List<Event> Events { get; set; }
+        public Router Router { get; set; }
         
 
         public Broker(String name, String url)
         {
-            this.name = name;
-            this.url = url;
+            this.Name = name;
+            this.URL = url;
+            this.Router = new FloodingRouter(this);
+            this.Children = new Dictionary<string, IBroker>();
+            this.Publishers = new List<IPublisher>();
+            this.Subscribers = new Dictionary<string, ISubscriber>();
         }
 
-        public void Subscribe(String Id, bool client, String topic)
+        public void Subscribe(String Id, bool isSubscriber, String topic)
         {
-            if(client)
-            {
-                subscriptionManager.SubscribeClient(Id, topic);
-            }
-            else
-            {
-                subscriptionManager.SubscribeRouting(Id, topic);
-            }
-            
-            bool root = this.IsRoot();
-            if(!root)
-            {
-                parent.Subscribe(this.name, false, topic);
-            }
+            Router.addSubscrition(Id, isSubscriber, topic);
         }
 
-        public void UnSubscribe(String Id, bool client, String topic)
+        public void UnSubscribe(String Id, bool isSubscriber, String topic)
         {
-            if(client)
-            {
-                subscriptionManager.UnSubscribeClient(Id, topic);
-            }
-
-            else
-            {
-                subscriptionManager.UnSubscribeRouter(Id, topic);
-            }
-            
-            bool root = this.IsRoot();
-            List<ISubscriber> subTopic = subscriptionManager.getSubscriptors(topic);
-            List<Router> routTopic = subscriptionManager.getRouters(topic);
-            bool sizeOne = subTopic.Count() + routTopic.Count() == 1;
-            if(!root && sizeOne)
-            {
-                parent.UnSubscribe(this.name, false,topic);
-            }
-
+            Router.deleteSubscrition(Id, isSubscriber, topic);
         }
 
+
+        /// <summary>
+        /// Diffuse the message down the tree. Router knows where this need to go
+        /// </summary>
         public void DiffuseMessage(Event e)
         {
             Console.WriteLine("Diffusing message from {0}", e.PublisherId);
-            foreach (ISubscriber subscriber in subscribers)
-            {
-                subscriber.ReceiveMessage(e);
-            }
-
-            foreach (IBroker broker in children)
-            {
-                broker.DiffuseMessage(e);
-            }
+            Router.route(e);
         }
 
 
@@ -87,10 +55,9 @@ namespace Broker
         /// </summary>
         public void DiffuseMessageToRoot(Event even)
         {
-            bool root = this.IsRoot();
-            if(!root)
+            if(!IsRoot()) // If it is the root let s go down!
             {
-                this.parent.DiffuseMessageToRoot(even);
+                this.Parent.DiffuseMessageToRoot(even);
             }
 
             else 
@@ -98,19 +65,17 @@ namespace Broker
                 this.DiffuseMessage(even);
             }
         }
+        
 
-        public void ReceiveMessage(Topic topic, String content)
-        {
-
-        }
 
         /// <summary>
         /// If the broker has no parent he is the root
         /// </summary>
         public bool IsRoot()
         {
-            return parent == null;
+            return this.Parent == null;
         }
+
 
         /// <summary>
         /// Notify the broker parent that he has a new born child
@@ -119,36 +84,39 @@ namespace Broker
         internal void notifyParent(string parentUrl)
         {
             Console.WriteLine("Registing in parent at {0}", parentUrl);
-            this.parent = (IBroker)Activator.GetObject(typeof(IBroker), parentUrl);
-            parent.registerNewChild(this.url);
+            this.Parent = (IBroker)Activator.GetObject(typeof(IBroker), parentUrl);
+            this.Parent.registerNewChild(this.Name, this.URL);
         }
+
 
         /// <summary>
         /// Register a new child
         /// </summary>
         /// <param name="url">Url of the new broker child</param>
-        public void registerNewChild(string url)
+        public void registerNewChild(string name, string url)
         {
             IBroker child = (IBroker)Activator.GetObject(typeof(IBroker), url);
-            children.Add(child);
+            Children.Add(name, child);
             Console.WriteLine("New child broker registed: {0}", url);
         }
+
 
         public void registerPublisher(string url)
         {
             IPublisher publisher = (IPublisher)Activator.GetObject(typeof(IPublisher), url);
-            publishers.Add(publisher);
+            Publishers.Add(publisher);
             Console.WriteLine("New publisher registed: {0}", url);
         }
+
 
         /// <summary>
         /// Register a new subscriber
         /// </summary>
         /// <param name="url">Url of the new subscriber</param>
-        public void registerSubscriber(string url)
+        public void registerSubscriber(string name, string url)
         {
             ISubscriber subscriber = (ISubscriber)Activator.GetObject(typeof(ISubscriber), url);
-            subscribers.Add(subscriber);
+            Subscribers.Add(name, subscriber);
             Console.WriteLine("New subscriber registed: {0}", url);
         }
     }

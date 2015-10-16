@@ -27,15 +27,13 @@ namespace Subscriber
 
         public void Subscribe(string topic)
         {
-            bool client = true;
-            broker.Subscribe(this.name, client, topic);
+            Console.WriteLine("Subscribing {0}", topic);
+            broker.Subscribe(this.name, true, topic);
         }
 
         public void UnSubscribe(string topic)
         {
-           
-            bool client = true;
-            broker.UnSubscribe(this.name, client, topic);
+            broker.UnSubscribe(this.name, true, topic);
         }
 
 
@@ -45,7 +43,7 @@ namespace Subscriber
         /// <param name="e"></param>
         public void ReceiveMessage(Event e)
         {
-            Console.WriteLine("Publisher: {0}\r\nTopic: {1}\r\nContent: {2}",e.PublisherId, e.Topic.Name, e.Content);
+            Console.WriteLine("Publisher: {0}\r\nTopic: {1}\r\nContent: {2}",e.PublisherId, e.Topic, e.Content);
         }
 
 
@@ -57,7 +55,7 @@ namespace Subscriber
         {
             Console.WriteLine("Registing in broker at {0}", brokerUrl);
             this.broker = (IBroker)Activator.GetObject(typeof(IBroker), brokerUrl);
-            this.broker.registerSubscriber(this.url);
+            this.broker.registerSubscriber(this.name, this.url);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace PuppetMaster
         public Process(String name, String type, String site, String url)
         {
             this.name = name;
-            this.type = type;
+            this.type = type.ToLower();
             this.siteName = site;
             this.url = url;
         }
@@ -39,7 +39,7 @@ namespace PuppetMaster
         public String Type
         {
             get { return type; }
-            set { type = value; }
+            set { type = value.ToLower(); }
         }
 
 

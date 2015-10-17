@@ -1,20 +1,27 @@
-﻿using System;
+﻿using CommonTypes;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Remoting;
+using System.Runtime.Remoting.Channels;
+using System.Runtime.Remoting.Channels.Tcp;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PuppetMaster
 {
     class Program
     {
+        private static PuppetMaster puppetMaster;
+
         public static void Main(string[] args)
         {
             Configurations configurations = ReadConfig();
-            Console.WriteLine(configurations.ToString());
+            //Console.WriteLine(configurations.ToString());
             initializeProcesses(configurations);
-            Console.ReadLine();
+            createMenu();
         }
 
         public static Configurations ReadConfig()
@@ -25,61 +32,147 @@ namespace PuppetMaster
 
         public static void initializeProcesses(Configurations configurations)
         {
+            ProcessCreator processCreator = new ProcessCreator();
             Console.WriteLine("Initializing processes");
-            foreach(Process process in configurations.Processes)
+
+            String puppetMasterUrl = configurations.PuppetMasterUrl;
+            char[] delimiterChars = { ':', '/' }; // "tcp://1.2.3.4:3335/sub"
+            string[] urlSplit = puppetMasterUrl.Split(delimiterChars);
+            int port = Convert.ToInt32(urlSplit[4]);
+
+            Console.WriteLine("Deploywng puppetMaster");
+            TcpChannel channel = new TcpChannel(port);
+            ChannelServices.RegisterChannel(channel, false);
+
+            puppetMaster = new PuppetMaster(puppetMasterUrl, configurations.RoutingPolicy, configurations.Ordering, configurations.LoggingLevel);
+
+            RemotingServices.Marshal(puppetMaster, "puppet", typeof(IPuppetMasterURL));
+            Console.WriteLine("Deployed");
+
+            foreach (Process process in configurations.Processes)
             {
+                Console.WriteLine(process.Type);
                 if (process.Type.Equals("broker"))
                 {
-                    startBrokerProcess(process, configurations.RoutingPolicy, configurations.LoggingLevel);
+                    processCreator.startBrokerProcess(process.Name, process.Url, process.BrokerUrl, configurations.RoutingPolicy, configurations.LoggingLevel);
+                    puppetMaster.AddBroker(process.Name, process.Url);
                 }
-                else if(process.Type.Equals("publisher"))
+                else if (process.Type.Equals("publisher"))
                 {
-                    startPublisherProcess(process, configurations.LoggingLevel);
+                    processCreator.startPublisherProcess(process.Name, process.Url, process.BrokerUrl, configurations.LoggingLevel);
+                    puppetMaster.AddPublisher(process.Name, process.Url);
                 }
                 else if (process.Type.Equals("subscriber"))
                 {
-                    startSubscriberProcess(process, configurations.Ordering, configurations.LoggingLevel);
+                    processCreator.startSubscriberProcess(process.Name, process.Url, process.BrokerUrl, configurations.Ordering, configurations.LoggingLevel);
+                    puppetMaster.AddSubscriber(process.Name, process.Url);                
                 }
                 else
                 {
                     throw new UnknownProcessException("Unknown Process specified, aborting execution");
                 }
-
+                
             }
-            
+
         }
 
-        private static void startSubscriberProcess(Process process, String ordering, String logginglevel)
-        {
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.Arguments = "" + process.Name + " " + process.Url + " " + process.BrokerUrl  + " " + ordering  + " " + logginglevel;
-            Console.WriteLine(startInfo.Arguments);
-            startInfo.FileName = @"Subscriber.exe";
-            System.Diagnostics.Process.Start(startInfo);
-        }
-
-        private static void startPublisherProcess(Process process, String logginglevel)
-        {
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.Arguments = "" + process.Name + " " + process.Url + " " + process.BrokerUrl + " " + logginglevel;
-            Console.WriteLine(startInfo.Arguments);
-            startInfo.FileName = @"Publisher.exe";
-            System.Diagnostics.Process.Start(startInfo);
-        }
-
-        private static void startBrokerProcess(Process process, String router, String logginglevel)
-        {
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.Arguments = "" + process.Name + " " + process.Url + " " +process.BrokerUrl  + " " + router  + " " + logginglevel;
-            Console.WriteLine(startInfo.Arguments);
-            startInfo.FileName = @"Broker.exe";
-            System.Diagnostics.Process.Start(startInfo);
-        }
 
         public static void createMenu()
         {
-
+            while (true)
+            {
+                Console.WriteLine("-----------------PuppetMaster Console-----------------");
+                Console.Write(">");
+                String command = Console.ReadLine();
+                try
+                {
+                    executeCommand(command);
+                }
+                catch (UnknownCommandException e)
+                {
+                    Console.WriteLine(e.Message);
+                    continue;
+                }
+            }
         }
+
+        private static void executeCommand(string command)
+        {
+            command.ToLower();
+            char[] delimiter = { ' ' };
+            String[] words = command.Split(delimiter);
+            //Subscriber processname Subscribe topicname
+            if (words[0].Equals("subscriber") && words[2].Equals("subscribe"))
+            {
+                puppetMaster.Subscribe(words[1], words[3]);
+            }
+            //Subscriber processname Unsubscribe topicname
+            else if (words[0].Equals("subscriber") && words[2].Equals("unsubscribe"))
+            {
+                puppetMaster.Unsubscribe(words[1], words[3]);
+            }
+            //Publisher processname Publish numberofevents Ontopic topicname Interval xms.
+            else if (words[0].Equals("publisher") && words[2].Equals("publish"))
+            {
+                puppetMaster.Publish(words[1], words[3], words[5], words[7]);
+            }
+            //Status
+            else if (words[0].Equals("status"))
+            {
+                puppetMaster.Status();
+            }
+            //Crash processname
+            else if (words[0].Equals("crash"))
+            {
+                puppetMaster.Crash(words[1]);
+            }
+            //Freeze processname
+            else if (words[0].Equals("freeze"))
+            {
+                puppetMaster.Freeze(words[1]);
+            }
+            //Unfreeze processname
+            else if (words[0].Equals("unfreeze"))
+            {
+                puppetMaster.Unfreeze(words[1]);
+            }
+            //Wait xms
+            else if (words[0].Equals("wait"))
+            {
+                int time = Convert.ToInt32(words[1]);
+                Thread.Sleep(time);
+            }
+            //Clear
+            else if (words[0].Equals("clear"))
+            {
+                Console.Clear();
+            }
+            //Exit
+            else if (words[0].Equals("exit"))
+            {
+                Environment.Exit(0);
+            }
+            //help
+            else if (words[0].Equals("help"))
+            {
+                Console.WriteLine("Subscriber processname Subscribe topicname");
+                Console.WriteLine("Subscriber processname Unsubscribe topicname");
+                Console.WriteLine("Publisher processname Publish numberofevents Ontopic topicname Interval xms");
+                Console.WriteLine("Status");
+                Console.WriteLine("Crash processname");
+                Console.WriteLine("Freeze processname");
+                Console.WriteLine("Unfreeze processname");
+                Console.WriteLine("Wait xms");
+                Console.WriteLine("Help");
+                Console.WriteLine("Clear");
+                Console.WriteLine("Exit");
+            }
+            else
+            {
+                throw new UnknownCommandException("Command not recognized\ntype HELP to list all available commands");
+            }
+        }
+
 
     }
 }

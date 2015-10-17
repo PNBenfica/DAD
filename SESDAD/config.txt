@@ -1,3 +1,5 @@
+CentralPuppetMaster tcp://localhost:3000/puppet
+
 Site site0 Parent none
 Site site1 Parent site0
 Site site2 Parent site1

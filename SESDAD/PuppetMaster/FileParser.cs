@@ -17,48 +17,69 @@ namespace PuppetMaster
             // Display the file contents by using a foreach loop.
             List<Site> sites = new List<Site>();
             List<Process> processes = new List<Process>();
+            String puppetMasterURL = "";
+            List<String> puppetMastersURL = new List<String>();
             String ordering = "";
             String routingPolicy = "";
             String loggingLevel = "";
+            char[] delimiter = { ' ' };
+            String[] words;
             foreach (string line in lines)
             {
-                String[] words;
-                char[] delimiter = { ' ' };
-                //Console.WriteLine(line);
-                if (line.Contains("Site"))
+                words = line.Split(delimiter);
+
+                if (words[0].ToLower().Equals("site"))
                 {
-                    words = line.Split(delimiter);
                     //site and site parent
                     sites.Add(new Site(words[1], words[3]));
                 }
-                else if (line.Contains("Process"))
+                else if (words[0].ToLower().Equals("centralpuppetmaster"))
                 {
-                    words = line.Split(delimiter);
+                    puppetMasterURL = words[1];
+                }
+                else if (words[0].ToLower().Equals("puppetmaster"))
+                {
+                    puppetMastersURL.Add(words[1]);
+                }
+                else if (words[0].ToLower().Equals("process"))
+                {
                     //processName, processType, site, processUrl
+                    Console.WriteLine("adding process " +words[1]);
                     processes.Add(new Process(words[1], words[3], words[5], words[7]));
                 }
-                else if (line.Contains("RoutingPolicy"))
+                else if (words[0].ToLower().Equals("routingpolicy"))
                 {
-                    words = line.Split(delimiter);
                     routingPolicy = words[1];
                 }
-                else if (line.Contains("Ordering"))
+                else if (words[0].ToLower().Equals("ordering"))
                 {
-                    words = line.Split(delimiter);
                     ordering = words[1];
 
                 }
-                else if (line.Contains("LoggingLevel"))
+                else if (words[0].ToLower().Equals("logginglevel"))
                 {
-                    words = line.Split(delimiter);
                     loggingLevel = words[1];
 
                 }
-                     
                 else
                 {
                     //Console.WriteLine("unknown line at config or empty line" + line);
                 }
+            }
+
+            if (ordering.Equals(""))
+            {
+                ordering = "fifo";
+            }
+
+            if (routingPolicy.Equals(""))
+            {
+                routingPolicy = "flooding";
+            }
+
+            if (loggingLevel.Equals(""))
+            {
+                loggingLevel = "light";
             }
 
             //get brokers parents if exist && publishers for subscribers
@@ -74,7 +95,7 @@ namespace PuppetMaster
                 }
             }
 
-            Configurations configurations = new Configurations(routingPolicy, ordering, sites, processes, loggingLevel);
+            Configurations configurations = new Configurations(routingPolicy, ordering, puppetMasterURL, puppetMastersURL, sites, processes, loggingLevel);
             return configurations;
         }
 

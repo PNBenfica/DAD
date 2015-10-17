@@ -42,6 +42,7 @@
     <Compile Include="Event.cs" />
     <Compile Include="IBroker.cs" />
     <Compile Include="IPublisher.cs" />
+    <Compile Include="IPuppetMasterURL.cs" />
     <Compile Include="ISubscriber.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

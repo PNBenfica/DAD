@@ -59,6 +59,29 @@ namespace Broker
                 Brokers.Add(name);
         }
 
+
+        /// <summary>
+        /// Add a new subscrition
+        /// </summary>
+        /// <param name="name">Name of the broker/subscriber</param>
+        /// <param name="isSubscriber">Type of the entitie interested</param>
+        public void Subscribe(String name, String[] topic, bool isSubscriber)
+        {
+            if (topic.Length == 0)
+            {
+                addSubscrition(name, isSubscriber);
+            }
+            else if (topic.Length == 1 && topic[0].Equals("*")) // want to subscribe all
+            {
+                SubscribeAll(name, isSubscriber);
+            }
+            else
+            {
+                SubscribeSubtopic(name, topic, isSubscriber);
+            }
+        }
+
+
         /// <summary>
         /// Subscribes all the subtopics
         /// </summary>
@@ -72,25 +95,14 @@ namespace Broker
 
 
         /// <summary>
-        /// Add a new subscrition
+        /// Subscribes the subtopic
         /// </summary>
-        /// <param name="name">Name of the broker/subscriber</param>
-        /// <param name="isSubscriber">Type of the entitie interested</param>
-        public void Subscribe(String name, String[] topic, bool isSubscriber)
+        /// <param name="topic"> ["subtopic", "sub-subtopic", ...] </param>
+        private void SubscribeSubtopic(String name, String[] topic, bool isSubscriber)
         {
-            if (topic.Length == 0)
-            {
-                if (Name.Equals("*")) // want to subscribe all
-                    Parent.SubscribeAll(name, isSubscriber);
-                else
-                    addSubscrition(name, isSubscriber);
-            }
-            else
-            {
-                Topic subTopic = GetSubTopic(topic[0]);
-                String[] restSubTopics = (String[])topic.Skip(1).ToArray(); // removes first element
-                subTopic.Subscribe(name, restSubTopics, isSubscriber);
-            }
+            Topic subTopic = GetSubTopic(topic[0]);
+            String[] restSubTopics = (String[])topic.Skip(1).ToArray(); // removes first element
+            subTopic.Subscribe(name, restSubTopics, isSubscriber);
         }
         
 
@@ -132,9 +144,12 @@ namespace Broker
         }
 
 
+        /// <summary>
+        /// returns true if there is any interested (subscriber/broker) in the event
+        /// </summary>
         public bool HaveSubscribers(String topic)
         {
-            throw new NotImplementedException();
+            return GetTopicSubscribers().Count() > 0 || GetTopicBrokers().Count > 0;
         }
 
 
@@ -186,6 +201,35 @@ namespace Broker
             if (!IsRoot())
                 brokers.UnionWith(Parent.AllSubTopicsSubscribers());
             return brokers;
+        }
+
+        /// <summary>
+        /// just to Debug
+        /// </summary>
+        public void Status()
+        {
+            Console.WriteLine("/{0}", this.Name);
+            PrintInfo("Subscribers", Subscribers);
+            PrintInfo("Subscribers all subtopics", SubscribersAllSubTopics);
+            PrintInfo("Brokers", Brokers);
+            PrintInfo("Brokers all subtopics", BrokersAllSubTopics);
+
+            foreach (Topic subtopic in subTopics.Values)
+                subtopic.Status();
+            
+            Console.WriteLine("");
+        }
+
+        private void PrintInfo(String description, HashSet<String> collection)
+        {
+            if (collection.Count() > 0)
+            {
+                Console.WriteLine(description);
+                foreach (String s in collection)
+                {
+                    Console.WriteLine("-> {0}", s);
+                }
+            }
         }
     }
 }

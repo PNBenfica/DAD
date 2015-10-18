@@ -55,12 +55,12 @@ namespace Broker
         /// </summary>
         public void DiffuseMessageToRoot(Event even)
         {
-            if(!IsRoot()) // If it is the root let s go down!
+            if(!IsRoot())
             {
                 this.Parent.DiffuseMessageToRoot(even);
             }
 
-            else 
+            else  // If it is the root let s go down!
             {
                 this.DiffuseMessage(even);
             }

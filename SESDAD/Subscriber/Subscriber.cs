@@ -27,7 +27,7 @@ namespace Subscriber
 
         public void Subscribe(string topic)
         {
-            Console.WriteLine("Subscribing {0}", topic);
+            Console.WriteLine("Subscribe {0}", topic);
             broker.Subscribe(this.name, true, topic);
         }
 
@@ -43,7 +43,7 @@ namespace Subscriber
         /// <param name="e"></param>
         public void ReceiveMessage(Event e)
         {
-            Console.WriteLine("Publisher: {0}\r\nTopic: {1}\r\nContent: {2}",e.PublisherId, e.Topic, e.Content);
+            Console.WriteLine("\r\n------------\r\nPublisher: {0}\r\nTopic: {1}\r\nContent: {2}", e.PublisherId, e.Topic, e.Content);
         }
 
 

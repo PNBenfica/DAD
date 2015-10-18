@@ -4,18 +4,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommonTypes;
+using System.Threading;
 
 namespace Publisher
 {
     class Publisher : MarshalByRefObject, IPublisher
     {
         private List<Event> events;
-        private String publisherId;
+        private String name;
         private String url;
         private IBroker broker;
-        public Publisher(String publisherId, String url)
+
+        public Publisher(String name, String url)
         {
-            this.publisherId = publisherId;
+            this.name = name;
             this.url = url;
             events = new List<Event>();
         }
@@ -24,12 +26,25 @@ namespace Publisher
         public void Publish(String topic, String content)
         {
             Console.WriteLine("Publish new event in topic {0}", topic);
-            Event e = new Event(this.publisherId,content,topic,0);
+            Event e = new Event(this.name,content,topic,0);
         //   events.Add(e);
 
             broker.DiffuseMessageToRoot(e);
            
         }
+
+        public void SequencePublish(String numberOfEvents, String topic, String waitXms)
+        {
+            int eventNumber = Convert.ToInt32(numberOfEvents);
+            int waitingTime = Convert.ToInt32(waitXms);
+            for (int i = 0; i < eventNumber; i++)
+            {
+                Publish(topic, this.name + i);
+                Thread.Sleep(waitingTime);
+            }
+
+        }
+
 
         public void registerInBroker(String brokerUrl)
         {

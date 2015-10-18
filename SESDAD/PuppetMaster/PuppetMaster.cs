@@ -56,37 +56,37 @@ namespace PuppetMaster
 
 
 
-        public void AddBroker(String processName, string url)
+        public void AddBroker(String processName, String url)
         {
             IBroker broker = (IBroker)Activator.GetObject(typeof(IBroker), url);
             brokers.Add(processName, broker);
         }
 
-        public void AddPublisher(String processName, string url)
+        public void AddPublisher(String processName, String url)
         {
             IPublisher publisher = (IPublisher)Activator.GetObject(typeof(IPublisher), url);
             publishers.Add(processName, publisher);
         }
 
-        public void AddSubscriber(String processName, string url)
+        public void AddSubscriber(String processName, String url)
         {
             ISubscriber subscriber = (ISubscriber)Activator.GetObject(typeof(IBroker), url);
             subscribers.Add(processName, subscriber);
         }
 
-        public void Subscribe(string processName, string topic)
+        public void Subscribe(String processName, String topic)
         {
             subscribers[processName].Subscribe(topic);
         }
 
-        public void Unsubscribe(string processName, string topic)
+        public void Unsubscribe(String processName, String topic)
         {
             subscribers[processName].UnSubscribe(topic);
         }
 
-        public void Publish(string processName, string numberOfEvents, string topic, string waitXms)
+        public void Publish(String processName, String numberOfEvents, String topic, String waitXms)
         {
-            //missing function at interface
+            publishers[processName].SequencePublish(numberOfEvents, topic, waitXms);
         }
 
         public void Status()
@@ -94,17 +94,17 @@ namespace PuppetMaster
             //missing function at interface
         }
 
-        public void Crash(string processName)
+        public void Crash(String processName)
         {
             //missing function at interface
         }
 
-        public void Freeze(string processName)
+        public void Freeze(String processName)
         {
             //missing function at interface
         }
 
-        public void Unfreeze(string processName)
+        public void Unfreeze(String processName)
         {
             //missing function at interface
         }

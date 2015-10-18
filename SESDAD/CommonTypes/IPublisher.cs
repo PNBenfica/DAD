@@ -9,5 +9,6 @@ namespace CommonTypes
     public interface IPublisher
     {
         void Publish(String topic, String content);
+        void SequencePublish(String numberOfEvents, String topic, String waitXms);
     }
 }

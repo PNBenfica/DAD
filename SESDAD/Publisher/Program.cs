@@ -39,6 +39,7 @@ namespace Publisher
             Console.ReadLine();
             publisher.Publish("/benfica/campeao", "somos campeoes");
             publisher.Publish("/benfica", "benfica benfica benfica");
+            publisher.Publish("/benfica/ola", "somos campeoes");
             Console.ReadLine();
         }
     }

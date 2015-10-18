@@ -12,8 +12,10 @@ namespace Broker
         public string Name { get; set; }
         public Topic Parent { get; set; }
         private Dictionary<string, Topic> subTopics;
-        public List<String> Subscribers { get; set;}
-        public List<String> Brokers { get; set; }
+        public HashSet<String> Subscribers { get; set; }
+        public HashSet<String> SubscribersAllSubTopics { get; set; } // Subscribers that subscribes an entire topic
+        public HashSet<String> Brokers { get; set; }
+        public HashSet<String> BrokersAllSubTopics { get; set; } // Brokers that subscribes an entire topic
 
 
         public Topic(String name, Topic parent = null)
@@ -21,8 +23,10 @@ namespace Broker
             this.Name = name;
             this.Parent = parent;
             this.subTopics = new Dictionary<string, Topic>();
-            this.Subscribers = new List<String>();
-            this.Brokers = new List<String>();
+            this.Subscribers = new HashSet<String>();
+            this.SubscribersAllSubTopics = new HashSet<String>();
+            this.Brokers = new HashSet<String>();
+            this.BrokersAllSubTopics = new HashSet<String>();
         }
 
         /// <summary>
@@ -55,6 +59,17 @@ namespace Broker
                 Brokers.Add(name);
         }
 
+        /// <summary>
+        /// Subscribes all the subtopics
+        /// </summary>
+        private void SubscribeAll(string name, bool isSubscriber)
+        {
+            if (isSubscriber)
+                SubscribersAllSubTopics.Add(name);
+            else
+                BrokersAllSubTopics.Add(name);
+        }
+
 
         /// <summary>
         /// Add a new subscrition
@@ -77,16 +92,7 @@ namespace Broker
                 subTopic.Subscribe(name, restSubTopics, isSubscriber);
             }
         }
-
-
-        /// <summary>
-        /// Subscribes in all the subtopics
-        /// </summary>
-        private void SubscribeAll(string name, bool isSubscriber)
-        {
-            throw new NotImplementedException();
-        }
-
+        
 
         public void Unsubscribe(string subscriberName, string[] topicSplit, bool isSubscriber)
         {
@@ -100,8 +106,7 @@ namespace Broker
         public List<String> GetSubscribers(String[] topic)
         {
             if (topic.Length == 0)
-                return Subscribers;
-
+                return GetTopicSubscribers();
             else
             {
                 Topic subTopic = GetSubTopic(topic[0]);
@@ -110,19 +115,77 @@ namespace Broker
             }
         }
 
-
         /// <summary>
         /// Get the brokers with a path that leads to a subscriber
         /// </summary>
         public List<String> GetBrokers(String[] topic)
         {
-            return Brokers; //TODO
+            if (topic.Length == 0)
+                return GetTopicBrokers();
+
+            else
+            {
+                Topic subTopic = GetSubTopic(topic[0]);
+                String[] restSubTopics = (String[])topic.Skip(1).ToArray(); // removes first element
+                return subTopic.GetBrokers(restSubTopics);
+            }
         }
 
 
         public bool HaveSubscribers(String topic)
         {
             throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// Get all of the subscribers interested in this topic:
+        /// The ones who have specifically subscribe this topic (this.Subscribers)
+        /// And the ones that have subscribe all topics ("/*") up in the tree
+        /// </summary>
+        private List<string> GetTopicSubscribers()
+        {
+            HashSet<String> subscribers = Parent.AllSubTopicsSubscribers();
+            subscribers.UnionWith(Subscribers);
+            return subscribers.ToList();
+        }
+
+
+        /// <summary>
+        /// Get the subscribers that have subscribe all topics
+        /// from this broker until the root
+        /// </summary>
+        private HashSet<String> AllSubTopicsSubscribers()
+        {
+            HashSet<String> subscribers = new HashSet<String>(SubscribersAllSubTopics);
+            if (!IsRoot())
+                subscribers.UnionWith(Parent.AllSubTopicsSubscribers());
+            return subscribers;
+        }
+
+
+        /// <summary>
+        /// Get all of the brokers interested in this topic:
+        /// The ones who have specifically subscribe this topic (this.Brokers)
+        /// And the ones that have subscribe all topics ("/*") up in the tree
+        /// </summary>
+        private List<string> GetTopicBrokers()
+        {
+            HashSet<String> brokers = Parent.AllSubTopicsBrokers();
+            brokers.UnionWith(Brokers);
+            return brokers.ToList();
+        }
+
+        /// <summary>
+        /// Get the brokers that have subscribe all topics
+        /// from this broker until the root
+        /// </summary>
+        private HashSet<String> AllSubTopicsBrokers()
+        {
+            HashSet<String> brokers = new HashSet<String>(BrokersAllSubTopics);
+            if (!IsRoot())
+                brokers.UnionWith(Parent.AllSubTopicsSubscribers());
+            return brokers;
         }
     }
 }

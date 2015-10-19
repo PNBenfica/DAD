@@ -53,6 +53,10 @@ namespace Publisher
             this.broker.registerPublisher(this.url);
         }
 
+        public void Status()
+        {
+            //TODO
+        }
 
     }
 }

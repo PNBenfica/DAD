@@ -15,6 +15,7 @@ namespace CommonTypes
         void registerNewChild(string name, string url);
         void registerPublisher(string url);
         void registerSubscriber(string name, string url);
+        void Status();
         
     }
 }

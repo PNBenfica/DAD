@@ -119,5 +119,10 @@ namespace Broker
             Subscribers.Add(name, subscriber);
             Console.WriteLine("New subscriber registed: {0}", url);
         }
+
+        public void Status()
+        {
+            //TODO
+        }
     }
 }

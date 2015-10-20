@@ -91,7 +91,18 @@ namespace PuppetMaster
 
         public void Status()
         {
-            //missing function at interface
+            foreach (String name in brokers.Keys)
+            {
+                brokers[name].Status();
+            }
+            foreach (String name in publishers.Keys)
+            {
+                publishers[name].Status();
+            }
+            foreach (String name in subscribers.Keys)
+            {
+                subscribers[name].Status();
+            }
         }
 
         public void Crash(String processName)

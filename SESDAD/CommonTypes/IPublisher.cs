@@ -10,5 +10,6 @@ namespace CommonTypes
     {
         void Publish(String topic, String content);
         void SequencePublish(String numberOfEvents, String topic, String waitXms);
+        void Status();
     }
 }

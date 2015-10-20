@@ -57,5 +57,10 @@ namespace Subscriber
             this.broker = (IBroker)Activator.GetObject(typeof(IBroker), brokerUrl);
             this.broker.registerSubscriber(this.name, this.url);
         }
+
+        public void Status()
+        {
+            //TODO
+        }
     }
 }

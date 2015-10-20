@@ -11,5 +11,6 @@ namespace CommonTypes
         void Subscribe(String topic);
         void UnSubscribe(String topic);
         void ReceiveMessage(Event evento);
+        void Status();
     }
 }

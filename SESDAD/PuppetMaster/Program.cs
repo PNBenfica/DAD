@@ -40,14 +40,13 @@ namespace PuppetMaster
             string[] urlSplit = puppetMasterUrl.Split(delimiterChars);
             int port = Convert.ToInt32(urlSplit[4]);
 
-            Console.WriteLine("Deploywng puppetMaster");
+            
             TcpChannel channel = new TcpChannel(port);
             ChannelServices.RegisterChannel(channel, false);
 
             puppetMaster = new PuppetMaster(puppetMasterUrl, configurations.RoutingPolicy, configurations.Ordering, configurations.LoggingLevel);
 
             RemotingServices.Marshal(puppetMaster, "puppet", typeof(IPuppetMasterURL));
-            Console.WriteLine("Deployed");
 
             foreach (Process process in configurations.Processes)
             {
@@ -98,6 +97,11 @@ namespace PuppetMaster
 
         private static void executeCommand(string command)
         {
+            Console.WriteLine(command);
+            if (command == null)
+            {
+                return;
+            }
             command.ToLower();
             char[] delimiter = { ' ' };
             String[] words = command.Split(delimiter);

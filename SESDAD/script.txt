@@ -1,0 +1,3 @@
+subscriber subscriber0 subscribe /benfica
+publisher publisher0 publish 10 Ontopic /benfica interval 1
+exit

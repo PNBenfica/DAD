@@ -208,7 +208,7 @@ namespace Broker
         /// </summary>
         public void Status()
         {
-            Console.WriteLine("/{0}", this.Name);
+            Console.WriteLine("Topic: {0}", this.Name);
             PrintInfo("Subscribers", Subscribers);
             PrintInfo("Subscribers all subtopics", SubscribersAllSubTopics);
             PrintInfo("Brokers", Brokers);
@@ -216,7 +216,6 @@ namespace Broker
 
             foreach (Topic subtopic in subTopics.Values)
                 subtopic.Status();
-            
             Console.WriteLine("");
         }
 

@@ -30,7 +30,7 @@ namespace Publisher
 
         public void Publish(String topic, String content)
         {
-            Console.WriteLine("New event published\r\nID: {0}\r\nTopic {1}\r\n",NumberOfEvents,  topic);
+            Console.WriteLine("New event published\r\nID: {0}\r\nTopic {1}\r\n",NumberOfEvents + 1,  topic);
             Event ev;
             lock (this)
             {
@@ -44,7 +44,7 @@ namespace Publisher
 
         private Event ProduceEvent(string topic, string content)
         {
-            return new Event(NumberOfEvents++, Name, content, topic, new List<Event>(PreviousEvents.ToArray()));
+            return new Event(++NumberOfEvents, Name, topic, content, new List<Event>(PreviousEvents.ToArray()));
         }
 
 

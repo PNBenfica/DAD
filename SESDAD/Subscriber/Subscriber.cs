@@ -13,16 +13,19 @@ namespace Subscriber
         private String name;
         private String url;
         private IBroker broker;
-        private OrderStrategy orderStrategy;
+        private bool isOrdering;
+        public Dictionary<string, int> PublishersPosts { get; set; }
 
         /// <summary>
         /// Subscriber Construtor
         /// </summary>
         /// <param name="name">subscriber name</param>
-        public Subscriber(String name, String url)
+        public Subscriber(String name, String url, String ordering)
         {
             this.name = name;
             this.url = url;
+            this.isOrdering = ordering.Equals("FIFO");
+            this.PublishersPosts = new Dictionary<String, int>();
         }
 
         public void Subscribe(string topic)
@@ -43,7 +46,30 @@ namespace Subscriber
         /// <param name="e"></param>
         public void ReceiveMessage(Event e)
         {
+            if (isOrdering){
+                IncPublisherPost(e.PublisherId);
+                PrintMessage(e);
+                Console.WriteLine("Publisher Posts Recorded:" + PublishersPosts[e.PublisherId]);
+                Console.WriteLine("Post ID:" + e.Id);
+            }
+            else
+                PrintMessage(e);
+        }
+
+
+
+        private void PrintMessage(Event e)
+        {
             Console.WriteLine("\r\n------------\r\nPublisher: {0}\r\nTopic: {1}\r\nContent: {2}", e.PublisherId, e.Topic, e.Content);
+        }
+
+
+        private void IncPublisherPost(string publisher)
+        {
+            if (!PublishersPosts.ContainsKey(publisher))
+                PublishersPosts[publisher] = 1;
+            else
+                PublishersPosts[publisher]++;
         }
 
 

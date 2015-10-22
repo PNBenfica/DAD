@@ -46,6 +46,7 @@ namespace Broker
         public void DiffuseMessage(Event e)
         {
             Console.WriteLine("Diffusing message from {0}", e.PublisherId);
+            Status();
             Router.route(e);
         }
 

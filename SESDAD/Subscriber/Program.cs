@@ -30,7 +30,7 @@ namespace Subscriber
             TcpChannel channel = new TcpChannel(port);
             ChannelServices.RegisterChannel(channel, false);
 
-            Subscriber subscriber = new Subscriber(name, url);
+            Subscriber subscriber = new Subscriber(name, url, ordering);
             RemotingServices.Marshal(subscriber, "sub", typeof(ISubscriber));
 
             Console.WriteLine("Subscriber {0} running on {1}", name, url);

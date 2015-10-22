@@ -18,12 +18,24 @@ namespace CommonTypes
 
         public int Id { get; set; }
 
-        public Event(String publisherId, String content, String topic, int id)
+        public List<Event> PreviousEvents { get; set; }
+
+        public Event(int id, String publisherId, String topic, String content, List<Event> previousEvents)
         {
-            this.PublisherId = publisherId;
-            this.Content = content;
-            this.Topic = topic;
             this.Id = id;
+            this.PublisherId = publisherId;
+            this.Topic = topic;
+            this.Content = content;
+            this.PreviousEvents = new List<Event>(previousEvents.ToArray());
         }
+
+
+        public Event(int id, String publisherId, String topic)
+        {
+            this.Id = id;
+            this.PublisherId = publisherId;
+            this.Topic = topic;
+        }
+
     }
 }

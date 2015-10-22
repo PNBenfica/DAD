@@ -36,7 +36,8 @@ namespace Broker
 
             // if there is no parent URL, this is the root!!
             // if there is a parent, this broker must let him know he has a son
-            if (args.Length == 3) 
+            String parentUrl = args[2];
+            if (!parentUrl.Equals("none")) 
             {
                 broker.notifyParent(args[2]);
             }

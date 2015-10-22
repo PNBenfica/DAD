@@ -11,27 +11,52 @@ namespace Publisher
     class Publisher : MarshalByRefObject, IPublisher
     {
         private List<Event> events;
-        private String name;
+        public String Name { get; set; }
         private String url;
         private IBroker broker;
+        public Queue<Event> PreviousEvents { get; set; }
+        public int NumberOfEvents { get; set; }
+        private const int MAXEVENTSQUEUE = 10;
 
         public Publisher(String name, String url)
         {
-            this.name = name;
+            this.Name = name;
             this.url = url;
             events = new List<Event>();
+            this.PreviousEvents = new Queue<Event>(MAXEVENTSQUEUE);
+            this.NumberOfEvents = 0;
         }
 
 
         public void Publish(String topic, String content)
         {
-            Console.WriteLine("Publish new event in topic {0}", topic);
-            Event e = new Event(this.name,content,topic,0);
-        //   events.Add(e);
-
-            broker.DiffuseMessageToRoot(e);
-           
+            Console.WriteLine("New event published\r\nID: {0}\r\nTopic {1}\r\n",NumberOfEvents,  topic);
+            Event ev;
+            lock (this)
+            {
+                ev = ProduceEvent(topic, content);
+                UpdatePreviousEvents(ev);
+            }
+            PrintQueuedEvents();
+            broker.DiffuseMessageToRoot(ev);
         }
+
+
+        private Event ProduceEvent(string topic, string content)
+        {
+            return new Event(NumberOfEvents++, Name, content, topic, new List<Event>(PreviousEvents.ToArray()));
+        }
+
+
+        private void UpdatePreviousEvents(Event e)
+        {
+            if (PreviousEvents.Count == 10)
+            {
+                PreviousEvents.Dequeue();
+            }
+            PreviousEvents.Enqueue(new Event(e.Id, e.PublisherId, e.Topic));
+        }
+
 
         public void SequencePublish(String numberOfEvents, String topic, String waitXms)
         {
@@ -39,7 +64,7 @@ namespace Publisher
             int waitingTime = Convert.ToInt32(waitXms);
             for (int i = 0; i < eventNumber; i++)
             {
-                Publish(topic, this.name + i);
+                Publish(topic, this.Name + i);
                 Thread.Sleep(waitingTime);
             }
 
@@ -58,5 +83,14 @@ namespace Publisher
             //TODO
         }
 
+        private void PrintQueuedEvents()
+        {
+            Console.WriteLine("--- Queued Events Id's ---");
+            foreach (Event ev in PreviousEvents)
+            {
+                Console.Write("{0} ", ev.Id);
+            }
+            Console.WriteLine("");
+        }
     }
 }

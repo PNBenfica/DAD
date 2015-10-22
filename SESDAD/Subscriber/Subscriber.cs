@@ -15,7 +15,9 @@ namespace Subscriber
         private IBroker broker;
         private bool isOrdering;
         public Dictionary<string, int> PublishersPosts { get; set; }
+        public Dictionary<string, List<Event>> QueuedEvents { get; set; }
         public Topic Subscriptions { get; set; }
+
 
         /// <summary>
         /// Subscriber Construtor
@@ -27,6 +29,7 @@ namespace Subscriber
             this.url = url;
             this.isOrdering = ordering.Equals("FIFO");
             this.PublishersPosts = new Dictionary<String, int>();
+            this.QueuedEvents = new Dictionary<string, List<Event>>();
             this.Subscriptions = new Topic("/");
         }
 
@@ -35,7 +38,6 @@ namespace Subscriber
             Console.WriteLine("New Subscrition on Topic: {0}", topic);
             Subscriptions.Subscribe(name, tokenize(topic), true);
             broker.Subscribe(this.name, true, topic);
-            Status();
         }
 
         public void UnSubscribe(string topic)
@@ -53,10 +55,18 @@ namespace Subscriber
         public void ReceiveMessage(Event e)
         {
             if (isOrdering){
-                IncPublisherPost(e.PublisherId);
-                PrintMessage(e);
+                if (IsInOrder(e))
+                {
+                    UpdatePublisherPost(e);
+                    PrintMessage(e);
+                }
+                else
+                {
+                    AddEventToQueue(e);
+                }
                 Console.WriteLine("Publisher Posts Recorded:" + PublishersPosts[e.PublisherId]);
                 Console.WriteLine("Post ID:" + e.Id);
+                PrintMessagesQueue();
             }
             else
                 PrintMessage(e);
@@ -72,19 +82,70 @@ namespace Subscriber
         }
 
 
-        private void IncPublisherPost(string publisher)
+        /// <summary>
+        /// The current message is in order if :
+        /// The id is the (current num of posts of publisher) + 1
+        /// Or if there aren't subscribed incoming messsages (the posts missing are from non subscribed topics)
+        /// </summary>
+        private bool IsInOrder(Event e)
+        {
+            return (e.Id == GetNumPublisherPost(e.PublisherId) + 1) || !HaveMessageIncoming(e) ;
+        }
+
+
+        /// <summary>
+        /// Check if there is some late message sent that havent arrived and it is subscripted
+        /// </summary>
+        private bool HaveMessageIncoming(Event e)
+        {
+            foreach (Event previousEvent in e.PreviousEvents)
+            {
+                if (previousEvent.Id < e.Id && previousEvent.Id > GetNumPublisherPost(e.PublisherId) && HasSubscrition(previousEvent.Topic))
+                    return true;
+            }
+            return false;
+        }
+
+
+        /// <summary>
+        /// Add an event to the queue of events waiting for other publisher message
+        /// </summary>
+        private void AddEventToQueue(Event e)
+        {
+            if (!QueuedEvents.ContainsKey(e.PublisherId))
+            {
+                QueuedEvents[e.PublisherId] = new List<Event>();
+            }
+            QueuedEvents[e.PublisherId].Add(e);
+        }
+
+
+        /// <summary>
+        /// returns true if the subscriber has a subscrition in the topic
+        /// </summary>
+        private bool HasSubscrition(string topic)
+        {
+            return Subscriptions.HasSubscrition(name, tokenize(topic));
+        }
+
+
+        private void UpdatePublisherPost(Event e)
+        {
+            PublishersPosts[e.PublisherId] = e.Id;
+        }
+
+
+        private int GetNumPublisherPost(string publisher)
         {
             if (!PublishersPosts.ContainsKey(publisher))
-                PublishersPosts[publisher] = 1;
-            else
-                PublishersPosts[publisher]++;
+                PublishersPosts[publisher] = 0;
+            return PublishersPosts[publisher];
         }
 
 
         /// <summary>
         /// notify site broker to add this new subscriber
         /// </summary>
-        /// <param name="brokerUrl">site broker</param>
         internal void registerInBroker(string brokerUrl)
         {
             Console.WriteLine("Registing in broker at {0}", brokerUrl);
@@ -101,6 +162,19 @@ namespace Subscriber
             char[] delimiterChars = { '/' };
             string[] topicSplit = topic.Split(delimiterChars, StringSplitOptions.RemoveEmptyEntries);
             return topicSplit;
+        }
+
+
+        private void PrintMessagesQueue()
+        {
+            Console.WriteLine("Message queue");
+            foreach (List<Event> queue in QueuedEvents.Values)
+            {
+                foreach (Event e in queue)
+                {
+                    Console.WriteLine("" + e.Id);
+                }
+            }
         }
 
 

@@ -36,6 +36,11 @@ namespace Publisher
             {
                 ev = ProduceEvent(topic, content);
                 UpdatePreviousEvents(ev);
+                //if (ev.Id == 13)
+                //{
+                //    Event ev2 = ProduceEvent(topic, content);
+                //    broker.DiffuseMessageToRoot(ev2);
+                //}
             }
             PrintQueuedEvents();
             broker.DiffuseMessageToRoot(ev);

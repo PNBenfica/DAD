@@ -154,6 +154,16 @@ namespace CommonTypes
 
 
         /// <summary>
+        /// returns true if the subscriber has a subscrition in the topic
+        /// </summary>
+        public bool HasSubscrition(string subscriberName, string[] topic)
+        {
+            List<String> subscribers = GetSubscribers(topic);
+            return subscribers.Contains(subscriberName);
+        }
+
+
+        /// <summary>
         /// Get all of the subscribers interested in this topic:
         /// The ones who have specifically subscribe this topic (this.Subscribers)
         /// And the ones that have subscribe all topics ("/*") up in the tree

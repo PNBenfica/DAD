@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Broker
+namespace CommonTypes
 {
     public class Topic
     {
@@ -191,6 +191,7 @@ namespace Broker
             return brokers.ToList();
         }
 
+
         /// <summary>
         /// Get the brokers that have subscribe all topics
         /// from this broker until the root
@@ -202,6 +203,7 @@ namespace Broker
                 brokers.UnionWith(Parent.AllSubTopicsSubscribers());
             return brokers;
         }
+
 
         /// <summary>
         /// just to Debug

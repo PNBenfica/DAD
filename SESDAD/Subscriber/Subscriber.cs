@@ -15,6 +15,7 @@ namespace Subscriber
         private IBroker broker;
         private bool isOrdering;
         public Dictionary<string, int> PublishersPosts { get; set; }
+        public Topic Subscriptions { get; set; }
 
         /// <summary>
         /// Subscriber Construtor
@@ -26,16 +27,21 @@ namespace Subscriber
             this.url = url;
             this.isOrdering = ordering.Equals("FIFO");
             this.PublishersPosts = new Dictionary<String, int>();
+            this.Subscriptions = new Topic("/");
         }
 
         public void Subscribe(string topic)
         {
-            Console.WriteLine("Subscribe {0}", topic);
+            Console.WriteLine("New Subscrition on Topic: {0}", topic);
+            Subscriptions.Subscribe(name, tokenize(topic), true);
             broker.Subscribe(this.name, true, topic);
+            Status();
         }
 
         public void UnSubscribe(string topic)
         {
+            Console.WriteLine("Unsubscrition on Topic: {0}", topic);
+            Subscriptions.Unsubscribe(name, tokenize(topic), true);
             broker.UnSubscribe(this.name, true, topic);
         }
 
@@ -60,7 +66,9 @@ namespace Subscriber
 
         private void PrintMessage(Event e)
         {
-            Console.WriteLine("\r\n------------\r\nPublisher: {0}\r\nTopic: {1}\r\nContent: {2}", e.PublisherId, e.Topic, e.Content);
+            Console.WriteLine("");
+            Console.WriteLine("------- New Message -------");
+            Console.WriteLine("Publisher: {0}\r\nTopic: {1}\r\nContent: {2}", e.PublisherId, e.Topic, e.Content);
         }
 
 
@@ -84,9 +92,21 @@ namespace Subscriber
             this.broker.registerSubscriber(this.name, this.url);
         }
 
+
+        /// <summary>
+        /// Divides the string topic into String[]
+        /// </summary>
+        public String[] tokenize(String topic)
+        {
+            char[] delimiterChars = { '/' };
+            string[] topicSplit = topic.Split(delimiterChars, StringSplitOptions.RemoveEmptyEntries);
+            return topicSplit;
+        }
+
+
         public void Status()
         {
-            //TODO
+            Subscriptions.Status();
         }
     }
 }

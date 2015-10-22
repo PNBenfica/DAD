@@ -36,6 +36,7 @@ namespace Publisher
             {
                 ev = ProduceEvent(topic, content);
                 UpdatePreviousEvents(ev);
+                // uncomment to test FIFO
                 //if (ev.Id == 13)
                 //{
                 //    Event ev2 = ProduceEvent(topic, content);

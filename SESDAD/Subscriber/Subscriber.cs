@@ -59,13 +59,12 @@ namespace Subscriber
                 {
                     UpdatePublisherPost(e);
                     PrintMessage(e);
+                    ResendQueuedEvents(e);
                 }
                 else
                 {
                     AddEventToQueue(e);
                 }
-                Console.WriteLine("Publisher Posts Recorded:" + PublishersPosts[e.PublisherId]);
-                Console.WriteLine("Post ID:" + e.Id);
                 PrintMessagesQueue();
             }
             else
@@ -73,11 +72,11 @@ namespace Subscriber
         }
 
 
-
         private void PrintMessage(Event e)
         {
             Console.WriteLine("");
             Console.WriteLine("------- New Message -------");
+            Console.WriteLine("Post ID:" + e.Id);
             Console.WriteLine("Publisher: {0}\r\nTopic: {1}\r\nContent: {2}", e.PublisherId, e.Topic, e.Content);
         }
 
@@ -117,6 +116,45 @@ namespace Subscriber
                 QueuedEvents[e.PublisherId] = new List<Event>();
             }
             QueuedEvents[e.PublisherId].Add(e);
+        }
+
+
+        /// <summary>
+        /// Remove an event from the queue of events waiting for other publisher message
+        /// </summary>
+        private void RemoveEventFromQueue(Event e)
+        {
+            QueuedEvents[e.PublisherId].Remove(e);
+        }
+
+
+        /// <summary>
+        /// returns the events queued that are waiting ordered by Id of the messages
+        /// </summary>
+        private List<Event> GetQueuedEvents(string publisher)
+        {
+            if (QueuedEvents.ContainsKey(publisher))
+            {
+                QueuedEvents[publisher] = QueuedEvents[publisher].OrderBy(o => o.Id).ToList();
+                return QueuedEvents[publisher];
+            }
+            return null;
+        }
+
+
+        /// <summary>
+        /// If there are waiting events from a publisher
+        /// lets resend the one with lower id
+        /// </summary>
+        private void ResendQueuedEvents(Event e)
+        {
+            List<Event> queuedEvents = GetQueuedEvents(e.PublisherId);
+            if (queuedEvents != null && queuedEvents.Count > 0)
+            {
+                Event nextEvent = queuedEvents[0];
+                RemoveEventFromQueue(nextEvent);
+                ReceiveMessage(nextEvent);
+            }
         }
 
 

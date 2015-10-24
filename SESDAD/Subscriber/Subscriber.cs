@@ -65,7 +65,6 @@ namespace Subscriber
                 {
                     AddEventToQueue(e);
                 }
-                PrintMessagesQueue();
             }
             else
                 PrintMessage(e);

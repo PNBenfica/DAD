@@ -43,8 +43,11 @@ namespace CommonTypes
         /// </summary>
         public Topic GetSubTopic(string subTopic)
         {
-            if (!subTopics.ContainsKey(subTopic))
-                subTopics.Add(subTopic, new Topic(subTopic, this));
+            lock (this)
+            {
+                if (!subTopics.ContainsKey(subTopic))
+                    subTopics.Add(subTopic, new Topic(subTopic, this));
+            }
             return subTopics[subTopic];
         }
 

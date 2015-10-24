@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommonTypes;
+using System.Threading;
 
 namespace Broker
 {
@@ -45,9 +46,12 @@ namespace Broker
         /// </summary>
         public void DiffuseMessage(Event e)
         {
-            Console.WriteLine("Diffusing message from {0}", e.PublisherId);
-            Status();
-            Router.route(e);
+            Thread thread = new Thread(() =>
+            {
+                Console.WriteLine("Diffusing message from {0}", e.PublisherId);
+                Router.route(e);
+            });
+            thread.Start();
         }
 
 
@@ -56,15 +60,19 @@ namespace Broker
         /// </summary>
         public void DiffuseMessageToRoot(Event even)
         {
-            if(!IsRoot())
+            Thread thread = new Thread(() =>
             {
-                this.Parent.DiffuseMessageToRoot(even);
-            }
+                if(!IsRoot())
+                {
+                    this.Parent.DiffuseMessageToRoot(even);
+                }
 
-            else  // If it is the root let s go down!
-            {
-                this.DiffuseMessage(even);
-            }
+                else  // If it is the root let s go down!
+                {
+                    this.DiffuseMessage(even);
+                }
+            });
+            thread.Start();
         }
         
 

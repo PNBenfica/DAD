@@ -30,20 +30,13 @@ namespace Publisher
 
         public void Publish(String topic, String content)
         {
-            Console.WriteLine("New event published\r\nID: {0}\r\nTopic {1}\r\n",NumberOfEvents + 1,  topic);
             Event ev;
             lock (this)
             {
+                Console.WriteLine("New event published\r\nID: {0}\r\nTopic {1}\r\n", NumberOfEvents + 1, topic);
                 ev = ProduceEvent(topic, content);
                 UpdatePreviousEvents(ev);
-                // uncomment to test FIFO
-                //if (ev.Id == 13)
-                //{
-                //    Event ev2 = ProduceEvent(topic, content);
-                //    broker.DiffuseMessageToRoot(ev2);
-                //}
             }
-            PrintQueuedEvents();
             broker.DiffuseMessageToRoot(ev);
         }
 
@@ -70,7 +63,11 @@ namespace Publisher
             int waitingTime = Convert.ToInt32(waitXms);
             for (int i = 0; i < eventNumber; i++)
             {
-                Publish(topic, this.Name + i);
+                Thread thread = new Thread(() =>
+                {
+                    Publish(topic, this.Name + i);
+                });
+                thread.Start();
                 Thread.Sleep(waitingTime);
             }
 

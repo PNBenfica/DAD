@@ -7,6 +7,7 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 using CommonTypes;
+using System.Threading;
 
 namespace Publisher
 {
@@ -40,7 +41,17 @@ namespace Publisher
             //publisher.Publish("/benfica/campeao", "somos campeoes");
             //publisher.Publish("/benfica", "benfica benfica benfica");
             //publisher.Publish("/benfica/ola", "somos campeoes");
-            publisher.SequencePublish("10", "/benfica/ola","0");
+            Thread thread = new Thread(() =>
+            {
+                publisher.SequencePublish("100", "/benfica/ola", "0");
+            });
+            thread.Start();
+            Thread thread1 = new Thread(() =>
+            {
+                publisher.SequencePublish("100", "/benfica/Samaris", "0");
+            });
+            thread1.Start();
+           
             Console.ReadLine();
         }
     }

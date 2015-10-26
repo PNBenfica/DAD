@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CommonTypes;
+using System.Threading;
 
 namespace Broker
 {
@@ -23,6 +24,7 @@ namespace Broker
         /// </summary>
         public void route(Event e)
         {
+             
             foreach (String s in GetSubscribers(e))
             {
                 Broker.Subscribers[s].ReceiveMessage(e);
@@ -30,6 +32,7 @@ namespace Broker
 
             foreach (String broker in GetBrokers(e))
             {
+  
                 Broker.Children[broker].DiffuseMessage(e);
             }
         }

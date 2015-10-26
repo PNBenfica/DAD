@@ -54,29 +54,36 @@ namespace Subscriber
         /// <param name="e"></param>
         public void ReceiveMessage(Event e)
         {
-            if (isOrdering){
-                if (IsInOrder(e))
+            lock (this)
+            {
+                if (isOrdering)
                 {
-                    UpdatePublisherPost(e);
-                    PrintMessage(e);
-                    ResendQueuedEvents(e);
+                    if (IsInOrder(e))
+                    {
+                        UpdatePublisherPost(e);
+                        PrintMessage(e);
+                        ResendQueuedEvents(e);
+                    }
+                    else
+                    {
+                        AddEventToQueue(e);
+                    }
                 }
                 else
-                {
-                    AddEventToQueue(e);
-                }
+                    PrintMessage(e);
             }
-            else
-                PrintMessage(e);
         }
 
 
         private void PrintMessage(Event e)
         {
-            Console.WriteLine("");
-            Console.WriteLine("------- New Message -------");
-            Console.WriteLine("Post ID:" + e.Id);
-            Console.WriteLine("Publisher: {0}\r\nTopic: {1}\r\nContent: {2}", e.PublisherId, e.Topic, e.Content);
+            //lock (this)
+            //{
+                Console.WriteLine("");
+                Console.WriteLine("------- New Message -------");
+                Console.WriteLine("Post ID:" + e.Id);
+                Console.WriteLine("Publisher: {0}\r\nTopic: {1}\r\nContent: {2}", e.PublisherId, e.Topic, e.Content);
+            //}
         }
 
 

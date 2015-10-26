@@ -31,19 +31,27 @@ namespace Publisher
         public void Publish(String topic, String content)
         {
             Event ev;
-            lock (this)
-            {
-                Console.WriteLine("New event published\r\nID: {0}\r\nTopic {1}\r\n", NumberOfEvents + 1, topic);
+            //lock (this)
+            //{
+            //Thread thread = new Thread(() =>
+            //{
                 ev = ProduceEvent(topic, content);
                 UpdatePreviousEvents(ev);
-            }
+            
+            
             broker.DiffuseMessageToRoot(ev);
+            //});
+            //thread.Start();
         }
 
 
         private Event ProduceEvent(string topic, string content)
         {
-            return new Event(++NumberOfEvents, Name, topic, content, new List<Event>(PreviousEvents.ToArray()));
+            //lock (this)
+            //{
+                Console.WriteLine("New event published\r\nID: {0}\r\nTopic {1}\r\ncontent: {2}\r\n", NumberOfEvents + 1, topic, content);
+                return new Event(++NumberOfEvents, Name, topic, content, new List<Event>(PreviousEvents.ToArray()));
+            //}
         }
 
 
@@ -63,11 +71,11 @@ namespace Publisher
             int waitingTime = Convert.ToInt32(waitXms);
             for (int i = 0; i < eventNumber; i++)
             {
-                Thread thread = new Thread(() =>
-                {
+                //Thread thread = new Thread(() =>
+                //{
                     Publish(topic, this.Name + i);
-                });
-                thread.Start();
+                //});
+                //thread.Start();
                 Thread.Sleep(waitingTime);
             }
 

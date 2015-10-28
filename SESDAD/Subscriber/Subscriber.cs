@@ -224,7 +224,10 @@ namespace Subscriber
 
         public void Status()
         {
+            Console.WriteLine("\r\n<------Status------>");
             Subscriptions.Status();
+            Console.WriteLine("");
+
         }
     }
 }

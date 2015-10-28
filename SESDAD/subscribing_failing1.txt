@@ -1,0 +1,13 @@
+subscriber subscriber1 subscribe /*
+Status
+subscriber subscriber1 subscribe /benfica/*
+Status
+subscriber subscriber1 subscribe /benfica/ola
+Status
+subscriber subscriber1 subscribe /benfica/1904
+Status
+publisher publisher0 publish 4 Ontopic /benfica/campeao interval 100
+exit
+publisher publisher0 publish 4 Ontopic /benfica/ola interval 100
+publisher publisher0 publish 4 Ontopic /benfica/vencervencer interval 100
+exit

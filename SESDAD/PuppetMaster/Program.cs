@@ -102,52 +102,51 @@ namespace PuppetMaster
             {
                 return;
             }
-            command.ToLower();
             char[] delimiter = { ' ' };
             String[] words = command.Split(delimiter);
             //Subscriber processname Subscribe topicname
-            if (words[0].Equals("subscriber") && words[2].Equals("subscribe"))
+            if (words[0].ToLower().Equals("subscriber") && words[2].ToLower().Equals("subscribe"))
             {
                 puppetMaster.Subscribe(words[1], words[3]);
             }
             //Subscriber processname Unsubscribe topicname
-            else if (words[0].Equals("subscriber") && words[2].Equals("unsubscribe"))
+            else if (words[0].ToLower().Equals("subscriber") && words[2].ToLower().Equals("unsubscribe"))
             {
                 puppetMaster.Unsubscribe(words[1], words[3]);
             }
             //Publisher processname Publish numberofevents Ontopic topicname Interval xms.
-            else if (words[0].Equals("publisher") && words[2].Equals("publish"))
+            else if (words[0].ToLower().Equals("publisher") && words[2].ToLower().Equals("publish"))
             {
                 puppetMaster.Publish(words[1], words[3], words[5], words[7]);
             }
             //Status
-            else if (words[0].Equals("status"))
+            else if (words[0].ToLower().Equals("status"))
             {
                 puppetMaster.Status();
             }
             //Crash processname
-            else if (words[0].Equals("crash"))
+            else if (words[0].ToLower().Equals("crash"))
             {
                 puppetMaster.Crash(words[1]);
             }
             //Freeze processname
-            else if (words[0].Equals("freeze"))
+            else if (words[0].ToLower().Equals("freeze"))
             {
                 puppetMaster.Freeze(words[1]);
             }
             //Unfreeze processname
-            else if (words[0].Equals("unfreeze"))
+            else if (words[0].ToLower().Equals("unfreeze"))
             {
                 puppetMaster.Unfreeze(words[1]);
             }
             //Wait xms
-            else if (words[0].Equals("wait"))
+            else if (words[0].ToLower().Equals("wait"))
             {
                 int time = Convert.ToInt32(words[1]);
                 Thread.Sleep(time);
             }
             //Clear
-            else if (words[0].Equals("clear"))
+            else if (words[0].ToLower().Equals("clear"))
             {
                 Console.Clear();
             }
@@ -157,7 +156,7 @@ namespace PuppetMaster
                 Environment.Exit(0);
             }
             //help
-            else if (words[0].Equals("help"))
+            else if (words[0].ToLower().Equals("help"))
             {
                 Console.WriteLine("Subscriber processname Subscribe topicname");
                 Console.WriteLine("Subscriber processname Unsubscribe topicname");

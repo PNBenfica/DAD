@@ -90,10 +90,59 @@ namespace CommonTypes
         /// </summary>
         private void SubscribeAll(string name, bool isSubscriber)
         {
+            //if already exist a subscribe all in the tree
+            if (checkAlreadySubscribeAll(name, isSubscriber))
+            {
+                return;
+            }
+
             if (isSubscriber)
                 SubscribersAllSubTopics.Add(name);
             else
                 BrokersAllSubTopics.Add(name);
+
+            clearSubTopicsSubscribeAll(name, isSubscriber, true);
+        }
+
+        public void clearSubTopicsSubscribeAll(string name, bool isSubscriber, bool isParentTopic)
+        {
+            if (!isParentTopic)
+            {
+                if (isSubscriber)
+                {
+                    SubscribersAllSubTopics.Remove(name);
+                }
+                else
+                {
+                    BrokersAllSubTopics.Remove(name);
+                }
+            }
+
+            foreach (KeyValuePair<string, Topic> entry in subTopics)
+            {
+                entry.Value.clearSubTopicsSubscribeAll(name, isSubscriber, false);
+            }
+        }
+
+
+        public bool checkAlreadySubscribeAll(String name, bool isSubscriber)
+        {
+            if (isSubscriber && SubscribersAllSubTopics.Contains(name))
+            {
+                return true;
+            }
+            else if (!isSubscriber && BrokersAllSubTopics.Contains(name))
+            {
+                return true;
+            }
+            else if (!BrokersAllSubTopics.Contains(name) && !SubscribersAllSubTopics.Contains(name) && IsRoot())
+            {
+                return false;
+            }
+            else
+            {
+                return Parent.checkAlreadySubscribeAll(name, isSubscriber);
+            }
         }
 
 

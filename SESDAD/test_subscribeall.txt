@@ -1,8 +1,8 @@
-subscriber subscriber1 subscribe /*
-Status
 subscriber subscriber1 subscribe /benfica/*
 Status
-subscriber subscriber1 subscribe /benfica/ola
+subscriber subscriber1 subscribe /*
+Status
+subscriber subscriber1 subscribe /benfica/ola/*
 Status
 subscriber subscriber1 subscribe /benfica/1904
 Status

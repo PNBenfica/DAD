@@ -31,27 +31,20 @@ namespace Publisher
         public void Publish(String topic, String content)
         {
             Event ev;
-            //lock (this)
-            //{
-            //Thread thread = new Thread(() =>
-            //{
+            lock (this)
+            {
                 ev = ProduceEvent(topic, content);
                 UpdatePreviousEvents(ev);
-            
+            }
             
             broker.DiffuseMessageToRoot(ev);
-            //});
-            //thread.Start();
         }
 
 
         private Event ProduceEvent(string topic, string content)
         {
-            //lock (this)
-            //{
-                Console.WriteLine("New event published\r\nID: {0}\r\nTopic {1}\r\ncontent: {2}\r\n", NumberOfEvents + 1, topic, content);
-                return new Event(++NumberOfEvents, Name, topic, content, new List<Event>(PreviousEvents.ToArray()));
-            //}
+            Console.WriteLine("New event published\r\nID: {0}\r\nTopic {1}\r\ncontent: {2}\r\n", NumberOfEvents + 1, topic, content);
+            return new Event(++NumberOfEvents, Name, topic, content, new List<Event>(PreviousEvents.ToArray()));
         }
 
 

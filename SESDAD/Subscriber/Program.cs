@@ -37,7 +37,7 @@ namespace Subscriber
 
             subscriber.registerInBroker(brokerUrl);
             Console.ReadLine();
-            subscriber.Subscribe("/benfica/ola");
+            subscriber.Subscribe("/benfica/ola/*");
             Console.ReadLine();
         }
     }

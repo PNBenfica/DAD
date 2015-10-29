@@ -222,7 +222,7 @@ namespace CommonTypes
         /// </summary>
         private List<string> GetTopicSubscribers()
         {
-            HashSet<String> subscribers = Parent.AllSubTopicsSubscribers();
+            HashSet<String> subscribers = AllSubTopicsSubscribers();
             subscribers.UnionWith(Subscribers);
             return subscribers.ToList();
         }
@@ -248,7 +248,7 @@ namespace CommonTypes
         /// </summary>
         private List<string> GetTopicBrokers()
         {
-            HashSet<String> brokers = Parent.AllSubTopicsBrokers();
+            HashSet<String> brokers = AllSubTopicsBrokers();
             brokers.UnionWith(Brokers);
             return brokers.ToList();
         }

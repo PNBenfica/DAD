@@ -15,7 +15,7 @@ namespace Subscriber
         private String url;
         private IBroker broker;
         public OrderStrategy OrderStrategy { get; set; } // Guarantees that the message is delivered in the correct order
-        public Topic Subscriptions { get; set; }
+        public Topic<String> Subscriptions { get; set; }
         public DateTime TimeStamp;
 
 
@@ -28,7 +28,7 @@ namespace Subscriber
             this.name = name;
             this.url = url;
             this.OrderStrategy = GetOrderByRefletion(order);
-            this.Subscriptions = new Topic("/");
+            this.Subscriptions = new Topic<String>("/");
         }
 
 

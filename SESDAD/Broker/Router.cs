@@ -10,12 +10,12 @@ namespace Broker
     public abstract class Router
     {
         public Broker Broker { get; set; }
-        public Topic TopicManager { get; set; }
+        public Topic<String> TopicManager { get; set; }
 
         public Router(Broker broker)
         {
             this.Broker = broker;
-            this.TopicManager = new Topic("/");
+            this.TopicManager = new Topic<String>("/");
         }
 
 

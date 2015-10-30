@@ -1,3 +1,7 @@
-subscriber subscriber1 subscribe /benfica
-publisher publisher0 publish 10 Ontopic /benfica/campeão interval 1
+publisher publisher0 publish 5 Ontopic /benfica/campeão interval 1
+subscriber subscriber1 subscribe /benfica/*
+publisher publisher0 publish 5 Ontopic /benfica/campeão interval 1
+publisher publisher0 publish 5 Ontopic /topico interval 1
+subscriber subscriber1 subscribe /topico
+publisher publisher0 publish 10 Ontopic /topico interval 1
 exit

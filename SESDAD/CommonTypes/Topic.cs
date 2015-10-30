@@ -165,7 +165,7 @@ namespace CommonTypes
 
 
         /// <summary>
-        /// Get the subscribers of a topic
+        /// Get all the subscribers of a topic
         /// </summary>
         public List<String> GetSubscribers(String[] topic)
         {
@@ -180,7 +180,7 @@ namespace CommonTypes
         }
 
         /// <summary>
-        /// Get the brokers with a path that leads to a subscriber
+        /// Get all the brokers with a path that leads to a subscriber
         /// </summary>
         public List<String> GetBrokers(String[] topic)
         {
@@ -193,25 +193,6 @@ namespace CommonTypes
                 String[] restSubTopics = (String[])topic.Skip(1).ToArray(); // removes first element
                 return subTopic.GetBrokers(restSubTopics);
             }
-        }
-
-
-        /// <summary>
-        /// returns true if there is any interested (subscriber/broker) in the event
-        /// </summary>
-        public bool HaveSubscribers(String topic)
-        {
-            return GetTopicSubscribers().Count() > 0 || GetTopicBrokers().Count > 0;
-        }
-
-
-        /// <summary>
-        /// returns true if the subscriber has a subscrition in the topic
-        /// </summary>
-        public bool HasSubscrition(string subscriberName, string[] topic)
-        {
-            List<String> subscribers = GetSubscribers(topic);
-            return subscribers.Contains(subscriberName);
         }
 
 
@@ -262,8 +243,27 @@ namespace CommonTypes
         {
             HashSet<String> brokers = new HashSet<String>(BrokersAllSubTopics);
             if (!IsRoot())
-                brokers.UnionWith(Parent.AllSubTopicsSubscribers());
+                brokers.UnionWith(Parent.AllSubTopicsBrokers());
             return brokers;
+        }
+
+
+        /// <summary>
+        /// returns true if there is any interested (subscriber/broker) in the event
+        /// </summary>
+        public bool HaveSubscribers(String topic)
+        {
+            return GetTopicSubscribers().Count() > 0 || GetTopicBrokers().Count > 0;
+        }
+
+
+        /// <summary>
+        /// returns true if the subscriber has a subscrition in the topic
+        /// </summary>
+        public bool HasSubscrition(string subscriberName, string[] topic)
+        {
+            List<String> subscribers = GetSubscribers(topic);
+            return subscribers.Contains(subscriberName);
         }
 
 

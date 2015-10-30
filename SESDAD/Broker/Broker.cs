@@ -24,7 +24,7 @@ namespace Broker
         {
             this.Name = name;
             this.URL = url;
-            this.Router = new FloodingRouter(this);
+            this.Router = new FilteredRouter(this);
             this.Children = new Dictionary<string, IBroker>();
             this.Publishers = new List<IPublisher>();
             this.Subscribers = new Dictionary<string, ISubscriber>();
@@ -32,6 +32,7 @@ namespace Broker
 
         public void Subscribe(String Id, bool isSubscriber, String topic)
         {
+            Console.WriteLine("New subscrition from {0}", Id);
             Router.addSubscrition(Id, isSubscriber, topic);
         }
 
@@ -48,7 +49,7 @@ namespace Broker
         {
             Thread thread = new Thread(() =>
             {
-                Console.WriteLine("Diffusing message from {0}", e.PublisherId);
+                Console.WriteLine("Diffusing message {0} from {1}", e.Id, e.PublisherId);
                 Router.route(e);
             });
             thread.Start();

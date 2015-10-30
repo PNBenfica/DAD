@@ -8,10 +8,10 @@ namespace CommonTypes
 {
     public interface IBroker
     {
-        void Subscribe(String Id, bool isSubscriber, String topic);
+        DateTime Subscribe(String Id, bool isSubscriber, String topic);
         void UnSubscribe(String Id, bool isSubscriber, String topic);
         void DiffuseMessage(Event even);
-        void DiffuseMessageToRoot(Event even);
+        DateTime DiffuseMessageToRoot(Event even);
         void registerNewChild(string name, string url);
         void registerPublisher(string url);
         void registerSubscriber(string name, string url);

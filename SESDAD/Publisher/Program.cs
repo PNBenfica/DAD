@@ -48,7 +48,7 @@ namespace Publisher
             thread.Start();
             Thread thread1 = new Thread(() =>
             {
-                publisher.SequencePublish("100", "/benfica/Samaris", "0");
+                publisher.SequencePublish("0", "/benfica/Samaris", "0");
             });
             thread1.Start();
            

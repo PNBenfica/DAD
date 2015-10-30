@@ -16,6 +16,7 @@ namespace Subscriber
         private IBroker broker;
         public OrderStrategy OrderStrategy { get; set; } // Guarantees that the message is delivered in the correct order
         public Topic Subscriptions { get; set; }
+        public DateTime TimeStamp;
 
 
         /// <summary>
@@ -44,7 +45,8 @@ namespace Subscriber
         {
             Console.WriteLine("New Subscrition on Topic: {0}", topic);
             Subscriptions.Subscribe(name, tokenize(topic), true);
-            broker.Subscribe(this.name, true, topic);
+            this.TimeStamp = broker.Subscribe(this.name, true, topic);
+            Console.WriteLine(TimeStamp.ToString("hh.mm.ss.ffffff"));
         }
 
         public void UnSubscribe(string topic)

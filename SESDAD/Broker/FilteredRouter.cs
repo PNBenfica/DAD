@@ -16,13 +16,17 @@ namespace Broker
         /// <summary>
         /// Updates Topic manager and propagtes subscrition up the tree
         /// </summary>
-        public override void addSubscrition(string name, bool isSubscriber, string topic)
+        public override DateTime addSubscrition(string name, bool isSubscriber, string topic)
         {
             TopicManager.Subscribe(name, tokenize(topic), isSubscriber);
 
-            if (!Broker.IsRoot())
+            if (Broker.IsRoot())
             {
-                Broker.Parent.Subscribe(Broker.Name, false, topic);
+                return DateTime.Now;
+            }
+            else
+            {
+                return Broker.Parent.Subscribe(Broker.Name, false, topic);
             }
         }
 

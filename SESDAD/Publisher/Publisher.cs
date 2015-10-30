@@ -34,10 +34,10 @@ namespace Publisher
             lock (this)
             {
                 ev = ProduceEvent(topic, content);
+                DateTime timeStamp = broker.DiffuseMessageToRoot(ev);
+                ev.TimeStamp = timeStamp;
                 UpdatePreviousEvents(ev);
-            }
-            
-            broker.DiffuseMessageToRoot(ev);
+            }            
         }
 
 
@@ -54,7 +54,7 @@ namespace Publisher
             {
                 PreviousEvents.Dequeue();
             }
-            PreviousEvents.Enqueue(new Event(e.Id, e.PublisherId, e.Topic));
+            PreviousEvents.Enqueue(new Event(e.Id, e.TimeStamp, e.PublisherId, e.Topic));
         }
 
 

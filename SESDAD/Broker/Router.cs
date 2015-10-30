@@ -43,7 +43,7 @@ namespace Broker
         }
 
         public abstract List<String> GetBrokers(Event e);
-        public abstract void addSubscrition(String name, bool isSubscriber, String topic);
+        public abstract DateTime addSubscrition(String name, bool isSubscriber, String topic);
         public abstract void deleteSubscrition(String name, bool isSubscriber, String topic);
 
 

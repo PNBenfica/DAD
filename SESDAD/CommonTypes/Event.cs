@@ -18,6 +18,8 @@ namespace CommonTypes
 
         public int Id { get; set; }
 
+        public DateTime TimeStamp { get; set; }
+
         public List<Event> PreviousEvents { get; set; }
 
         public Event(int id, String publisherId, String topic, String content, List<Event> previousEvents)
@@ -30,9 +32,10 @@ namespace CommonTypes
         }
 
 
-        public Event(int id, String publisherId, String topic)
+        public Event(int id, DateTime timeStamp, String publisherId, String topic)
         {
             this.Id = id;
+            this.TimeStamp = timeStamp;
             this.PublisherId = publisherId;
             this.Topic = topic;
         }

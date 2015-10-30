@@ -30,10 +30,10 @@ namespace Broker
             this.Subscribers = new Dictionary<string, ISubscriber>();
         }
 
-        public void Subscribe(String Id, bool isSubscriber, String topic)
+        public DateTime Subscribe(String Id, bool isSubscriber, String topic)
         {
             Console.WriteLine("New subscrition from {0}", Id);
-            Router.addSubscrition(Id, isSubscriber, topic);
+            return Router.addSubscrition(Id, isSubscriber, topic);
         }
 
         public void UnSubscribe(String Id, bool isSubscriber, String topic)
@@ -59,21 +59,24 @@ namespace Broker
         /// <summary>
         /// Diffuse the event to the root
         /// </summary>
-        public void DiffuseMessageToRoot(Event even)
+        public DateTime DiffuseMessageToRoot(Event e)
         {
-            Thread thread = new Thread(() =>
-            {
-                if(!IsRoot())
-                {
-                    this.Parent.DiffuseMessageToRoot(even);
-                }
+            DateTime timeStamp;
 
-                else  // If it is the root let s go down!
-                {
-                    this.DiffuseMessage(even);
-                }
-            });
-            thread.Start();
+            if (IsRoot())  // If it is the root let s go down!
+            {
+                timeStamp = DateTime.Now;
+                e.TimeStamp = timeStamp;
+                Thread thread = new Thread(() => { this.DiffuseMessage(e); });
+                thread.Start();
+            }
+
+            else
+            {
+                timeStamp = this.Parent.DiffuseMessageToRoot(e);
+            }
+
+            return timeStamp;
         }
         
 

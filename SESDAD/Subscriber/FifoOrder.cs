@@ -13,6 +13,7 @@ namespace Subscriber
         public Dictionary<string, int> PublishersPosts { get; set; }
         public HashSet<string> HasPublisherInfo { get; set; } // if a publisher name is here this subscriber already received a message from him
         public Dictionary<string, List<Event>> QueuedEvents { get; set; }
+        System.Threading.Timer timer = null;
 
 
         public FifoOrder(Subscriber subscriber) 
@@ -30,7 +31,7 @@ namespace Subscriber
             {
                 UpdatePublisherPost(e);
                 Subscriber.PrintMessage(e);
-                ResendQueuedEvents(e);
+                ResendQueuedEvents(e.PublisherId);
             }
             else
             {
@@ -57,7 +58,11 @@ namespace Subscriber
         {
             foreach (Event previousEvent in e.PreviousEvents)
             {
-                if (previousEvent.Id < e.Id && previousEvent.Id > GetNumPublisherPost(e.PublisherId) && Subscriber.HasSubscrition(previousEvent.Topic))
+                bool wasSentBeforeNewEvent = previousEvent.Id < e.Id; // sent before the new event that arrived
+                bool wasSentAfterLastEvent = previousEvent.Id > GetNumPublisherPost(e.PublisherId); // sent after last event recorded of this publisher
+                bool isSubscribed = Subscriber.HasSubscrition(previousEvent.Topic);
+                bool subscribedBeforePublish = previousEvent.TimeStamp.CompareTo(Subscriber.TimeStamp) > 0;
+                if (wasSentBeforeNewEvent && wasSentAfterLastEvent && isSubscribed && subscribedBeforePublish)
                     return true;
             }
             return false;
@@ -76,40 +81,8 @@ namespace Subscriber
                 QueuedEvents[e.PublisherId] = new List<Event>();
             }
             QueuedEvents[e.PublisherId].Add(e);
-
-            PreventMessageDeadLock(e);
         }
-
-
-        /// <summary>
-        /// This happens for example when: Publisher publisher post Id 1
-        /// The subscriber subscribes after. Publisher post Id 2. Subscriber waits for Id 1
-        /// To prevent that after a defined set of time, the message will all messages will be sent
-        /// </summary>
-        private void PreventMessageDeadLock(Event e)
-        {
-            if (!HasPublisherInfo.Contains(e.PublisherId)) // if we dont know who this guy is, lets wait a little
-            {
-                HasPublisherInfo.Add(e.PublisherId);
-                System.Threading.Timer timer = null;
-                timer = new System.Threading.Timer((obj) =>
-                        {
-                            lock (this)
-                            {
-                                List<Event> queuedEvents = GetQueuedEvents(e.PublisherId);
-                                if (queuedEvents != null && queuedEvents.Count > 0)
-                                {
-                                    UpdatePublisherPost(queuedEvents[0]);
-                                    ResendQueuedEvents(e);
-                                }
-                            }
-                            timer.Dispose();
-                        },
-                    null, 3000, System.Threading.Timeout.Infinite);
-
-            }
-        }
-
+        
 
         /// <summary>
         /// Remove an event from the queue of events waiting for other publisher message
@@ -138,9 +111,9 @@ namespace Subscriber
         /// If there are waiting events from a publisher
         /// lets resend the one with lower id
         /// </summary>
-        private void ResendQueuedEvents(Event e)
+        private void ResendQueuedEvents(string publisher)
         {
-            List<Event> queuedEvents = GetQueuedEvents(e.PublisherId);
+            List<Event> queuedEvents = GetQueuedEvents(publisher);
             if (queuedEvents != null && queuedEvents.Count > 0)
             {
                 Event nextEvent = queuedEvents[0];

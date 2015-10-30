@@ -15,8 +15,7 @@ namespace Subscriber
         private String url;
         private IBroker broker;
         public OrderStrategy OrderStrategy { get; set; } // Guarantees that the message is delivered in the correct order
-        public Topic<String> Subscriptions { get; set; }
-        public DateTime TimeStamp;
+        public Topic<Subscription> Subscriptions { get; set; }
 
 
         /// <summary>
@@ -28,7 +27,7 @@ namespace Subscriber
             this.name = name;
             this.url = url;
             this.OrderStrategy = GetOrderByRefletion(order);
-            this.Subscriptions = new Topic<String>("/");
+            this.Subscriptions = new Topic<Subscription>("/");
         }
 
 
@@ -44,15 +43,15 @@ namespace Subscriber
         public void Subscribe(string topic)
         {
             Console.WriteLine("New Subscrition on Topic: {0}", topic);
-            Subscriptions.Subscribe(name, tokenize(topic), true);
-            this.TimeStamp = broker.Subscribe(this.name, true, topic);
-            Console.WriteLine(TimeStamp.ToString("hh.mm.ss.ffffff"));
+            DateTime timeStamp = broker.Subscribe(this.name, true, topic);
+            Subscription subscription = new Subscription(name, timeStamp);
+            Subscriptions.Subscribe(subscription, tokenize(topic), true);
         }
 
         public void UnSubscribe(string topic)
         {
             Console.WriteLine("Unsubscrition on Topic: {0}", topic);
-            Subscriptions.Unsubscribe(name, tokenize(topic), true);
+            Subscriptions.Unsubscribe(new Subscription(name), tokenize(topic), true);
             broker.UnSubscribe(this.name, true, topic);
         }
 
@@ -84,7 +83,16 @@ namespace Subscriber
         /// </summary>
         public bool HasSubscrition(string topic)
         {
-            return Subscriptions.HasSubscrition(name, tokenize(topic));
+            return Subscriptions.HasSubscrition(new Subscription(name), tokenize(topic));
+        }
+
+
+        public DateTime TopicTimeStamp(string topic)
+        {
+            List<Subscription> subscriptions = Subscriptions.GetSubscribers(tokenize(topic));
+            if (subscriptions != null && subscriptions.Count > 0)
+                return subscriptions[0].TimeStamp;
+            return DateTime.Now;
         }
 
 

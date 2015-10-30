@@ -61,7 +61,8 @@ namespace Subscriber
                 bool wasSentBeforeNewEvent = previousEvent.Id < e.Id; // sent before the new event that arrived
                 bool wasSentAfterLastEvent = previousEvent.Id > GetNumPublisherPost(e.PublisherId); // sent after last event recorded of this publisher
                 bool isSubscribed = Subscriber.HasSubscrition(previousEvent.Topic);
-                bool subscribedBeforePublish = previousEvent.TimeStamp.CompareTo(Subscriber.TimeStamp) > 0;
+                bool subscribedBeforePublish = previousEvent.TimeStamp.CompareTo(Subscriber.TopicTimeStamp(previousEvent.Topic)) > 0;
+
                 if (wasSentBeforeNewEvent && wasSentAfterLastEvent && isSubscribed && subscribedBeforePublish)
                     return true;
             }

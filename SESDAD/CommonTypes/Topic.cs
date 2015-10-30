@@ -158,7 +158,7 @@ namespace CommonTypes
         }
         
 
-        public void Unsubscribe(string subscriberName, string[] topicSplit, bool isSubscriber)
+        public void Unsubscribe(T subscriberName, string[] topicSplit, bool isSubscriber)
         {
             throw new NotImplementedException();
         }

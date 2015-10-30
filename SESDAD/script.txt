@@ -1,4 +1,8 @@
 publisher publisher0 publish 5 Ontopic /benfica/campeão interval 1
 subscriber subscriber1 subscribe /benfica/*
 publisher publisher0 publish 5 Ontopic /benfica/campeão interval 1
+publisher publisher0 publish 20 Ontopic /topic interval 1
+subscriber subscriber1 subscribe /topic
+publisher publisher0 publish 10 Ontopic /topic interval 1
+publisher publisher0 publish 5 Ontopic /benfica/carcela/renato/tondela interval 1
 exit

@@ -115,23 +115,17 @@ namespace PuppetMaster
 
         public void Crash(String processName)
         {
-            publishers[processName].Crash();
-            subscribers[processName].Crash();
-            brokers[processName].Crash();
+         
         }
 
         public void Freeze(String processName)
         {
-            publishers[processName].Freeze();
-            subscribers[processName].Freeze();
-            brokers[processName].Freeze();
+      
         }
 
         public void Unfreeze(String processName)
         {
-            publishers[processName].Unfreeze();
-            subscribers[processName].Unfreeze();
-            brokers[processName].Unfreeze();
+   
         }
 
         #endregion

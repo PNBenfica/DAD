@@ -18,7 +18,8 @@ namespace Publisher
         private String url;
         private IBroker broker;
         public Queue<Event> PreviousEvents { get; set; }
-        public LinkedList<Event> frozenEvents { get; set; }
+        public Queue<String> frozenTopics { get; set; }
+        public Queue<String> frozenContents { get; set; }
         public int NumberOfEvents { get; set; }
         private const int MAXEVENTSQUEUE = 10;
         private bool freeze = false;
@@ -33,7 +34,8 @@ namespace Publisher
             this.url = url;
             events = new List<Event>();
             this.PreviousEvents = new Queue<Event>(MAXEVENTSQUEUE);
-            this.frozenEvents = new LinkedList<Event>();
+            this.frozenTopics = new Queue<String>();
+            this.frozenContents = new Queue<String>();
             this.NumberOfEvents = 0;
         }
 
@@ -46,18 +48,17 @@ namespace Publisher
         public void Unfreeze() 
         {
             this.freeze = false;
-            int frozensize = frozenEvents.Count;
+            int frozensize = frozenTopics.Count;
             List<DateTime> eventTime = new List<DateTime>(frozensize) ;
             for (int i = 0; i < frozensize; i++ )
             {
-                Event ev = frozenEvents.First<Event>();
-                frozenEvents.RemoveFirst();
-             
+
+                Event ev = ProduceEvent(frozenTopics.Dequeue(), frozenContents.Dequeue());
                 DateTime timeStamp = broker.DiffuseMessageToRoot(ev);
-                eventTime.Add(timeStamp);
-                for (int j = 0; j < ev.PreviousEvents.Count; j++)
-                    ev.PreviousEvents[j].TimeStamp = eventTime[j];
-            }
+                ev.TimeStamp = timeStamp;
+                UpdatePreviousEvents(ev);
+                
+             }
         }
 
         public void Crash()
@@ -87,22 +88,29 @@ namespace Publisher
 
         #region publishEvent
 
+        public void QueueEvent(string topic, String content)
+        {
+             Console.WriteLine("New event published\r\nTopic {0}\r\ncontent: {1}\r\n", topic, content);
+            frozenTopics.Enqueue(topic);
+            frozenContents.Enqueue(content);
+        }
+
         public void Publish(String topic, String content)
         {
             Event ev;
             lock (this)
             {
-                ev = ProduceEvent(topic, content);
+               
                 if (!this.freeze)
                 {
+                    ev = ProduceEvent(topic, content);
                     DateTime timeStamp = broker.DiffuseMessageToRoot(ev);
                     ev.TimeStamp = timeStamp;
                     UpdatePreviousEvents(ev);
                 }
                 else
                 {
-                    frozenEvents.AddLast(ev);
-                    UpdatePreviousEvents(ev);
+                    QueueEvent(topic, content);
                 }
             }            
         }

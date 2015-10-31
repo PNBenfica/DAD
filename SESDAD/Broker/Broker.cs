@@ -10,6 +10,7 @@ namespace Broker
 {
     public class Broker : MarshalByRefObject, IBroker
     {
+        #region variables
         public String Name { get; set; }
         public String URL { get; set; }
         public IBroker Parent { get; set; }
@@ -18,7 +19,9 @@ namespace Broker
         public Dictionary<string, ISubscriber> Subscribers { get; set; }
         public List<Event> Events { get; set; }
         public Router Router { get; set; }
-        
+        #endregion
+
+        #region classUtils
 
         public Broker(String name, String url)
         {
@@ -30,6 +33,18 @@ namespace Broker
             this.Subscribers = new Dictionary<string, ISubscriber>();
         }
 
+        /// <summary>
+        /// If the broker has no parent he is the root
+        /// </summary>
+        public bool IsRoot()
+        {
+            return this.Parent == null;
+        }
+
+        #endregion
+
+        #region remoteMethods
+
         public DateTime Subscribe(String Id, bool isSubscriber, String topic)
         {
             Console.WriteLine("New subscrition from: {0} on topic: {1}", Id, topic);
@@ -40,7 +55,6 @@ namespace Broker
         {
             Router.deleteSubscrition(Id, isSubscriber, topic);
         }
-
 
         /// <summary>
         /// Diffuse the message down the tree. Router knows where this need to go
@@ -54,7 +68,6 @@ namespace Broker
             });
             thread.Start();
         }
-
 
         /// <summary>
         /// Diffuse the event to the root
@@ -78,17 +91,6 @@ namespace Broker
 
             return timeStamp;
         }
-        
-
-
-        /// <summary>
-        /// If the broker has no parent he is the root
-        /// </summary>
-        public bool IsRoot()
-        {
-            return this.Parent == null;
-        }
-
 
         /// <summary>
         /// Notify the broker parent that he has a new born child
@@ -101,7 +103,6 @@ namespace Broker
             this.Parent.registerNewChild(this.Name, this.URL);
         }
 
-
         /// <summary>
         /// Register a new child
         /// </summary>
@@ -113,14 +114,12 @@ namespace Broker
             Console.WriteLine("New child broker registed: {0}", url);
         }
 
-
         public void registerPublisher(string url)
         {
             IPublisher publisher = (IPublisher)Activator.GetObject(typeof(IPublisher), url);
             Publishers.Add(publisher);
             Console.WriteLine("New publisher registed: {0}", url);
         }
-
 
         /// <summary>
         /// Register a new subscriber
@@ -133,7 +132,6 @@ namespace Broker
             Console.WriteLine("New subscriber registed: {0}", url);
         }
 
-
         /// <summary>
         /// Write in console the current status
         /// </summary>
@@ -143,5 +141,7 @@ namespace Broker
             Router.TopicManager.Status();
             Console.WriteLine("");
         }
+
+        #endregion
     }
 }

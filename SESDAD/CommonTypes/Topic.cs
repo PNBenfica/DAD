@@ -184,21 +184,21 @@ namespace CommonTypes
         /// <summary>
         /// Add a new subscrition
         /// </summary>
-        /// <param name="name">Name of the broker/subscriber</param>
+        /// <param name="processName">Name of the broker/subscriber</param>
         /// <param name="isSubscriber">Type of the entitie interested</param>
-        public void Subscribe(T name, String[] topicArray, bool isSubscriber)
+        public void Subscribe(T processName, String[] topicArray, bool isSubscriber)
         {
             if (topicArray.Length == 0)
             {
-                addSubscrition(name, isSubscriber);
+                addSubscrition(processName, isSubscriber);
             }
             else if (topicArray.Length == 1 && topicArray[0].Equals("*")) // want to subscribe all
             {
-                SubscribeAll(name, isSubscriber);
+                SubscribeAll(processName, isSubscriber);
             }
             else
             {
-                SubscribeSubtopic(name, topicArray, isSubscriber);
+                SubscribeSubtopic(processName, topicArray, isSubscriber);
             }
         }
 
@@ -287,43 +287,71 @@ namespace CommonTypes
         #endregion
 
         #region unsubscribeTopic
-        private void removeSubscrition(T name, bool isSubscriber)
+        private void removeSubscrition(T processName, bool isSubscriber)
         {
             if (isSubscriber)
-                Subscribers.Remove(name);
+                Subscribers.Remove(processName);
             else
-                Brokers.Remove(name);
+                Brokers.Remove(processName);
         }
 
-        public void UnSubscribe(T name, string[] topicArray, bool isSubscriber)
+        public void UnSubscribe(T processName, string[] topicArray, bool isSubscriber)
         {
             if (topicArray.Length == 0)
             {
-                removeSubscrition(name, isSubscriber);
+                removeSubscrition(processName, isSubscriber);
             }
             else if (topicArray.Length == 1 && topicArray[0].Equals("*")) // want to subscribe all
             {
-                UnSubscribeAll(name, isSubscriber);
+                UnSubscribeAll(processName, isSubscriber);
             }
             else
             {
-                UnSubscribeSubtopic(name, topicArray, isSubscriber);
+                UnSubscribeSubtopic(processName, topicArray, isSubscriber);
             }
         }
 
-        private void UnSubscribeAll(T name, bool isSubscriber)
+        private void UnSubscribeAll(T processName, bool isSubscriber)
         {
             if (isSubscriber)
-                SubscribersAllSubTopics.Remove(name);
+            {
+                SubscribersAllSubTopics.Remove(processName);
+                UnsubscribeAllSubTopics(processName, isSubscriber, true);
+            }
             else
-                BrokersAllSubTopics.Remove(name);
+            {
+                BrokersAllSubTopics.Remove(processName);
+                UnsubscribeAllSubTopics(processName, isSubscriber, true);
+            }
         }
 
-        private void UnSubscribeSubtopic(T name, string[] topicArray, bool isSubscriber)
+        private void UnsubscribeAllSubTopics(T processName, bool isSubscriber, bool isParent)
+        {
+            if (!isParent)
+            {
+                if (isSubscriber)
+                {
+                    Subscribers.Remove(processName);
+                    SubscribersAllSubTopics.Remove(processName);
+                }
+                else
+                {
+                    Brokers.Remove(processName);
+                    BrokersAllSubTopics.Remove(processName);
+                }
+            }
+            foreach (Topic<T> topic in subTopics.Values)
+            {
+                topic.UnsubscribeAllSubTopics(processName, isSubscriber, false);
+            }
+
+        }
+
+        private void UnSubscribeSubtopic(T processName, string[] topicArray, bool isSubscriber)
         {
             Topic<T> subTopic = GetSubTopic(topicArray[0]);
             String[] restSubTopics = (String[])topicArray.Skip(1).ToArray(); // removes first element
-            subTopic.UnSubscribe(name, restSubTopics, isSubscriber);
+            subTopic.UnSubscribe(processName, restSubTopics, isSubscriber);
         }
         #endregion      
     }

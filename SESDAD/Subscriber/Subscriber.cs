@@ -11,12 +11,16 @@ namespace Subscriber
 {
     public class Subscriber : MarshalByRefObject, ISubscriber
     {
+
+        #region variables
         private String name;
         private String url;
         private IBroker broker;
         public OrderStrategy OrderStrategy { get; set; } // Guarantees that the message is delivered in the correct order
         public Topic<Subscription> Subscriptions { get; set; }
+        #endregion
 
+        #region classUtils
 
         /// <summary>
         /// Subscriber Construtor
@@ -30,6 +34,39 @@ namespace Subscriber
             this.Subscriptions = new Topic<Subscription>("/");
         }
 
+        public void PrintMessage(Event e)
+        {
+            Console.WriteLine("");
+            Console.WriteLine("------- New Message -------");
+            Console.WriteLine("Post ID:" + e.Id);
+            Console.WriteLine("Publisher: {0}\r\nTopic: {1}\r\nContent: {2}", e.PublisherId, e.Topic, e.Content);
+        }
+
+        /// <summary>
+        /// Divides the string topic into String[]
+        /// </summary>
+        public String[] tokenize(String topic)
+        {
+            char[] delimiterChars = { '/' };
+            string[] topicSplit = topic.Split(delimiterChars, StringSplitOptions.RemoveEmptyEntries);
+            return topicSplit;
+        }
+
+        /// <summary>
+        /// returns true if the subscriber has a subscrition in the topic
+        /// </summary>
+        public bool HasSubscrition(string topic)
+        {
+            return Subscriptions.HasSubscrition(new Subscription(name), tokenize(topic));
+        }
+
+        public DateTime TopicTimeStamp(string topic)
+        {
+            List<Subscription> subscriptions = Subscriptions.GetSubscribers(tokenize(topic));
+            if (subscriptions != null && subscriptions.Count > 0)
+                return subscriptions[0].TimeStamp;
+            return DateTime.Now;
+        }
 
         private OrderStrategy GetOrderByRefletion(string order)
         {
@@ -39,6 +76,18 @@ namespace Subscriber
             return (OrderStrategy)Activator.CreateInstance(t, new Object[] { this });
         }
 
+        /// <summary>
+        /// notify site broker to add this new subscriber
+        /// </summary>
+        internal void registerInBroker(string brokerUrl)
+        {
+            Console.WriteLine("Registing in broker at {0}", brokerUrl);
+            this.broker = (IBroker)Activator.GetObject(typeof(IBroker), brokerUrl);
+            this.broker.registerSubscriber(this.name, this.url);
+        }
+        #endregion
+   
+        #region remoteMethods
 
         public void Subscribe(string topic)
         {
@@ -55,7 +104,6 @@ namespace Subscriber
             broker.UnSubscribe(this.name, true, topic);
         }
 
-
         /// <summary>
         /// This method is called when a new event arrives from the broker
         /// </summary>
@@ -68,56 +116,6 @@ namespace Subscriber
             }
         }
 
-
-        public void PrintMessage(Event e)
-        {
-            Console.WriteLine("");
-            Console.WriteLine("------- New Message -------");
-            Console.WriteLine("Post ID:" + e.Id);
-            Console.WriteLine("Publisher: {0}\r\nTopic: {1}\r\nContent: {2}", e.PublisherId, e.Topic, e.Content);
-        }
-
-
-        /// <summary>
-        /// returns true if the subscriber has a subscrition in the topic
-        /// </summary>
-        public bool HasSubscrition(string topic)
-        {
-            return Subscriptions.HasSubscrition(new Subscription(name), tokenize(topic));
-        }
-
-
-        public DateTime TopicTimeStamp(string topic)
-        {
-            List<Subscription> subscriptions = Subscriptions.GetSubscribers(tokenize(topic));
-            if (subscriptions != null && subscriptions.Count > 0)
-                return subscriptions[0].TimeStamp;
-            return DateTime.Now;
-        }
-
-
-        /// <summary>
-        /// notify site broker to add this new subscriber
-        /// </summary>
-        internal void registerInBroker(string brokerUrl)
-        {
-            Console.WriteLine("Registing in broker at {0}", brokerUrl);
-            this.broker = (IBroker)Activator.GetObject(typeof(IBroker), brokerUrl);
-            this.broker.registerSubscriber(this.name, this.url);
-        }
-
-
-        /// <summary>
-        /// Divides the string topic into String[]
-        /// </summary>
-        public String[] tokenize(String topic)
-        {
-            char[] delimiterChars = { '/' };
-            string[] topicSplit = topic.Split(delimiterChars, StringSplitOptions.RemoveEmptyEntries);
-            return topicSplit;
-        }
-
-        
         public void Status()
         {
             Console.WriteLine("\r\n<------Status------>");
@@ -125,5 +123,8 @@ namespace Subscriber
             Console.WriteLine("");
 
         }
+
+        #endregion
+    
     }
 }

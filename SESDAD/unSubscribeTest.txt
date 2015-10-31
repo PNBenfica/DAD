@@ -1,9 +1,13 @@
-subscriber subscriber1 subscribe /benfica
+subscriber subscriber1 subscribe /benfica/*
+subscriber subscriber1 subscribe /benfica/ola
+subscriber subscriber1 subscribe /benfica/ola/john
 Status
-publisher publisher0 publish 4 Ontopic /benfica interval 100
-Wait 20000
-subscriber subscriber1 unsubscribe /benfica
-Wait 20000
+publisher publisher0 publish 2 Ontopic /benfica/ola interval 100
+publisher publisher0 publish 2 Ontopic /benfica/ola/john interval 100
+wait 10000
+subscriber subscriber1 unsubscribe /benfica/*
+wait 10000
 Status
-publisher publisher0 publish 4 Ontopic /benfica interval 100
+publisher publisher0 publish 2 Ontopic /benfica/ola interval 100
+publisher publisher0 publish 2 Ontopic /benfica/ola/john interval 100
 exit

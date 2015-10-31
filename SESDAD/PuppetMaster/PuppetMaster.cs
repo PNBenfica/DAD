@@ -9,6 +9,8 @@ namespace PuppetMaster
 {
     public class PuppetMaster : MarshalByRefObject, IPuppetMasterURL
     {
+        #region variables
+
         List<String> puppetMastersUrl;
         String url;
         String routingPolicy;
@@ -20,6 +22,8 @@ namespace PuppetMaster
         private Dictionary<String, ISubscriber> subscribers = new Dictionary<String, ISubscriber>();
         private Dictionary<String, IPublisher> publishers = new Dictionary<String, IPublisher>();
 
+        #endregion
+
         public PuppetMaster(String url, String routingPolicy, String ordering, String loggingLevel)
         {
             this.url = url;
@@ -27,6 +31,8 @@ namespace PuppetMaster
             this.ordering = ordering;
             this.loggingLevel = loggingLevel;
         }
+
+        #region remoteMethods
 
         public void notify(String processName, String message)
         {
@@ -54,7 +60,9 @@ namespace PuppetMaster
             }
         }
 
+        #endregion
 
+        #region localMethods
 
         public void AddBroker(String processName, String url)
         {
@@ -119,5 +127,7 @@ namespace PuppetMaster
         {
             //missing function at interface
         }
+
+        #endregion
     }
 }

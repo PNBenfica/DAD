@@ -9,22 +9,26 @@ namespace Broker
 {
     public abstract class Router
     {
+
+        #region variables
         public Broker Broker { get; set; }
         public Topic<String> TopicManager { get; set; }
 
+        #endregion
+
+        #region classUtils
         public Router(Broker broker)
         {
             this.Broker = broker;
             this.TopicManager = new Topic<String>("/");
         }
 
-
         /// <summary>
         /// Get the proper interested in the event and sends them the event
         /// </summary>
         public void route(Event e)
         {
-             
+
             foreach (String s in GetSubscribers(e))
             {
                 Broker.Subscribers[s].ReceiveMessage(e);
@@ -32,20 +36,10 @@ namespace Broker
 
             foreach (String broker in GetBrokers(e))
             {
-  
+
                 Broker.Children[broker].DiffuseMessage(e);
             }
         }
-
-        public List<String> GetSubscribers(Event e)
-        {
-            return TopicManager.GetSubscribers(tokenize(e.Topic));
-        }
-
-        public abstract List<String> GetBrokers(Event e);
-        public abstract DateTime addSubscrition(String name, bool isSubscriber, String topic);
-        public abstract void deleteSubscrition(String name, bool isSubscriber, String topic);
-
 
 
         /// <summary>
@@ -57,5 +51,23 @@ namespace Broker
             string[] topicSplit = topic.Split(delimiterChars, StringSplitOptions.RemoveEmptyEntries);
             return topicSplit;
         }
+
+
+
+        public List<String> GetSubscribers(Event e)
+        {
+            return TopicManager.GetSubscribers(tokenize(e.Topic));
+        }
+        #endregion
+
+        #region abstractMethods
+
+        public abstract List<String> GetBrokers(Event e);
+        public abstract DateTime addSubscrition(String name, bool isSubscriber, String topic);
+        public abstract void deleteSubscrition(String name, bool isSubscriber, String topic);
+
+        #endregion
+
+
     }
 }

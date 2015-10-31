@@ -9,7 +9,7 @@ namespace CommonTypes
     [Serializable]
     public class Event
     {
-
+        #region variables
         public String PublisherId { get; set; }
 
         public String Content { get; set; }
@@ -22,6 +22,9 @@ namespace CommonTypes
 
         public List<Event> PreviousEvents { get; set; }
 
+        #endregion
+
+        #region classUtils
         public Event(int id, String publisherId, String topic, String content, List<Event> previousEvents)
         {
             this.Id = id;
@@ -39,6 +42,8 @@ namespace CommonTypes
             this.PublisherId = publisherId;
             this.Topic = topic;
         }
+
+        #endregion
 
     }
 }

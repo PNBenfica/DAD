@@ -52,5 +52,10 @@ namespace Subscriber
             result = result * prime + Subscriber.GetHashCode();
             return result;
         }
+
+        public override string ToString()
+        {
+            return Subscriber;
+        }
     }
 }

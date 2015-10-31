@@ -32,7 +32,7 @@ namespace Broker
 
         public DateTime Subscribe(String Id, bool isSubscriber, String topic)
         {
-            Console.WriteLine("New subscrition from {0}", Id);
+            Console.WriteLine("New subscrition from: {0} on topic: {1}", Id, topic);
             return Router.addSubscrition(Id, isSubscriber, topic);
         }
 

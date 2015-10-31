@@ -50,7 +50,6 @@ namespace Subscriber
             int prime = 31;
             int result = 1;
             result = result * prime + Subscriber.GetHashCode();
-            result = result * prime + TimeStamp.ToString("hh.mm.ss.ffffff").GetHashCode();
             return result;
         }
     }

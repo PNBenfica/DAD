@@ -18,6 +18,7 @@ namespace Publisher
         private String url;
         private IBroker broker;
         public Queue<Event> PreviousEvents { get; set; }
+        public Queue<Event> frozenEvents { get; set; }
         public int NumberOfEvents { get; set; }
         private const int MAXEVENTSQUEUE = 10;
         private bool freeze = false;
@@ -32,6 +33,7 @@ namespace Publisher
             this.url = url;
             events = new List<Event>();
             this.PreviousEvents = new Queue<Event>(MAXEVENTSQUEUE);
+            this.frozenEvents = new Queue<Event>();
             this.NumberOfEvents = 0;
         }
 
@@ -44,6 +46,15 @@ namespace Publisher
         public void Unfreeze() 
         {
             this.freeze = false;
+            int frozensize = frozenEvents.Count;
+            for (int i = 0; i < frozensize; i++ )
+            {
+                Event ev = frozenEvents.Dequeue();
+             
+                DateTime timeStamp = broker.DiffuseMessageToRoot(ev);
+                ev.TimeStamp = timeStamp;
+              
+            }
         }
 
         public void Crash()
@@ -55,6 +66,7 @@ namespace Publisher
         {
             Console.WriteLine("\r\n<------Status------>");
             Console.WriteLine("Freeze: " + freeze);
+            PrintQueuedEvents();
             Console.WriteLine("");
         }
 
@@ -78,9 +90,17 @@ namespace Publisher
             lock (this)
             {
                 ev = ProduceEvent(topic, content);
-                DateTime timeStamp = broker.DiffuseMessageToRoot(ev);
-                ev.TimeStamp = timeStamp;
-                UpdatePreviousEvents(ev);
+                if (!this.freeze)
+                {
+                    DateTime timeStamp = broker.DiffuseMessageToRoot(ev);
+                    ev.TimeStamp = timeStamp;
+                    UpdatePreviousEvents(ev);
+                }
+                else
+                {
+                    frozenEvents.Enqueue(ev);
+                    UpdatePreviousEvents(ev);
+                }
             }            
         }
 

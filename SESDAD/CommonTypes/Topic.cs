@@ -8,7 +8,8 @@ namespace CommonTypes
 {
     public class Topic<T>
     {
-
+        #region variables
+        
         public string Name { get; set; }
         public Topic<T> Parent { get; set; }
         private Dictionary<string, Topic<T>> subTopics;
@@ -17,6 +18,9 @@ namespace CommonTypes
         public HashSet<T> Brokers { get; set; }
         public HashSet<T> BrokersAllSubTopics { get; set; } // Brokers that subscribes an entire topic
 
+        #endregion
+
+        #region classUtils
 
         public Topic(String name, Topic<T> parent = null)
         {
@@ -28,7 +32,6 @@ namespace CommonTypes
             this.Brokers = new HashSet<T>();
             this.BrokersAllSubTopics = new HashSet<T>();
         }
-
         /// <summary>
         /// Is this the root "/"
         /// </summary>
@@ -36,7 +39,6 @@ namespace CommonTypes
         {
             return this.Parent == null;
         }
-
 
         /// <summary>
         /// Returns a subtopic (creates if it isn t there)
@@ -49,146 +51,6 @@ namespace CommonTypes
                     subTopics.Add(subTopic, new Topic<T>(subTopic, this));
             }
             return subTopics[subTopic];
-        }
-
-        /// <summary>
-        /// Add a subscriber/broker subscrition
-        /// </summary>
-        private void addSubscrition(T name, bool isSubscriber)
-        {
-            if (isSubscriber)
-                Subscribers.Add(name);
-            else
-                Brokers.Add(name);
-        }
-
-
-        /// <summary>
-        /// Add a new subscrition
-        /// </summary>
-        /// <param name="name">Name of the broker/subscriber</param>
-        /// <param name="isSubscriber">Type of the entitie interested</param>
-        public void Subscribe(T name, String[] topicArray, bool isSubscriber)
-        {
-            if (topicArray.Length == 0)
-            {
-                addSubscrition(name, isSubscriber);
-            }
-            else if (topicArray.Length == 1 && topicArray[0].Equals("*")) // want to subscribe all
-            {
-                SubscribeAll(name, isSubscriber);
-            }
-            else
-            {
-                SubscribeSubtopic(name, topicArray, isSubscriber);
-            }
-        }
-
-        public void Unsubscribe(T name, string[] topicArray, bool isSubscriber)
-        {
-            if (topicArray.Length == 0)
-            {
-                removeSubscrition(name, isSubscriber);
-            }
-            else if (topicArray.Length == 1 && topicArray[0].Equals("*")) // want to subscribe all
-            {
-                UnSubscribeAll(name, isSubscriber);
-            }
-            else
-            {
-                UnSubscribeSubtopic(name, topicArray, isSubscriber);
-            }
-        }
-
-        private void UnSubscribeSubtopic(T name, string[] topicArray, bool isSubscriber)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void removeSubscrition(T name, bool isSubscriber)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        /// <summary>
-        /// Subscribes all the subtopics
-        /// </summary>
-        private void SubscribeAll(T name, bool isSubscriber)
-        {
-            //if already exist a subscribe all in the tree
-            if (checkAlreadySubscribeAll(name, isSubscriber))
-            {
-                return;
-            }
-
-            if (isSubscriber)
-                SubscribersAllSubTopics.Add(name);
-            else
-                BrokersAllSubTopics.Add(name);
-
-            clearSubTopicsSubscribeAll(name, isSubscriber, true);
-        }
-
-        private void UnSubscribeAll(T name, bool isSubscriber)
-        {
-            if (isSubscriber)
-                SubscribersAllSubTopics.Remove(name);
-            else
-                BrokersAllSubTopics.Remove(name);
-        }
-
-        public void clearSubTopicsSubscribeAll(T name, bool isSubscriber, bool isParentTopic)
-        {
-            if (!isParentTopic)
-            {
-                if (isSubscriber)
-                {
-                    SubscribersAllSubTopics.Remove(name);
-                }
-                else
-                {
-                    BrokersAllSubTopics.Remove(name);
-                }
-            }
-
-            foreach (KeyValuePair<string, Topic<T>> entry in subTopics)
-            {
-                entry.Value.clearSubTopicsSubscribeAll(name, isSubscriber, false);
-            }
-        }
-
-
-        public bool checkAlreadySubscribeAll(T name, bool isSubscriber)
-        {
-            if (isSubscriber && SubscribersAllSubTopics.Contains(name))
-            {
-                return true;
-            }
-            else if (!isSubscriber && BrokersAllSubTopics.Contains(name))
-            {
-                return true;
-            }
-            else if (!BrokersAllSubTopics.Contains(name) && !SubscribersAllSubTopics.Contains(name) && IsRoot())
-            {
-                return false;
-            }
-            else
-            {
-                return Parent.checkAlreadySubscribeAll(name, isSubscriber);
-            }
-        }
-
-
-        /// <summary>
-        /// Subscribes the subtopic
-        /// </summary>
-        /// <param name="topic"> ["subtopic", "sub-subtopic", ...] </param>
-        private void SubscribeSubtopic(T name, String[] topic, bool isSubscriber)
-        {
-            Topic<T> subTopic = GetSubTopic(topic[0]);
-            String[] restSubTopics = (String[])topic.Skip(1).ToArray(); // removes first element
-            subTopic.Subscribe(name, restSubTopics, isSubscriber);
         }
 
         /// <summary>
@@ -222,7 +84,6 @@ namespace CommonTypes
             }
         }
 
-
         /// <summary>
         /// Get all of the subscribers interested in this topic:
         /// The ones who have specifically subscribe this topic (this.Subscribers)
@@ -234,7 +95,6 @@ namespace CommonTypes
             subscribers.UnionWith(Subscribers);
             return subscribers.ToList();
         }
-
 
         /// <summary>
         /// Get the subscribers that have subscribe all topics
@@ -248,7 +108,6 @@ namespace CommonTypes
             return subscribers;
         }
 
-
         /// <summary>
         /// Get all of the brokers interested in this topic:
         /// The ones who have specifically subscribe this topic (this.Brokers)
@@ -260,7 +119,6 @@ namespace CommonTypes
             brokers.UnionWith(Brokers);
             return brokers.ToList();
         }
-
 
         /// <summary>
         /// Get the brokers that have subscribe all topics
@@ -274,7 +132,6 @@ namespace CommonTypes
             return brokers;
         }
 
-
         /// <summary>
         /// returns true if there is any interested (subscriber/broker) in the event
         /// </summary>
@@ -282,7 +139,6 @@ namespace CommonTypes
         {
             return GetTopicSubscribers().Count() > 0 || GetTopicBrokers().Count > 0;
         }
-
 
         /// <summary>
         /// returns true if the subscriber has a subscrition in the topic
@@ -292,7 +148,6 @@ namespace CommonTypes
             List<T> subscribers = GetSubscribers(topic);
             return subscribers.Contains(subscriberName);
         }
-
 
         /// <summary>
         /// just to Debug
@@ -321,5 +176,155 @@ namespace CommonTypes
                 }
             }
         }
+        #endregion
+
+        #region subscribeTopic
+
+
+        /// <summary>
+        /// Add a new subscrition
+        /// </summary>
+        /// <param name="name">Name of the broker/subscriber</param>
+        /// <param name="isSubscriber">Type of the entitie interested</param>
+        public void Subscribe(T name, String[] topicArray, bool isSubscriber)
+        {
+            if (topicArray.Length == 0)
+            {
+                addSubscrition(name, isSubscriber);
+            }
+            else if (topicArray.Length == 1 && topicArray[0].Equals("*")) // want to subscribe all
+            {
+                SubscribeAll(name, isSubscriber);
+            }
+            else
+            {
+                SubscribeSubtopic(name, topicArray, isSubscriber);
+            }
+        }
+
+        /// <summary>
+        /// Subscribes all the subtopics
+        /// </summary>
+        private void SubscribeAll(T name, bool isSubscriber)
+        {
+            //if already exist a subscribe all in the tree
+            if (checkAlreadySubscribeAll(name, isSubscriber))
+            {
+                return;
+            }
+
+            if (isSubscriber)
+                SubscribersAllSubTopics.Add(name);
+            else
+                BrokersAllSubTopics.Add(name);
+
+            clearSubTopicsSubscribeAll(name, isSubscriber, true);
+        }
+
+
+        /// <summary>
+        /// Subscribes the subtopic
+        /// </summary>
+        /// <param name="topic"> ["subtopic", "sub-subtopic", ...] </param>
+        private void SubscribeSubtopic(T name, String[] topic, bool isSubscriber)
+        {
+            Topic<T> subTopic = GetSubTopic(topic[0]);
+            String[] restSubTopics = (String[])topic.Skip(1).ToArray(); // removes first element
+            subTopic.Subscribe(name, restSubTopics, isSubscriber);
+        }
+
+        /// <summary>
+        /// Add a subscriber/broker subscrition
+        /// </summary>
+        private void addSubscrition(T name, bool isSubscriber)
+        {
+            if (isSubscriber)
+                Subscribers.Add(name);
+            else
+                Brokers.Add(name);
+        }
+
+        public void clearSubTopicsSubscribeAll(T name, bool isSubscriber, bool isParentTopic)
+        {
+            if (!isParentTopic)
+            {
+                if (isSubscriber)
+                {
+                    SubscribersAllSubTopics.Remove(name);
+                }
+                else
+                {
+                    BrokersAllSubTopics.Remove(name);
+                }
+            }
+
+            foreach (KeyValuePair<string, Topic<T>> entry in subTopics)
+            {
+                entry.Value.clearSubTopicsSubscribeAll(name, isSubscriber, false);
+            }
+        }
+
+        public bool checkAlreadySubscribeAll(T name, bool isSubscriber)
+        {
+            if (isSubscriber && SubscribersAllSubTopics.Contains(name))
+            {
+                return true;
+            }
+            else if (!isSubscriber && BrokersAllSubTopics.Contains(name))
+            {
+                return true;
+            }
+            else if (!BrokersAllSubTopics.Contains(name) && !SubscribersAllSubTopics.Contains(name) && IsRoot())
+            {
+                return false;
+            }
+            else
+            {
+                return Parent.checkAlreadySubscribeAll(name, isSubscriber);
+            }
+        }
+
+        #endregion
+
+        #region unsubscribeTopic
+        private void removeSubscrition(T name, bool isSubscriber)
+        {
+            if (isSubscriber)
+                Subscribers.Remove(name);
+            else
+                Brokers.Remove(name);
+        }
+
+        public void UnSubscribe(T name, string[] topicArray, bool isSubscriber)
+        {
+            if (topicArray.Length == 0)
+            {
+                removeSubscrition(name, isSubscriber);
+            }
+            else if (topicArray.Length == 1 && topicArray[0].Equals("*")) // want to subscribe all
+            {
+                UnSubscribeAll(name, isSubscriber);
+            }
+            else
+            {
+                UnSubscribeSubtopic(name, topicArray, isSubscriber);
+            }
+        }
+
+        private void UnSubscribeAll(T name, bool isSubscriber)
+        {
+            if (isSubscriber)
+                SubscribersAllSubTopics.Remove(name);
+            else
+                BrokersAllSubTopics.Remove(name);
+        }
+
+        private void UnSubscribeSubtopic(T name, string[] topicArray, bool isSubscriber)
+        {
+            Topic<T> subTopic = GetSubTopic(topicArray[0]);
+            String[] restSubTopics = (String[])topicArray.Skip(1).ToArray(); // removes first element
+            subTopic.UnSubscribe(name, restSubTopics, isSubscriber);
+        }
+        #endregion      
     }
 }

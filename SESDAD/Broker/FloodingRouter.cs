@@ -29,7 +29,7 @@ namespace Broker
         /// </summary>
         public override void deleteSubscrition(string name, bool isSubscriber, string topic)
         {
-            TopicManager.Unsubscribe(name, tokenize(topic), isSubscriber);
+            TopicManager.UnSubscribe(name, tokenize(topic), isSubscriber);
         }
 
 

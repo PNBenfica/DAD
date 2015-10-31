@@ -1,0 +1,9 @@
+subscriber subscriber1 subscribe /benfica
+Status
+publisher publisher0 publish 4 Ontopic /benfica interval 100
+Wait 20000
+subscriber subscriber1 unsubscribe /benfica
+Wait 20000
+Status
+publisher publisher0 publish 4 Ontopic /benfica interval 100
+exit

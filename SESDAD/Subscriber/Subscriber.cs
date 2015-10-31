@@ -51,7 +51,7 @@ namespace Subscriber
         public void UnSubscribe(string topic)
         {
             Console.WriteLine("Unsubscrition on Topic: {0}", topic);
-            Subscriptions.Unsubscribe(new Subscription(name), tokenize(topic), true);
+            Subscriptions.UnSubscribe(new Subscription(name), tokenize(topic), true);
             broker.UnSubscribe(this.name, true, topic);
         }
 

@@ -47,14 +47,16 @@ namespace Publisher
         {
             this.freeze = false;
             int frozensize = frozenEvents.Count;
+            List<DateTime> eventTime = new List<DateTime>(frozensize) ;
             for (int i = 0; i < frozensize; i++ )
             {
                 Event ev = frozenEvents.First<Event>();
                 frozenEvents.RemoveFirst();
              
                 DateTime timeStamp = broker.DiffuseMessageToRoot(ev);
-                ev.TimeStamp = timeStamp;
-              
+                eventTime.Add(timeStamp);
+                for (int j = 0; j < ev.PreviousEvents.Count; j++)
+                    ev.PreviousEvents[j].TimeStamp = eventTime[j];
             }
         }
 

@@ -43,7 +43,7 @@ namespace Publisher
             //publisher.Publish("/benfica/ola", "somos campeoes");
             Thread thread = new Thread(() =>
             {
-                publisher.SequencePublish("100", "/benfica/ola", "0");
+                publisher.SequencePublish("20", "/benfica/ola", "0");
             });
             thread.Start();
             Thread thread1 = new Thread(() =>

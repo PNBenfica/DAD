@@ -115,17 +115,32 @@ namespace PuppetMaster
 
         public void Crash(String processName)
         {
-         
+        
         }
 
         public void Freeze(String processName)
         {
-      
+            try
+            {
+
+                publishers[processName].Freeze();
+                subscribers[processName].Freeze();
+                brokers[processName].Freeze();
+
+            }
+            catch (KeyNotFoundException) {  }
         }
 
         public void Unfreeze(String processName)
         {
-   
+            try
+            {
+                publishers[processName].Unfreeze();
+                subscribers[processName].Unfreeze();
+                brokers[processName].Unfreeze();
+
+            }
+            catch (KeyNotFoundException) { }
         }
 
         #endregion

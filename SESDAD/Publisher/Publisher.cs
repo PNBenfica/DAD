@@ -54,7 +54,7 @@ namespace Publisher
         public void Status()
         {
             Console.WriteLine("\r\n<------Status------>");
-      
+            Console.WriteLine("Freeze: " + freeze);
             Console.WriteLine("");
         }
 

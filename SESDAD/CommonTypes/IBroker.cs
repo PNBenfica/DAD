@@ -16,6 +16,9 @@ namespace CommonTypes
         void registerPublisher(string url);
         void registerSubscriber(string name, string url);
         void Status();
+        void Freeze();
+        void Unfreeze();
+        void Crash();
         
     }
 }

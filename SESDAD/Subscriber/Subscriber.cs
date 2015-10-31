@@ -14,6 +14,7 @@ namespace Subscriber
 
         #region variables
         private String name;
+        private bool freeze = false;
         private String url;
         private IBroker broker;
         public OrderStrategy OrderStrategy { get; set; } // Guarantees that the message is delivered in the correct order
@@ -122,6 +123,20 @@ namespace Subscriber
             Subscriptions.Status();
             Console.WriteLine("");
 
+        }
+
+        public void Freeze()
+        {
+            this.freeze = true;
+        }
+
+        public void Unfreeze()
+        {
+            this.freeze = false;
+        }
+        public void Crash()
+        {
+            System.Environment.Exit(0);
         }
 
         #endregion

@@ -20,6 +20,7 @@ namespace Publisher
         public Queue<Event> PreviousEvents { get; set; }
         public int NumberOfEvents { get; set; }
         private const int MAXEVENTSQUEUE = 10;
+        private bool freeze = false;
 
         #endregion variables
 
@@ -34,9 +35,27 @@ namespace Publisher
             this.NumberOfEvents = 0;
         }
 
+
+        public void Freeze()
+        {
+            this.freeze = true;
+        }
+
+        public void Unfreeze() 
+        {
+            this.freeze = false;
+        }
+
+        public void Crash()
+        {
+            System.Environment.Exit(0);
+        }
+
         public void Status()
         {
-            //TODO
+            Console.WriteLine("\r\n<------Status------>");
+      
+            Console.WriteLine("");
         }
 
         private void PrintQueuedEvents()

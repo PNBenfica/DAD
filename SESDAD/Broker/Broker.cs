@@ -11,6 +11,8 @@ namespace Broker
     public class Broker : MarshalByRefObject, IBroker
     {
         #region variables
+
+        private bool freeze = false;
         public String Name { get; set; }
         public String URL { get; set; }
         public IBroker Parent { get; set; }
@@ -19,6 +21,7 @@ namespace Broker
         public Dictionary<string, ISubscriber> Subscribers { get; set; }
         public List<Event> Events { get; set; }
         public Router Router { get; set; }
+
         #endregion
 
         #region classUtils
@@ -131,6 +134,23 @@ namespace Broker
             Subscribers.Add(name, subscriber);
             Console.WriteLine("New subscriber registed: {0}", url);
         }
+
+
+        public void Freeze()
+        {
+            this.freeze = true;
+        }
+
+        public void Unfreeze()
+        {
+            this.freeze = false;
+        }
+
+        public void Crash()
+        {
+            System.Environment.Exit(0);
+        }
+
 
         /// <summary>
         /// Write in console the current status

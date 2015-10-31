@@ -115,17 +115,23 @@ namespace PuppetMaster
 
         public void Crash(String processName)
         {
-            //missing function at interface
+            publishers[processName].Crash();
+            subscribers[processName].Crash();
+            brokers[processName].Crash();
         }
 
         public void Freeze(String processName)
         {
-            //missing function at interface
+            publishers[processName].Freeze();
+            subscribers[processName].Freeze();
+            brokers[processName].Freeze();
         }
 
         public void Unfreeze(String processName)
         {
-            //missing function at interface
+            publishers[processName].Unfreeze();
+            subscribers[processName].Unfreeze();
+            brokers[processName].Unfreeze();
         }
 
         #endregion

@@ -18,7 +18,7 @@ namespace Publisher
         private String url;
         private IBroker broker;
         public Queue<Event> PreviousEvents { get; set; }
-        public Queue<Event> frozenEvents { get; set; }
+        public LinkedList<Event> frozenEvents { get; set; }
         public int NumberOfEvents { get; set; }
         private const int MAXEVENTSQUEUE = 10;
         private bool freeze = false;
@@ -33,7 +33,7 @@ namespace Publisher
             this.url = url;
             events = new List<Event>();
             this.PreviousEvents = new Queue<Event>(MAXEVENTSQUEUE);
-            this.frozenEvents = new Queue<Event>();
+            this.frozenEvents = new LinkedList<Event>();
             this.NumberOfEvents = 0;
         }
 
@@ -49,7 +49,8 @@ namespace Publisher
             int frozensize = frozenEvents.Count;
             for (int i = 0; i < frozensize; i++ )
             {
-                Event ev = frozenEvents.Dequeue();
+                Event ev = frozenEvents.First<Event>();
+                frozenEvents.RemoveFirst();
              
                 DateTime timeStamp = broker.DiffuseMessageToRoot(ev);
                 ev.TimeStamp = timeStamp;
@@ -98,7 +99,7 @@ namespace Publisher
                 }
                 else
                 {
-                    frozenEvents.Enqueue(ev);
+                    frozenEvents.AddLast(ev);
                     UpdatePreviousEvents(ev);
                 }
             }            

@@ -68,20 +68,46 @@ namespace CommonTypes
         /// </summary>
         /// <param name="name">Name of the broker/subscriber</param>
         /// <param name="isSubscriber">Type of the entitie interested</param>
-        public void Subscribe(T name, String[] topic, bool isSubscriber)
+        public void Subscribe(T name, String[] topicArray, bool isSubscriber)
         {
-            if (topic.Length == 0)
+            if (topicArray.Length == 0)
             {
                 addSubscrition(name, isSubscriber);
             }
-            else if (topic.Length == 1 && topic[0].Equals("*")) // want to subscribe all
+            else if (topicArray.Length == 1 && topicArray[0].Equals("*")) // want to subscribe all
             {
                 SubscribeAll(name, isSubscriber);
             }
             else
             {
-                SubscribeSubtopic(name, topic, isSubscriber);
+                SubscribeSubtopic(name, topicArray, isSubscriber);
             }
+        }
+
+        public void Unsubscribe(T name, string[] topicArray, bool isSubscriber)
+        {
+            if (topicArray.Length == 0)
+            {
+                removeSubscrition(name, isSubscriber);
+            }
+            else if (topicArray.Length == 1 && topicArray[0].Equals("*")) // want to subscribe all
+            {
+                UnSubscribeAll(name, isSubscriber);
+            }
+            else
+            {
+                UnSubscribeSubtopic(name, topicArray, isSubscriber);
+            }
+        }
+
+        private void UnSubscribeSubtopic(T name, string[] topicArray, bool isSubscriber)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void removeSubscrition(T name, bool isSubscriber)
+        {
+            throw new NotImplementedException();
         }
 
 
@@ -102,6 +128,14 @@ namespace CommonTypes
                 BrokersAllSubTopics.Add(name);
 
             clearSubTopicsSubscribeAll(name, isSubscriber, true);
+        }
+
+        private void UnSubscribeAll(T name, bool isSubscriber)
+        {
+            if (isSubscriber)
+                SubscribersAllSubTopics.Remove(name);
+            else
+                BrokersAllSubTopics.Remove(name);
         }
 
         public void clearSubTopicsSubscribeAll(T name, bool isSubscriber, bool isParentTopic)
@@ -156,13 +190,6 @@ namespace CommonTypes
             String[] restSubTopics = (String[])topic.Skip(1).ToArray(); // removes first element
             subTopic.Subscribe(name, restSubTopics, isSubscriber);
         }
-        
-
-        public void Unsubscribe(T subscriberName, string[] topicSplit, bool isSubscriber)
-        {
-            throw new NotImplementedException();
-        }
-
 
         /// <summary>
         /// Get all the subscribers of a topic

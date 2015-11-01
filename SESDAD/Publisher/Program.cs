@@ -41,17 +41,23 @@ namespace Publisher
             //publisher.Publish("/benfica/campeao", "somos campeoes");
             //publisher.Publish("/benfica", "benfica benfica benfica");
             //publisher.Publish("/benfica/ola", "somos campeoes");
+
             Thread thread = new Thread(() =>
             {
-                publisher.SequencePublish("20", "/benfica/ola", "0");
+                publisher.SequencePublish("5", "/benfica/ola", "0");
             });
             thread.Start();
+
+            publisher.Freeze();
+
             Thread thread1 = new Thread(() =>
             {
-                publisher.SequencePublish("0", "/benfica/Samaris", "0");
+                publisher.SequencePublish("2", "/benfica/Samaris", "0");
             });
             thread1.Start();
-           
+
+            Console.ReadLine();
+            publisher.Unfreeze();
             Console.ReadLine();
         }
     }

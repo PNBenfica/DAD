@@ -18,11 +18,12 @@ namespace Publisher
         private String url;
         private IBroker broker;
         public Queue<Event> PreviousEvents { get; set; }
-        public Queue<String> frozenTopics { get; set; }
-        public Queue<String> frozenContents { get; set; }
         public int NumberOfEvents { get; set; }
         private const int MAXEVENTSQUEUE = 10;
-        private bool freeze = false;
+
+        private bool isFrozen = false;
+        Object freezeLock = new Object();
+        AutoResetEvent notFreezed = new AutoResetEvent(true);
 
         #endregion variables
 
@@ -34,31 +35,42 @@ namespace Publisher
             this.url = url;
             events = new List<Event>();
             this.PreviousEvents = new Queue<Event>(MAXEVENTSQUEUE);
-            this.frozenTopics = new Queue<String>();
-            this.frozenContents = new Queue<String>();
             this.NumberOfEvents = 0;
         }
 
 
         public void Freeze()
         {
-            this.freeze = true;
+            Console.WriteLine("Freezed");
+            lock (freezeLock)
+            {
+                isFrozen = true;
+                notFreezed.Reset();
+            }
         }
 
-        public void Unfreeze() 
+        public void Unfreeze()
         {
-            this.freeze = false;
-            int frozensize = frozenTopics.Count;
-            List<DateTime> eventTime = new List<DateTime>(frozensize) ;
-            for (int i = 0; i < frozensize; i++ )
+            Console.WriteLine("UnFreezed");
+            lock (freezeLock)
             {
+                isFrozen = false;
+                notFreezed.Set();
+            }
+        }
 
-                Event ev = ProduceEvent(frozenTopics.Dequeue(), frozenContents.Dequeue());
-                DateTime timeStamp = broker.DiffuseMessageToRoot(ev);
-                ev.TimeStamp = timeStamp;
-                UpdatePreviousEvents(ev);
-                
-             }
+
+        private void CheckFroozen()
+        {
+            AutoResetEvent[] handles = { notFreezed };
+            WaitHandle.WaitAll(handles);
+            lock (freezeLock)
+            {
+                if (!isFrozen)
+                {
+                    notFreezed.Set();
+                }
+            }
         }
 
         public void Crash()
@@ -69,7 +81,7 @@ namespace Publisher
         public void Status()
         {
             Console.WriteLine("\r\n<------Status------>");
-            Console.WriteLine("Freeze: " + freeze);
+            Console.WriteLine("Freeze: " + isFrozen);
             PrintQueuedEvents();
             Console.WriteLine("");
         }
@@ -87,31 +99,15 @@ namespace Publisher
         #endregion
 
         #region publishEvent
-
-        public void QueueEvent(string topic, String content)
-        {
-             Console.WriteLine("New event published\r\nTopic {0}\r\ncontent: {1}\r\n", topic, content);
-            frozenTopics.Enqueue(topic);
-            frozenContents.Enqueue(content);
-        }
-
+        
         public void Publish(String topic, String content)
         {
-            Event ev;
             lock (this)
             {
-               
-                if (!this.freeze)
-                {
-                    ev = ProduceEvent(topic, content);
-                    DateTime timeStamp = broker.DiffuseMessageToRoot(ev);
-                    ev.TimeStamp = timeStamp;
-                    UpdatePreviousEvents(ev);
-                }
-                else
-                {
-                    QueueEvent(topic, content);
-                }
+                Event ev = ProduceEvent(topic, content);
+                DateTime timeStamp = broker.DiffuseMessageToRoot(ev);
+                ev.TimeStamp = timeStamp;
+                UpdatePreviousEvents(ev);
             }            
         }
 
@@ -123,7 +119,7 @@ namespace Publisher
 
         private void UpdatePreviousEvents(Event e)
         {
-            if (PreviousEvents.Count == 10)
+            if (PreviousEvents.Count == MAXEVENTSQUEUE)
             {
                 PreviousEvents.Dequeue();
             }
@@ -136,11 +132,9 @@ namespace Publisher
             int waitingTime = Convert.ToInt32(waitXms);
             for (int i = 0; i < eventNumber; i++)
             {
-                //Thread thread = new Thread(() =>
-                //{
-                    Publish(topic, this.Name + i);
-                //});
-                //thread.Start();
+                CheckFroozen();
+
+                Publish(topic, this.Name + i);
                 Thread.Sleep(waitingTime);
             }
 

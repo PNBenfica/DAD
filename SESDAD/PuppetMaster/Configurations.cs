@@ -10,26 +10,26 @@ namespace PuppetMaster
         private String routingPolicy;
         private String ordering;
         List<String> puppetMastersUrl;
-        String puppetMasterUrl;
+        String centralPuppetMasterUrl;
         private List<Site> sites;
         private List<Process> processes;
         private String loggingLevel;
 
-        public Configurations(String routingPolicy, String ordering, String puppetMasterUrl, List<String> puppetMastersUrl, List<Site> sites, List<Process> processes, String loggingLevel)
+        public Configurations(String routingPolicy, String ordering, String centralPuppetMasterUrl, List<String> puppetMastersUrl, List<Site> sites, List<Process> processes, String loggingLevel)
         {
             this.routingPolicy = routingPolicy;
             this.ordering = ordering;
-            this.puppetMasterUrl = puppetMasterUrl;
+            this.centralPuppetMasterUrl = centralPuppetMasterUrl;
             this.puppetMastersUrl = puppetMastersUrl;
             this.sites = sites;
             this.processes = processes;
             this.loggingLevel = loggingLevel;
         }
 
-        public String PuppetMasterUrl
+        public String CentralPuppetMasterUrl
         {
-            get { return puppetMasterUrl; }
-            set { puppetMasterUrl = value; }
+            get { return centralPuppetMasterUrl; }
+            set { centralPuppetMasterUrl = value; }
         }
 
 
@@ -75,7 +75,7 @@ namespace PuppetMaster
         public override String ToString()
         {
             String info = "Config Content:\r\n";
-            info += "PuppetMasterURL: " + puppetMasterUrl + "\r\n";
+            info += "PuppetMasterURL: " + centralPuppetMasterUrl + "\r\n";
             foreach (Site site in sites)
             {
                 info += site.ToString();

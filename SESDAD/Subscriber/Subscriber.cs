@@ -17,26 +17,28 @@ namespace Subscriber
         private bool freeze = false;
         private String url;
         private IBroker broker;
+        private IPuppetMasterURL puppetMaster;
+        private string loggingLevel;
         public OrderStrategy OrderStrategy { get; set; } // Guarantees that the message is delivered in the correct order
         public Topic<Subscription> Subscriptions { get; set; }
         #endregion
 
         #region classUtils
 
-        /// <summary>
-        /// Subscriber Construtor
-        /// </summary>
-        /// <param name="name">subscriber name</param>
-        public Subscriber(String name, String url, String order)
+        public Subscriber(string name, string url, string ordering, string puppetMasterUrl, string loggingLevel)
         {
+            // TODO: Complete member initialization
             this.name = name;
             this.url = url;
-            this.OrderStrategy = GetOrderByRefletion(order);
+            this.OrderStrategy = GetOrderByRefletion(ordering);
+            this.puppetMaster = (IPuppetMasterURL)Activator.GetObject(typeof(IPuppetMasterURL), puppetMasterUrl);
+            this.loggingLevel = loggingLevel;
             this.Subscriptions = new Topic<Subscription>("/");
         }
 
         public void PrintMessage(Event e)
         {
+            puppetMaster.Log("SubEvent " + this.name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
             Console.WriteLine("");
             Console.WriteLine("------- New Message -------");
             Console.WriteLine("Post ID:" + e.Id);

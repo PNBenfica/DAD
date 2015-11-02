@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PuppetMaster
@@ -12,10 +13,12 @@ namespace PuppetMaster
         #region variables
 
         List<String> puppetMastersUrl;
+        String centralPuppetMasterUrl;
         String url;
         String routingPolicy;
         String ordering;
         String loggingLevel;
+
 
         //key: processName value: processProxy
         private Dictionary<String, IBroker> brokers = new Dictionary<String, IBroker>();
@@ -24,41 +27,56 @@ namespace PuppetMaster
 
         #endregion
 
-        public PuppetMaster(String url, String routingPolicy, String ordering, String loggingLevel)
+        public PuppetMaster(String url, String routingPolicy, String ordering, String loggingLevel, String centralPuppetMasterUrl)
         {
             this.url = url;
             this.routingPolicy = routingPolicy;
             this.ordering = ordering;
             this.loggingLevel = loggingLevel;
+            this.centralPuppetMasterUrl = centralPuppetMasterUrl;
+            Log("\n\n");
         }
 
         #region remoteMethods
 
-        public void notify(String processName, String message)
+        public void Notify(String processName, String message)
         {
             Console.WriteLine(processName + " send: " + message);
         }
 
-        public void createProcess(String type, String processName, String url, String brokerUrl)
+        public void CreateProcess(String type, String processName, String url, String brokerUrl)
         {
             ProcessCreator processCreator = new ProcessCreator();
             if (type.Equals("broker"))
             {
-                processCreator.startBrokerProcess(processName, url, brokerUrl, this.routingPolicy, this.loggingLevel);
+                processCreator.startBrokerProcess(processName, url, brokerUrl, this.routingPolicy, this.loggingLevel, this.centralPuppetMasterUrl);
             }
             else if (type.Equals("publisher"))
             {
-                processCreator.startPublisherProcess(processName, url, brokerUrl, this.loggingLevel);
+                processCreator.startPublisherProcess(processName, url, brokerUrl, this.loggingLevel, this.centralPuppetMasterUrl);
             }
             else if (type.Equals("subscriber"))
             {
-                processCreator.startSubscriberProcess(processName, url, brokerUrl, this.ordering, this.loggingLevel);
+                processCreator.startSubscriberProcess(processName, url, brokerUrl, this.ordering, this.loggingLevel, this.centralPuppetMasterUrl);
             }
             else
             {
                 throw new UnknownProcessException("Unknown Process specified, aborting execution");
             }
         }
+
+
+        public void Log(string logMessage)
+        {
+            lock (this)
+            {
+                System.IO.StreamWriter file = new System.IO.StreamWriter(@"log.txt", true);
+                file.WriteLine(logMessage);
+                Console.WriteLine(logMessage);
+                file.Close();
+            }
+        }
+
 
         #endregion
 
@@ -144,5 +162,6 @@ namespace PuppetMaster
         }
 
         #endregion
+
     }
 }

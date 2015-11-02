@@ -35,16 +35,16 @@ namespace PuppetMaster
             ProcessCreator processCreator = new ProcessCreator();
             Console.WriteLine("Initializing processes");
 
-            String puppetMasterUrl = configurations.PuppetMasterUrl;
+            String centralPuppetMasterUrl = configurations.CentralPuppetMasterUrl;
             char[] delimiterChars = { ':', '/' }; // "tcp://1.2.3.4:3335/sub"
-            string[] urlSplit = puppetMasterUrl.Split(delimiterChars);
+            string[] urlSplit = centralPuppetMasterUrl.Split(delimiterChars);
             int port = Convert.ToInt32(urlSplit[4]);
 
             
             TcpChannel channel = new TcpChannel(port);
             ChannelServices.RegisterChannel(channel, false);
 
-            puppetMaster = new PuppetMaster(puppetMasterUrl, configurations.RoutingPolicy, configurations.Ordering, configurations.LoggingLevel);
+            puppetMaster = new PuppetMaster(centralPuppetMasterUrl, configurations.RoutingPolicy, configurations.Ordering, configurations.LoggingLevel, centralPuppetMasterUrl);
 
             RemotingServices.Marshal(puppetMaster, "puppet", typeof(IPuppetMasterURL));
 
@@ -53,17 +53,17 @@ namespace PuppetMaster
                 Console.WriteLine(process.Type);
                 if (process.Type.Equals("broker"))
                 {
-                    processCreator.startBrokerProcess(process.Name, process.Url, process.BrokerUrl, configurations.RoutingPolicy, configurations.LoggingLevel);
+                    processCreator.startBrokerProcess(process.Name, process.Url, process.BrokerUrl, configurations.RoutingPolicy, centralPuppetMasterUrl, configurations.LoggingLevel);
                     puppetMaster.AddBroker(process.Name, process.Url);
                 }
                 else if (process.Type.Equals("publisher"))
                 {
-                    processCreator.startPublisherProcess(process.Name, process.Url, process.BrokerUrl, configurations.LoggingLevel);
+                    processCreator.startPublisherProcess(process.Name, process.Url, process.BrokerUrl, centralPuppetMasterUrl, configurations.LoggingLevel);
                     puppetMaster.AddPublisher(process.Name, process.Url);
                 }
                 else if (process.Type.Equals("subscriber"))
                 {
-                    processCreator.startSubscriberProcess(process.Name, process.Url, process.BrokerUrl, configurations.Ordering, configurations.LoggingLevel);
+                    processCreator.startSubscriberProcess(process.Name, process.Url, process.BrokerUrl, configurations.Ordering, centralPuppetMasterUrl, configurations.LoggingLevel );
                     puppetMaster.AddSubscriber(process.Name, process.Url);                
                 }
                 else

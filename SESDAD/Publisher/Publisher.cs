@@ -13,7 +13,6 @@ namespace Publisher
 
         #region variables
 
-        private List<Event> events;
         public String Name { get; set; }
         private String url;
         private IBroker broker;
@@ -24,16 +23,19 @@ namespace Publisher
         private bool isFrozen = false;
         Object freezeLock = new Object();
         AutoResetEvent notFreezed = new AutoResetEvent(true);
+        private IPuppetMasterURL puppetMaster;
+        private string loggingLevel;
 
         #endregion variables
 
         #region classUtils
         
-        public Publisher(String name, String url)
+        public Publisher(string name, string url, string puppetMasterUrl, string loggingLevel)
         {
             this.Name = name;
             this.url = url;
-            events = new List<Event>();
+            this.puppetMaster = (IPuppetMasterURL)Activator.GetObject(typeof(IPuppetMasterURL), puppetMasterUrl);
+            this.loggingLevel = loggingLevel;
             this.PreviousEvents = new Queue<Event>(MAXEVENTSQUEUE);
             this.NumberOfEvents = 0;
         }

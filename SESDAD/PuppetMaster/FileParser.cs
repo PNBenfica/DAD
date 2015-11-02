@@ -17,7 +17,7 @@ namespace PuppetMaster
             // Display the file contents by using a foreach loop.
             List<Site> sites = new List<Site>();
             List<Process> processes = new List<Process>();
-            String puppetMasterURL = "";
+            String centralPuppetMasterURL = "";
             List<String> puppetMastersURL = new List<String>();
             String ordering = "";
             String routingPolicy = "";
@@ -35,7 +35,7 @@ namespace PuppetMaster
                 }
                 else if (words[0].ToLower().Equals("centralpuppetmaster"))
                 {
-                    puppetMasterURL = words[1];
+                    centralPuppetMasterURL = words[1];
                 }
                 else if (words[0].ToLower().Equals("puppetmaster"))
                 {
@@ -95,7 +95,7 @@ namespace PuppetMaster
                 }
             }
 
-            Configurations configurations = new Configurations(routingPolicy, ordering, puppetMasterURL, puppetMastersURL, sites, processes, loggingLevel);
+            Configurations configurations = new Configurations(routingPolicy, ordering, centralPuppetMasterURL, puppetMastersURL, sites, processes, loggingLevel);
             return configurations;
         }
 

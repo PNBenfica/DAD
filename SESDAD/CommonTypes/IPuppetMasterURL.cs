@@ -8,8 +8,10 @@ namespace CommonTypes
 {
     public interface IPuppetMasterURL
     {
-        void notify(String processName, String message);
+        void Notify(String processName, String message);
 
-        void createProcess(String type, String processName, String url, String brokerUrl);
+        void CreateProcess(String type, String processName, String url, String brokerUrl);
+
+        void Log(String logMessage);
     }
 }

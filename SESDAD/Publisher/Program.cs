@@ -16,12 +16,15 @@ namespace Publisher
         // args[0] -> Publisher name
         // args[1] -> Publisher url
         // args[2] -> broker url
+        // args[3] -> puppetMaster
+        // args[4] -> logLevel
         static void Main(string[] args)
         {
             String name = args[0];
             String url = args[1];
             String brokerUrl = args[2];
-            String loggingLevel = args[3];
+            String puppetMasterUrl = args[3];
+            String loggingLevel = args[4];
 
             char[] delimiterChars = { ':', '/' }; // "tcp://1.2.3.4:3335/pub"
             string[] urlSplit = url.Split(delimiterChars);
@@ -30,7 +33,7 @@ namespace Publisher
             TcpChannel channel = new TcpChannel(port);
             ChannelServices.RegisterChannel(channel, false);
 
-            Publisher publisher = new Publisher(name, url);
+            Publisher publisher = new Publisher(name, url, puppetMasterUrl, loggingLevel);
             RemotingServices.Marshal(publisher, "pub", typeof(IPublisher));
 
             Console.WriteLine("Publisher {0} running on {1}", name, url);

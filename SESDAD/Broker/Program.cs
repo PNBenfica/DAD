@@ -15,12 +15,17 @@ namespace Broker
         // args[0] -> subscriber name
         // args[1] -> subscriber url
         // args[2] -> parent url
+        // args[3] -> router
+        // args[4] -> puppetMaster
+        // args[5] -> logLevel
         static void Main(string[] args)
         {
             String name = args[0];
             String url = args[1];
+            String parentUrl = args[2];
             String router = args[3];
-            String loggingLevel = args[4];
+            String puppetMasterUrl = args[4];
+            String loggingLevel = args[5];
 
             char[] delimiterChars = { ':', '/' }; // "tcp://1.2.3.4:3333/broker"
             string[] urlSplit = url.Split(delimiterChars);
@@ -29,17 +34,17 @@ namespace Broker
             TcpChannel channel = new TcpChannel(port);
             ChannelServices.RegisterChannel(channel, false);
 
-            Broker broker = new Broker(name, url);
+            Broker broker = new Broker(name, url, puppetMasterUrl, loggingLevel);
             RemotingServices.Marshal(broker, "broker", typeof(IBroker));
 
             Console.WriteLine("Broker {0} running on {1}", name, url);
 
             // if there is no parent URL, this is the root!!
             // if there is a parent, this broker must let him know he has a son
-            String parentUrl = args[2];
+            
             if (!parentUrl.Equals("none")) 
             {
-                broker.notifyParent(args[2]);
+                broker.notifyParent(parentUrl);
             }
 
             Console.ReadLine();

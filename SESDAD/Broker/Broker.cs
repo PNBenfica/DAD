@@ -13,6 +13,8 @@ namespace Broker
         #region variables
 
         private bool freeze = false;
+        private IPuppetMasterURL puppetMaster;
+        private string loggingLevel;
         public String Name { get; set; }
         public String URL { get; set; }
         public IBroker Parent { get; set; }
@@ -26,10 +28,12 @@ namespace Broker
 
         #region classUtils
 
-        public Broker(String name, String url)
+        public Broker(string name, string url, string puppetMasterUrl, string loggingLevel)
         {
             this.Name = name;
             this.URL = url;
+            this.puppetMaster = (IPuppetMasterURL)Activator.GetObject(typeof(IPuppetMasterURL), puppetMasterUrl);
+            this.loggingLevel = loggingLevel;
             this.Router = new FilteredRouter(this);
             this.Children = new Dictionary<string, IBroker>();
             this.Publishers = new List<IPublisher>();

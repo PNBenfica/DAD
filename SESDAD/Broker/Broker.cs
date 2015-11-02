@@ -28,13 +28,21 @@ namespace Broker
 
         #region classUtils
 
-        public Broker(string name, string url, string puppetMasterUrl, string loggingLevel)
+        public Broker(string name, string url, string router, string puppetMasterUrl, string loggingLevel)
         {
             this.Name = name;
             this.URL = url;
             this.puppetMaster = (IPuppetMasterURL)Activator.GetObject(typeof(IPuppetMasterURL), puppetMasterUrl);
             this.loggingLevel = loggingLevel;
-            this.Router = new FilteredRouter(this);
+            if (router.Equals("ﬁlter"))
+            {
+                this.Router = new FilteredRouter(this);
+            }
+            else
+            {
+                this.Router = new FloodingRouter(this);
+
+            }
             this.Children = new Dictionary<string, IBroker>();
             this.Publishers = new List<IPublisher>();
             this.Subscribers = new Dictionary<string, ISubscriber>();
@@ -72,8 +80,11 @@ namespace Broker
             {
                 Console.WriteLine("Diffusing message {0} from {1}", e.Id, e.PublisherId);
                 Router.route(e);
+                puppetMaster.Log("BroEvent " + this.Name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id); 
             });
             thread.Start();
+        
+
         }
 
         /// <summary>
@@ -89,6 +100,7 @@ namespace Broker
                 e.TimeStamp = timeStamp;
                 Thread thread = new Thread(() => { this.DiffuseMessage(e); });
                 thread.Start();
+         
             }
 
             else

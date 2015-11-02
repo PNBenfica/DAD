@@ -110,6 +110,7 @@ namespace Publisher
                 DateTime timeStamp = broker.DiffuseMessageToRoot(ev);
                 ev.TimeStamp = timeStamp;
                 UpdatePreviousEvents(ev);
+                puppetMaster.Log("PubEvent " + this.Name + ", " + this.Name + ", " + ev.Topic + ", " + this.NumberOfEvents); // faz sentido meter duas vezes o nome do processo? no enunciado esta
             }            
         }
 

@@ -133,18 +133,41 @@ namespace PuppetMaster
 
         public void Crash(String processName)
         {
-        
+            try
+            {
+                publishers[processName].Crash();
+            }
+            catch (KeyNotFoundException) { }
+
+            try
+            {
+                subscribers[processName].Crash();
+            }
+            catch (KeyNotFoundException) { }
+
+            try
+            {
+                brokers[processName].Crash();
+            }
+            catch (KeyNotFoundException) { }
         }
 
         public void Freeze(String processName)
         {
             try
             {
-
                 publishers[processName].Freeze();
-                subscribers[processName].Freeze();
-                brokers[processName].Freeze();
+            }
+            catch (KeyNotFoundException) {  }
 
+            try
+            {
+               subscribers[processName].Freeze();
+            }
+            catch (KeyNotFoundException) {  }
+         
+            try{
+                brokers[processName].Freeze();
             }
             catch (KeyNotFoundException) {  }
         }
@@ -154,9 +177,18 @@ namespace PuppetMaster
             try
             {
                 publishers[processName].Unfreeze();
-                subscribers[processName].Unfreeze();
-                brokers[processName].Unfreeze();
+            }
+            catch (KeyNotFoundException) { }
 
+            try
+            {
+                subscribers[processName].Unfreeze();
+            }
+            catch (KeyNotFoundException) { }
+
+            try
+            {
+                brokers[processName].Unfreeze();
             }
             catch (KeyNotFoundException) { }
         }

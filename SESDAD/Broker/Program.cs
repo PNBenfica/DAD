@@ -34,7 +34,7 @@ namespace Broker
             TcpChannel channel = new TcpChannel(port);
             ChannelServices.RegisterChannel(channel, false);
 
-            Broker broker = new Broker(name, url, puppetMasterUrl, loggingLevel);
+            Broker broker = new Broker(name, url,  router, puppetMasterUrl, loggingLevel);
             RemotingServices.Marshal(broker, "broker", typeof(IBroker));
 
             Console.WriteLine("Broker {0} running on {1}", name, url);

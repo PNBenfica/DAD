@@ -94,17 +94,23 @@ namespace Subscriber
 
         public void Subscribe(string topic)
         {
-            Console.WriteLine("New Subscrition on Topic: {0}", topic);
-            DateTime timeStamp = broker.Subscribe(this.name, true, topic);
-            Subscription subscription = new Subscription(name, timeStamp);
-            Subscriptions.Subscribe(subscription, tokenize(topic), true);
+            lock (this)
+            {
+                Console.WriteLine("New Subscrition on Topic: {0}", topic);
+                DateTime timeStamp = broker.Subscribe(this.name, true, topic);
+                Subscription subscription = new Subscription(name, timeStamp);
+                Subscriptions.Subscribe(subscription, tokenize(topic), true);
+            }
         }
 
         public void UnSubscribe(string topic)
         {
-            Console.WriteLine("Unsubscrition on Topic: {0}", topic);
-            Subscriptions.UnSubscribe(new Subscription(name), tokenize(topic), true);
-            broker.UnSubscribe(this.name, true, topic);
+            lock (this)
+            {
+                Console.WriteLine("Unsubscrition on Topic: {0}", topic);
+                Subscriptions.UnSubscribe(new Subscription(name), tokenize(topic), true);
+                broker.UnSubscribe(this.name, true, topic);
+            }
         }
 
         /// <summary>

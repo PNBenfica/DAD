@@ -10,4 +10,3 @@ wait 10000
 Status
 publisher publisher0 publish 2 Ontopic /benfica/ola interval 100
 publisher publisher0 publish 2 Ontopic /benfica/ola/john interval 100
-exit

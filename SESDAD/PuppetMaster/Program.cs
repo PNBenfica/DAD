@@ -75,6 +75,32 @@ namespace PuppetMaster
 
         }
 
+        public static void readScripts(string script = null)
+        {
+            if (script == null)
+            {
+                string[] scriptFiles = { "easyPublishSubscribe", "twoPublishers", "freezeTest" };//, "unSubscribeTest" };
+                foreach (string file in scriptFiles)
+                {
+                    string[] lines = System.IO.File.ReadAllLines(@"../../../" + file + ".txt");
+                    foreach (string command in lines)
+                    {
+                        executeCommand(command);
+                    }
+                }
+            }
+            else
+            {
+                string[] lines = System.IO.File.ReadAllLines("../../../" + script + ".txt");
+                foreach (string command in lines)
+                {
+                    executeCommand(command);
+                }
+            }
+
+
+        }
+
 
         public static void createMenu()
         {
@@ -155,6 +181,16 @@ namespace PuppetMaster
             {
                 Environment.Exit(0);
             }
+
+                // depois alterem isto caso queiram ja que isto nao faz parte dos comandos para a aplicacao
+            else if (words[0].ToLower().Equals("script") && words.Length == 1)
+            {
+                readScripts();
+            }
+            else if (words[0].ToLower().Equals("script") && words.Length == 2)
+            {
+                readScripts(words[1]);
+            }
             //help
             else if (words[0].ToLower().Equals("help"))
             {
@@ -175,6 +211,8 @@ namespace PuppetMaster
                 throw new UnknownCommandException("Command not recognized\ntype HELP to list all available commands");
             }
         }
+
+
 
 
     }

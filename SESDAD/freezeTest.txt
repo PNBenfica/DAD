@@ -1,0 +1,5 @@
+publisher publisher1 publish 200 Ontopic /benfica/campeão interval 1
+freeze publisher1
+subscriber subscriber1 subscribe /benfica/*
+wait 1000
+unfreeze publisher1

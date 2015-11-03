@@ -34,15 +34,15 @@ namespace Broker
             this.URL = url;
             this.puppetMaster = (IPuppetMasterURL)Activator.GetObject(typeof(IPuppetMasterURL), puppetMasterUrl);
             this.loggingLevel = loggingLevel;
-            if (router.Equals("ﬁlter"))
+            if (router.Equals("filter"))
             {
                 this.Router = new FilteredRouter(this);
             }
             else
             {
-                this.Router = new FloodingRouter(this);
+               this.Router = new FloodingRouter(this);
 
-            }
+           }
             this.Children = new Dictionary<string, IBroker>();
             this.Publishers = new List<IPublisher>();
             this.Subscribers = new Dictionary<string, ISubscriber>();
@@ -62,13 +62,19 @@ namespace Broker
 
         public DateTime Subscribe(String Id, bool isSubscriber, String topic)
         {
-            Console.WriteLine("New subscrition from: {0} on topic: {1}", Id, topic);
-            return Router.addSubscrition(Id, isSubscriber, topic);
+            lock (this)
+            {
+                Console.WriteLine("New subscrition from: {0} on topic: {1}", Id, topic);
+                return Router.addSubscrition(Id, isSubscriber, topic);
+            }
         }
 
         public void UnSubscribe(String Id, bool isSubscriber, String topic)
         {
-            Router.deleteSubscrition(Id, isSubscriber, topic);
+            lock (this)
+            {
+                Router.deleteSubscrition(Id, isSubscriber, topic);
+            }
         }
 
         /// <summary>
@@ -79,8 +85,9 @@ namespace Broker
             Thread thread = new Thread(() =>
             {
                 Console.WriteLine("Diffusing message {0} from {1}", e.Id, e.PublisherId);
-                Router.route(e);
                 puppetMaster.Log("BroEvent " + this.Name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id); 
+                Router.route(e);
+         
             });
             thread.Start();
         

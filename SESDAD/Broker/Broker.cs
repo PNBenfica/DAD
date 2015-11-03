@@ -85,7 +85,7 @@ namespace Broker
             Thread thread = new Thread(() =>
             {
                 Console.WriteLine("Diffusing message {0} from {1}", e.Id, e.PublisherId);
-                puppetMaster.Log("BroEvent " + this.Name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id); 
+                puppetMaster.Log("BroEvent " + this.Name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
                 Router.route(e);
          
             });

@@ -55,7 +55,10 @@ namespace Broker
         /// </summary>
         public override List<String> GetBrokers(Event e)
         {
-            return TopicManager.GetBrokers(tokenize(e.Topic));
+            lock (TopicManager)
+            {
+                return TopicManager.GetBrokers(tokenize(e.Topic));
+            }
         }
     }
 }

@@ -56,7 +56,10 @@ namespace Broker
 
         public List<String> GetSubscribers(Event e)
         {
-            return TopicManager.GetSubscribers(tokenize(e.Topic));
+            lock (TopicManager)
+            {
+                return TopicManager.GetSubscribers(tokenize(e.Topic));
+            }
         }
         #endregion
 

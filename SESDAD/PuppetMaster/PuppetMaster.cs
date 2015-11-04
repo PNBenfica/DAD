@@ -133,64 +133,38 @@ namespace PuppetMaster
 
         public void Crash(String processName)
         {
-            try
-            {
+            if (publishers.ContainsKey(processName))
                 publishers[processName].Crash();
-            }
-            catch (KeyNotFoundException) { }
 
-            try
-            {
+            if (subscribers.ContainsKey(processName))
                 subscribers[processName].Crash();
-            }
-            catch (KeyNotFoundException) { }
 
-            try
-            {
+            if (brokers.ContainsKey(processName))
                 brokers[processName].Crash();
-            }
-            catch (KeyNotFoundException) { }
         }
 
         public void Freeze(String processName)
         {
-            try
-            {
+            if (publishers.ContainsKey(processName))
                 publishers[processName].Freeze();
-            }
-            catch (KeyNotFoundException) {  }
 
-            try
-            {
+            if (subscribers.ContainsKey(processName))
                subscribers[processName].Freeze();
-            }
-            catch (KeyNotFoundException) {  }
-         
-            try{
+
+            if (brokers.ContainsKey(processName))
                 brokers[processName].Freeze();
-            }
-            catch (KeyNotFoundException) {  }
         }
 
         public void Unfreeze(String processName)
         {
-            try
-            {
+            if (publishers.ContainsKey(processName))
                 publishers[processName].Unfreeze();
-            }
-            catch (KeyNotFoundException) { }
 
-            try
-            {
+            if (subscribers.ContainsKey(processName))
                 subscribers[processName].Unfreeze();
-            }
-            catch (KeyNotFoundException) { }
 
-            try
-            {
+            if (brokers.ContainsKey(processName))
                 brokers[processName].Unfreeze();
-            }
-            catch (KeyNotFoundException) { }
         }
 
         #endregion

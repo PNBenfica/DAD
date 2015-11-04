@@ -104,11 +104,12 @@ namespace PuppetMaster
 
         public static void createMenu()
         {
-            while (true)
+            Console.WriteLine("-----------------PuppetMaster Console-----------------");
+            Console.Write(">");
+            String command;
+
+            while ((command = Console.ReadLine()) != null)
             {
-                Console.WriteLine("-----------------PuppetMaster Console-----------------");
-                Console.Write(">");
-                String command = Console.ReadLine();
                 try
                 {
                     executeCommand(command);
@@ -118,7 +119,9 @@ namespace PuppetMaster
                     Console.WriteLine(e.Message);
                     continue;
                 }
+                Console.Write("> ");
             }
+            while (true) ;
         }
 
         private static void executeCommand(string command)

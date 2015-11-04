@@ -83,8 +83,9 @@ namespace Publisher
         public void Status()
         {
             Console.WriteLine("\r\n<------Status------>");
-            Console.WriteLine("Freeze: " + isFrozen);
-            PrintQueuedEvents();
+            Console.WriteLine("Name: {0}", Name);
+            Console.WriteLine("Freeze: {0}", isFrozen);
+            Console.WriteLine("Events Published: {0}", NumberOfEvents);
             Console.WriteLine("");
         }
 

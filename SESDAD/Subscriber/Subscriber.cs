@@ -128,6 +128,8 @@ namespace Subscriber
         public void Status()
         {
             Console.WriteLine("\r\n<------Status------>");
+            Console.WriteLine("Name: {0}", name);
+            Console.WriteLine("--Subscriptions--");
             Subscriptions.Status();
             Console.WriteLine("");
 

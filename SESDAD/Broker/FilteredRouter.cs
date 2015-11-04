@@ -37,12 +37,8 @@ namespace Broker
         public override void deleteSubscrition(string name, bool isSubscriber, string topic)
         {
             TopicManager.UnSubscribe(name, tokenize(topic), isSubscriber);
-
-            //List<ISubscriber> subTopic = SubscriptionManager.getSubscriptors(topic);
-            //List<Router> routTopic = SubscriptionManager.getRouters(topic);
-            //bool sizeOne = subTopic.Count() + routTopic.Count() == 1;
-
-            bool parentNeedUpdate = !Broker.IsRoot() && !TopicManager.HaveSubscribers(topic);
+            
+            bool parentNeedUpdate = !Broker.IsRoot() && !TopicManager.HaveSubscribers(tokenize(topic));
             if (parentNeedUpdate)
             {
                 Broker.Parent.UnSubscribe(Broker.Name, false, topic);

@@ -135,9 +135,9 @@ namespace CommonTypes
         /// <summary>
         /// returns true if there is any interested (subscriber/broker) in the event
         /// </summary>
-        public bool HaveSubscribers(String topic)
+        public bool HaveSubscribers(String[] topic)
         {
-            return GetTopicSubscribers().Count() > 0 || GetTopicBrokers().Count > 0;
+            return GetSubscribers(topic).Count() > 0 || GetBrokers(topic).Count > 0;
         }
 
         /// <summary>
@@ -154,11 +154,10 @@ namespace CommonTypes
         /// </summary>
         public void Status()
         {
-            Console.WriteLine("Topic: {0}", this.Name);
-            PrintInfo("Subscribers", Subscribers);
-            PrintInfo("Subscribers all subtopics", SubscribersAllSubTopics);
-            PrintInfo("Brokers", Brokers);
-            PrintInfo("Brokers all subtopics", BrokersAllSubTopics);
+            PrintInfo("Subscriber", Subscribers);
+            PrintInfo("Subscriber '/*'", SubscribersAllSubTopics);
+            PrintInfo("Broker", Brokers);
+            PrintInfo("Broker '/*'", BrokersAllSubTopics);
 
             foreach (Topic<T> subtopic in subTopics.Values)
                 subtopic.Status();
@@ -169,10 +168,10 @@ namespace CommonTypes
         {
             if (collection.Count() > 0)
             {
-                Console.WriteLine(description);
                 foreach (T s in collection)
                 {
-                    Console.WriteLine("-> {0}", s);
+                    Console.Write("Topic: {0} | {1} |", this.Name, description);
+                    Console.WriteLine(" {0} ", s);
                 }
             }
         }

@@ -1,6 +1,6 @@
-﻿publisher publisher0 publish 50000 Ontopic /benfica/campeão interval 1
+publisher publisher0 publish 50000 Ontopic /benfica/campeao interval 1
 subscriber subscriber1 subscribe /benfica/*
-publisher publisher0 publish 50000 Ontopic /benfica/campeão interval 1
+publisher publisher0 publish 50000 Ontopic /benfica/campeao interval 1
 publisher publisher0 publish 20000 Ontopic /topic interval 1
 subscriber subscriber1 subscribe /topic
 publisher publisher0 publish 1000000 Ontopic /topic interval 1

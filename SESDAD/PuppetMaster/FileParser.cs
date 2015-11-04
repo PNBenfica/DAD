@@ -9,10 +9,11 @@ namespace PuppetMaster
     public class FileParser
     {
 
-        public Configurations parse(String filePath)
+        public Configurations parse(String configPath, String puppetMastersPath)
         {
 
-            string[] lines = System.IO.File.ReadAllLines(@filePath);
+            string[] configLines = System.IO.File.ReadAllLines(configPath);
+            string[] puppetMastersLines = System.IO.File.ReadAllLines(puppetMastersPath);
 
             // Display the file contents by using a foreach loop.
             List<Site> sites = new List<Site>();
@@ -24,7 +25,23 @@ namespace PuppetMaster
             String loggingLevel = "";
             char[] delimiter = { ' ' };
             String[] words;
-            foreach (string line in lines)
+
+            //saving puppetMasters URL 
+            foreach (string line in puppetMastersLines)
+            {
+                words = line.Split(delimiter);
+                if (words[0].ToLower().Equals("centralpuppetmaster"))
+                {
+                    centralPuppetMasterURL = words[1];
+                }
+                else if (words[0].ToLower().Equals("puppetmaster"))
+                {
+                    puppetMastersURL.Add(words[1]);
+                }
+            }
+
+            //saving config 
+            foreach (string line in configLines)
             {
                 words = line.Split(delimiter);
 
@@ -32,14 +49,6 @@ namespace PuppetMaster
                 {
                     //site and site parent
                     sites.Add(new Site(words[1], words[3]));
-                }
-                else if (words[0].ToLower().Equals("centralpuppetmaster"))
-                {
-                    centralPuppetMasterURL = words[1];
-                }
-                else if (words[0].ToLower().Equals("puppetmaster"))
-                {
-                    puppetMastersURL.Add(words[1]);
                 }
                 else if (words[0].ToLower().Equals("process"))
                 {

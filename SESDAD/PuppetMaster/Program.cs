@@ -27,7 +27,7 @@ namespace PuppetMaster
         public static Configurations ReadConfig()
         {
             FileParser parser = new FileParser();
-            return parser.parse("../../../config.txt");
+            return parser.parse(@"..\..\..\config.txt", @"..\..\..\puppetMasters.txt");
         }
 
         public static void initializeProcesses(Configurations configurations)

@@ -14,5 +14,5 @@ RoutingPolicy flooding
 
 Ordering FIFO
 
-LoggingLevel light
+LoggingLevel full
 

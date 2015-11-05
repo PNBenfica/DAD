@@ -1,2 +1,0 @@
-subscriber subscriber0 subscribe /benfica
-publisher publish0 publish 5 ontopic /benfica interval 1000

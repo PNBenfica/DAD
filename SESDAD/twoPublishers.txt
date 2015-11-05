@@ -1,2 +1,0 @@
-subscriber subscriber1 subscribe /benfica/*
-publisher publisher0 publish 100 Ontopic /benfica/campeão interval 1

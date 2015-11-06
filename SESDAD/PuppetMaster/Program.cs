@@ -18,16 +18,19 @@ namespace PuppetMaster
 
         public static void Main(string[] args)
         {
-            Configurations configurations = ReadConfig();
-            //Console.WriteLine(configurations.ToString());
+            String filename = @"..\..\..\config.txt";
+            if (args.Length > 0)
+                filename = @args[0];
+
+            Configurations configurations = ReadConfig(filename);
             initializeProcesses(configurations);
             createMenu();
         }
 
-        public static Configurations ReadConfig()
+        public static Configurations ReadConfig(String filename)
         {
             FileParser parser = new FileParser();
-            return parser.parse(@"..\..\..\config.txt", @"..\..\..\puppetMasters.txt");
+            return parser.parse(filename, @"..\..\..\puppetMasters.txt");
         }
 
         public static void initializeProcesses(Configurations configurations)

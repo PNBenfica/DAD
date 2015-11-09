@@ -18,7 +18,7 @@ namespace PuppetMaster
 
         public static void Main(string[] args)
         {
-            String filename = @"..\..\..\config.txt";
+            String filename = @"..\..\..\T3-config.txt";
             if (args.Length > 0)
                 filename = @args[0];
 

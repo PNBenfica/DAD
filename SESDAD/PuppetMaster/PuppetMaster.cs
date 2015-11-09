@@ -18,6 +18,7 @@ namespace PuppetMaster
         String routingPolicy;
         String ordering;
         String loggingLevel;
+        String datefile;
 
 
         //key: processName value: processProxy
@@ -34,6 +35,7 @@ namespace PuppetMaster
             this.ordering = ordering;
             this.loggingLevel = loggingLevel;
             this.centralPuppetMasterUrl = centralPuppetMasterUrl;
+            this.datefile = DateTime.Now.ToString("yyyy-MM-dd-HH-mm");
             Log("\n\n");
         }
 
@@ -70,7 +72,7 @@ namespace PuppetMaster
         {
             lock (this)
             {
-                System.IO.StreamWriter file = new System.IO.StreamWriter(@"log.txt", true);
+                System.IO.StreamWriter file = new System.IO.StreamWriter(@"log-" + datefile + ".txt", true);
                 file.WriteLine(logMessage);
                 Console.WriteLine(logMessage);
                 file.Close();
@@ -112,7 +114,13 @@ namespace PuppetMaster
 
         public void Publish(String processName, String numberOfEvents, String topic, String waitXms)
         {
+            Thread thread = new Thread(() =>
+            {
             publishers[processName].SequencePublish(numberOfEvents, topic, waitXms);
+
+
+            });
+            thread.Start();
         }
 
         public void Status()

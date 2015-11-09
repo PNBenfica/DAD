@@ -95,14 +95,26 @@ namespace Broker
 
         }
 
+           public bool ParentHaveSubscription(Event even)
+        {
+            List<String> subs = Router.GetSubscribers(even);
+            if (subs.Count() > 0)
+                return false;
+            return true;
+        }
+
         /// <summary>
         /// Diffuse the event to the root
         /// </summary>
         public DateTime DiffuseMessageToRoot(Event e)
         {
             DateTime timeStamp;
-
-            if (IsRoot())  // If it is the root let s go down!
+            bool root = IsRoot();
+            if (!root)
+            {
+                root = Parent.ParentHaveSubscription(e);
+            }
+            if(root)
             {
                 timeStamp = DateTime.Now;
                 e.TimeStamp = timeStamp;

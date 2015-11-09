@@ -15,6 +15,7 @@ namespace CommonTypes
         void registerNewChild(string name, string url);
         void registerPublisher(string url);
         void registerSubscriber(string name, string url);
+        bool ParentHaveSubscription(Event even);
         void Status();
         void Freeze();
         void Unfreeze();

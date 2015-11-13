@@ -13,7 +13,6 @@ namespace Subscriber
         public Dictionary<string, int> PublishersPosts { get; set; }
         public HashSet<string> HasPublisherInfo { get; set; } // if a publisher name is here this subscriber already received a message from him
         public Dictionary<string, List<Event>> QueuedEvents { get; set; }
-        System.Threading.Timer timer = null;
 
 
         public FifoOrder(Subscriber subscriber) 

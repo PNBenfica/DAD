@@ -27,7 +27,6 @@ namespace Subscriber
 
         public Subscriber(string name, string url, string ordering, string puppetMasterUrl, string loggingLevel)
         {
-            // TODO: Complete member initialization
             this.name = name;
             this.url = url;
             this.OrderStrategy = GetOrderByRefletion(ordering);
@@ -99,7 +98,7 @@ namespace Subscriber
                 Console.WriteLine("New Subscrition on Topic: {0}", topic);
                 DateTime timeStamp = broker.Subscribe(this.name, true, topic);
                 Subscription subscription = new Subscription(name, timeStamp);
-                Subscriptions.Subscribe(subscription, tokenize(topic), true);
+                Subscriptions.Subscribe(subscription, tokenize(topic));
             }
         }
 
@@ -108,7 +107,7 @@ namespace Subscriber
             lock (this)
             {
                 Console.WriteLine("Unsubscrition on Topic: {0}", topic);
-                Subscriptions.UnSubscribe(new Subscription(name), tokenize(topic), true);
+                Subscriptions.UnSubscribe(new Subscription(name), tokenize(topic));
                 broker.UnSubscribe(this.name, true, topic);
             }
         }

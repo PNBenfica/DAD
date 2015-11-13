@@ -15,8 +15,6 @@ namespace CommonTypes
         private Dictionary<string, Topic<T>> subTopics;
         public HashSet<T> Subscribers { get; set; }
         public HashSet<T> SubscribersAllSubTopics { get; set; } // Subscribers that subscribes an entire topic
-        public HashSet<T> Brokers { get; set; }
-        public HashSet<T> BrokersAllSubTopics { get; set; } // Brokers that subscribes an entire topic
 
         #endregion
 
@@ -29,8 +27,6 @@ namespace CommonTypes
             this.subTopics = new Dictionary<string, Topic<T>>();
             this.Subscribers = new HashSet<T>();
             this.SubscribersAllSubTopics = new HashSet<T>();
-            this.Brokers = new HashSet<T>();
-            this.BrokersAllSubTopics = new HashSet<T>();
         }
         /// <summary>
         /// Is this the root "/"
@@ -69,22 +65,6 @@ namespace CommonTypes
         }
 
         /// <summary>
-        /// Get all the brokers with a path that leads to a subscriber
-        /// </summary>
-        public List<T> GetBrokers(String[] topic)
-        {
-            if (topic.Length == 0)
-                return GetTopicBrokers();
-
-            else
-            {
-                Topic<T> subTopic = GetSubTopic(topic[0]);
-                String[] restSubTopics = (String[])topic.Skip(1).ToArray(); // removes first element
-                return subTopic.GetBrokers(restSubTopics);
-            }
-        }
-
-        /// <summary>
         /// Get all of the subscribers interested in this topic:
         /// The ones who have specifically subscribe this topic (this.Subscribers)
         /// And the ones that have subscribe all topics ("/*") up in the tree
@@ -109,35 +89,11 @@ namespace CommonTypes
         }
 
         /// <summary>
-        /// Get all of the brokers interested in this topic:
-        /// The ones who have specifically subscribe this topic (this.Brokers)
-        /// And the ones that have subscribe all topics ("/*") up in the tree
-        /// </summary>
-        private List<T> GetTopicBrokers()
-        {
-            HashSet<T> brokers = AllSubTopicsBrokers();
-            brokers.UnionWith(Brokers);
-            return brokers.ToList();
-        }
-
-        /// <summary>
-        /// Get the brokers that have subscribe all topics
-        /// from this broker until the root
-        /// </summary>
-        private HashSet<T> AllSubTopicsBrokers()
-        {
-            HashSet<T> brokers = new HashSet<T>(BrokersAllSubTopics);
-            if (!IsRoot())
-                brokers.UnionWith(Parent.AllSubTopicsBrokers());
-            return brokers;
-        }
-
-        /// <summary>
         /// returns true if there is any interested (subscriber/broker) in the event
         /// </summary>
         public bool HaveSubscribers(String[] topic)
         {
-            return GetSubscribers(topic).Count() > 0 || GetBrokers(topic).Count > 0;
+            return GetSubscribers(topic).Count() > 0;
         }
 
         /// <summary>
@@ -154,10 +110,8 @@ namespace CommonTypes
         /// </summary>
         public void Status()
         {
-            PrintInfo("Subscriber", Subscribers);
-            PrintInfo("Subscriber '/*'", SubscribersAllSubTopics);
-            PrintInfo("Broker", Brokers);
-            PrintInfo("Broker '/*'", BrokersAllSubTopics);
+            PrintInfo("Single Subscription", Subscribers);
+            PrintInfo("Full Subscription", SubscribersAllSubTopics);
 
             foreach (Topic<T> subtopic in subTopics.Values)
                 subtopic.Status();
@@ -184,40 +138,36 @@ namespace CommonTypes
         /// Add a new subscrition
         /// </summary>
         /// <param name="processName">Name of the broker/subscriber</param>
-        /// <param name="isSubscriber">Type of the entitie interested</param>
-        public void Subscribe(T processName, String[] topicArray, bool isSubscriber)
+        public void Subscribe(T processName, String[] topicArray)
         {
             if (topicArray.Length == 0)
             {
-                addSubscrition(processName, isSubscriber);
+                addSubscrition(processName);
             }
             else if (topicArray.Length == 1 && topicArray[0].Equals("*")) // want to subscribe all
             {
-                SubscribeAll(processName, isSubscriber);
+                SubscribeAll(processName);
             }
             else
             {
-                SubscribeSubtopic(processName, topicArray, isSubscriber);
+                SubscribeSubtopic(processName, topicArray);
             }
         }
 
         /// <summary>
         /// Subscribes all the subtopics
         /// </summary>
-        private void SubscribeAll(T name, bool isSubscriber)
+        private void SubscribeAll(T name)
         {
             //if already exist a subscribe all in the tree
-            if (checkAlreadySubscribeAll(name, isSubscriber))
+            if (checkAlreadySubscribeAll(name))
             {
                 return;
             }
 
-            if (isSubscriber)
-                SubscribersAllSubTopics.Add(name);
-            else
-                BrokersAllSubTopics.Add(name);
+            SubscribersAllSubTopics.Add(name);
 
-            clearSubTopicsSubscribeAll(name, isSubscriber, true);
+            clearSubTopicsSubscribeAll(name, true);
         }
 
 
@@ -225,132 +175,99 @@ namespace CommonTypes
         /// Subscribes the subtopic
         /// </summary>
         /// <param name="topic"> ["subtopic", "sub-subtopic", ...] </param>
-        private void SubscribeSubtopic(T name, String[] topic, bool isSubscriber)
+        private void SubscribeSubtopic(T name, String[] topic)
         {
             Topic<T> subTopic = GetSubTopic(topic[0]);
             String[] restSubTopics = (String[])topic.Skip(1).ToArray(); // removes first element
-            subTopic.Subscribe(name, restSubTopics, isSubscriber);
+            subTopic.Subscribe(name, restSubTopics);
         }
 
         /// <summary>
         /// Add a subscriber/broker subscrition
         /// </summary>
-        private void addSubscrition(T name, bool isSubscriber)
+        private void addSubscrition(T name)
         {
-            if (isSubscriber)
-                Subscribers.Add(name);
-            else
-                Brokers.Add(name);
+            Subscribers.Add(name);
         }
 
-        public void clearSubTopicsSubscribeAll(T name, bool isSubscriber, bool isParentTopic)
+        public void clearSubTopicsSubscribeAll(T name, bool isParentTopic)
         {
             if (!isParentTopic)
             {
-                if (isSubscriber)
-                {
-                    SubscribersAllSubTopics.Remove(name);
-                }
-                else
-                {
-                    BrokersAllSubTopics.Remove(name);
-                }
+                SubscribersAllSubTopics.Remove(name);
             }
 
-            foreach (KeyValuePair<string, Topic<T>> entry in subTopics)
+            foreach (Topic<T> subTopic in subTopics.Values)
             {
-                entry.Value.clearSubTopicsSubscribeAll(name, isSubscriber, false);
+                subTopic.clearSubTopicsSubscribeAll(name, false);
             }
         }
 
-        public bool checkAlreadySubscribeAll(T name, bool isSubscriber)
+        public bool checkAlreadySubscribeAll(T name)
         {
-            if (isSubscriber && SubscribersAllSubTopics.Contains(name))
+            if (SubscribersAllSubTopics.Contains(name))
             {
                 return true;
             }
-            else if (!isSubscriber && BrokersAllSubTopics.Contains(name))
-            {
-                return true;
-            }
-            else if (!BrokersAllSubTopics.Contains(name) && !SubscribersAllSubTopics.Contains(name) && IsRoot())
+            else if (IsRoot())
             {
                 return false;
             }
             else
             {
-                return Parent.checkAlreadySubscribeAll(name, isSubscriber);
+                return Parent.checkAlreadySubscribeAll(name);
             }
         }
 
         #endregion
 
         #region unsubscribeTopic
-        private void removeSubscrition(T processName, bool isSubscriber)
+        private void removeSubscrition(T processName)
         {
-            if (isSubscriber)
-                Subscribers.Remove(processName);
-            else
-                Brokers.Remove(processName);
+            Subscribers.Remove(processName);
         }
 
-        public void UnSubscribe(T processName, string[] topicArray, bool isSubscriber)
+        public void UnSubscribe(T processName, string[] topicArray)
         {
             if (topicArray.Length == 0)
             {
-                removeSubscrition(processName, isSubscriber);
+                removeSubscrition(processName);
             }
             else if (topicArray.Length == 1 && topicArray[0].Equals("*")) // want to subscribe all
             {
-                UnSubscribeAll(processName, isSubscriber);
+                UnSubscribeAll(processName);
             }
             else
             {
-                UnSubscribeSubtopic(processName, topicArray, isSubscriber);
+                UnSubscribeSubtopic(processName, topicArray);
             }
         }
 
-        private void UnSubscribeAll(T processName, bool isSubscriber)
+        private void UnSubscribeAll(T processName)
         {
-            if (isSubscriber)
-            {
-                SubscribersAllSubTopics.Remove(processName);
-                UnsubscribeAllSubTopics(processName, isSubscriber, true);
-            }
-            else
-            {
-                BrokersAllSubTopics.Remove(processName);
-                UnsubscribeAllSubTopics(processName, isSubscriber, true);
-            }
+            SubscribersAllSubTopics.Remove(processName);
+            UnsubscribeAllSubTopics(processName, true);
         }
 
-        private void UnsubscribeAllSubTopics(T processName, bool isSubscriber, bool isParent)
+        private void UnsubscribeAllSubTopics(T processName, bool isParent)
         {
             if (!isParent)
             {
-                if (isSubscriber)
-                {
-                    Subscribers.Remove(processName);
-                    SubscribersAllSubTopics.Remove(processName);
-                }
-                else
-                {
-                    Brokers.Remove(processName);
-                    BrokersAllSubTopics.Remove(processName);
-                }
+                Subscribers.Remove(processName);
+                SubscribersAllSubTopics.Remove(processName);
             }
             foreach (Topic<T> topic in subTopics.Values)
             {
-                topic.UnsubscribeAllSubTopics(processName, isSubscriber, false);
+                topic.UnsubscribeAllSubTopics(processName, false);
             }
 
         }
 
-        private void UnSubscribeSubtopic(T processName, string[] topicArray, bool isSubscriber)
+        private void UnSubscribeSubtopic(T processName, string[] topicArray)
         {
             Topic<T> subTopic = GetSubTopic(topicArray[0]);
             String[] restSubTopics = (String[])topicArray.Skip(1).ToArray(); // removes first element
-            subTopic.UnSubscribe(processName, restSubTopics, isSubscriber);
+            subTopic.UnSubscribe(processName, restSubTopics);
         }
         #endregion      
     }

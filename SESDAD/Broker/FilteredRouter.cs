@@ -9,8 +9,12 @@ namespace Broker
 {
     class FilteredRouter : Router
     {
+
+        public Topic<String> BrokersSubscriptions { get; set; }
+
         public FilteredRouter(Broker broker) : base(broker)
         {
+            this.BrokersSubscriptions = new Topic<String>("/");
         }
 
         /// <summary>
@@ -18,7 +22,10 @@ namespace Broker
         /// </summary>
         public override DateTime addSubscrition(string name, bool isSubscriber, string topic)
         {
-            TopicManager.Subscribe(name, tokenize(topic), isSubscriber);
+            if (isSubscriber)
+                SubscribersSubscriptions.Subscribe(name, tokenize(topic));
+            else
+                BrokersSubscriptions.Subscribe(name, tokenize(topic));
 
             if (Broker.IsRoot())
             {
@@ -36,9 +43,12 @@ namespace Broker
         /// </summary>
         public override void deleteSubscrition(string name, bool isSubscriber, string topic)
         {
-            TopicManager.UnSubscribe(name, tokenize(topic), isSubscriber);
-            
-            bool parentNeedUpdate = !Broker.IsRoot() && !TopicManager.HaveSubscribers(tokenize(topic));
+            if (isSubscriber)
+                SubscribersSubscriptions.UnSubscribe(name, tokenize(topic));
+            else
+                BrokersSubscriptions.UnSubscribe(name, tokenize(topic));
+
+            bool parentNeedUpdate = !Broker.IsRoot() && !SubscribersSubscriptions.HaveSubscribers(tokenize(topic)) && !BrokersSubscriptions.HaveSubscribers(tokenize(topic));
             if (parentNeedUpdate)
             {
                 Broker.Parent.UnSubscribe(Broker.Name, false, topic);
@@ -51,10 +61,15 @@ namespace Broker
         /// </summary>
         public override List<String> GetBrokers(Event e)
         {
-            lock (TopicManager)
+            lock (SubscribersSubscriptions)
             {
-                return TopicManager.GetBrokers(tokenize(e.Topic));
+                return BrokersSubscriptions.GetSubscribers(tokenize(e.Topic));
             }
+        }
+
+        public override void BrokersSubscriptionsStatus()
+        {
+            BrokersSubscriptions.Status();
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Broker
 
         #region variables
         public Broker Broker { get; set; }
-        public Topic<String> TopicManager { get; set; }
+        public Topic<String> SubscribersSubscriptions { get; set; }
 
         #endregion
 
@@ -20,7 +20,7 @@ namespace Broker
         public Router(Broker broker)
         {
             this.Broker = broker;
-            this.TopicManager = new Topic<String>("/");
+            this.SubscribersSubscriptions = new Topic<String>("/");
         }
 
         /// <summary>
@@ -56,11 +56,21 @@ namespace Broker
 
         public List<String> GetSubscribers(Event e)
         {
-            lock (TopicManager)
+            lock (SubscribersSubscriptions)
             {
-                return TopicManager.GetSubscribers(tokenize(e.Topic));
+                return SubscribersSubscriptions.GetSubscribers(tokenize(e.Topic));
             }
         }
+
+
+        public void Status()
+        {
+            Console.WriteLine("--Subscribers Subscriptions--");
+            SubscribersSubscriptions.Status();
+            Console.WriteLine("--Brokers Subscriptions--");
+            BrokersSubscriptionsStatus();
+        }
+
         #endregion
 
         #region abstractMethods
@@ -68,9 +78,9 @@ namespace Broker
         public abstract List<String> GetBrokers(Event e);
         public abstract DateTime addSubscrition(String name, bool isSubscriber, String topic);
         public abstract void deleteSubscrition(String name, bool isSubscriber, String topic);
+        public abstract void BrokersSubscriptionsStatus();
 
         #endregion
-
 
     }
 }

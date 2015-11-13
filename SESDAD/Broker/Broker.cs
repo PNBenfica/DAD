@@ -185,8 +185,7 @@ namespace Broker
         {
             Console.WriteLine("\r\n<------Status------>");
             Console.WriteLine("Name: {0}", Name);
-            Console.WriteLine("--Subscriptions--");
-            Router.TopicManager.Status();
+            Router.Status();
             Console.WriteLine("");
         }
 

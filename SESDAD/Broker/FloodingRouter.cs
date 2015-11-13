@@ -20,7 +20,7 @@ namespace Broker
         /// </summary>
         public override DateTime addSubscrition(string name, bool isSubscriber, string topic)
         {
-            TopicManager.Subscribe(name, tokenize(topic), isSubscriber);
+            SubscribersSubscriptions.Subscribe(name, tokenize(topic));
             return DateTime.Now;
         }
 
@@ -29,7 +29,7 @@ namespace Broker
         /// </summary>
         public override void deleteSubscrition(string name, bool isSubscriber, string topic)
         {
-            TopicManager.UnSubscribe(name, tokenize(topic), isSubscriber);
+            SubscribersSubscriptions.UnSubscribe(name, tokenize(topic));
         }
 
 
@@ -40,6 +40,12 @@ namespace Broker
         {
             String[] brokers = Broker.Children.Keys.ToArray();
             return new List<string>(brokers);
+        }
+
+
+        public override void BrokersSubscriptionsStatus()
+        {
+            Console.WriteLine("Flooding to all Brokers");
         }
     }
 }

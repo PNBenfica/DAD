@@ -19,7 +19,6 @@ namespace Subscriber
         private IBroker broker;
         private IPuppetMasterURL puppetMaster;
         private string loggingLevel;
-        public OrderStrategy OrderStrategy { get; set; } // Guarantees that the message is delivered in the correct order
         public Topic<Subscription> Subscriptions { get; set; }
         #endregion
 
@@ -29,7 +28,6 @@ namespace Subscriber
         {
             this.name = name;
             this.url = url;
-            this.OrderStrategy = GetOrderByRefletion(ordering);
             this.puppetMaster = (IPuppetMasterURL)Activator.GetObject(typeof(IPuppetMasterURL), puppetMasterUrl);
             this.loggingLevel = loggingLevel;
             this.Subscriptions = new Topic<Subscription>("/");
@@ -68,14 +66,6 @@ namespace Subscriber
             if (subscriptions != null && subscriptions.Count > 0)
                 return subscriptions[0].TimeStamp;
             return DateTime.Now;
-        }
-
-        private OrderStrategy GetOrderByRefletion(string order)
-        {
-            order = "Subscriber." + Char.ToUpper(order[0]) + order.Substring(1).ToLower() + "Order";
-            Assembly assembly = Assembly.Load("Subscriber");
-            Type t = assembly.GetType(order);
-            return (OrderStrategy)Activator.CreateInstance(t, new Object[] { this });
         }
 
         /// <summary>
@@ -120,7 +110,7 @@ namespace Subscriber
         {
             lock (this)
             {
-                OrderStrategy.DeliverMessage(e);
+                PrintMessage(e);
             }
         }
 

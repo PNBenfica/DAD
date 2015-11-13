@@ -4,37 +4,60 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommonTypes;
+using System.Threading;
 
-namespace Subscriber
+namespace Broker
 {
     class FifoOrder: OrderStrategy
     {
 
         public Dictionary<string, int> PublishersPosts { get; set; }
-        public HashSet<string> HasPublisherInfo { get; set; } // if a publisher name is here this subscriber already received a message from him
-        public Dictionary<string, List<Event>> QueuedEvents { get; set; }
+        public Dictionary<string, List<Event>> QueuedEvents { get; set; } //queued events of a publisher
+        public Dictionary<string, Object> PublisherLocks { get; set; } //queued events of a publisher
 
 
-        public FifoOrder(Subscriber subscriber) 
-            : base(subscriber)
+        public FifoOrder(Broker broker) 
+            : base(broker)
         {
             this.PublishersPosts = new Dictionary<String, int>();
             this.QueuedEvents = new Dictionary<string, List<Event>>();
-            this.HasPublisherInfo = new HashSet<string>();
+            this.PublisherLocks = new Dictionary<string, Object>(); 
         }
 
 
-        public override void DeliverMessage(Event e)
+        public override void DeliverInOrder(Event e)
         {
             if (IsInOrder(e))
             {
                 UpdatePublisherPost(e);
-                Subscriber.PrintMessage(e);
+                RouteEvent(e);
                 ResendQueuedEvents(e.PublisherId);
             }
             else
             {
                 AddEventToQueue(e);
+            }
+        }
+
+        private void RouteEvent(Event e)
+        {
+            lock (this)
+            {
+                if (!PublisherLocks.ContainsKey(e.PublisherId))
+                    PublisherLocks[e.PublisherId] = new Object();
+
+                Thread thread = new Thread(() =>
+                {
+                    lock (PublisherLocks[e.PublisherId])
+                    {
+
+                        Console.WriteLine("Diffusing message {0} from {1}", e.Id, e.PublisherId);
+                        if (Broker.loggingLevel.ToLower().Equals("full"))
+                            Broker.puppetMaster.Log("BroEvent " + Broker.Name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
+                        Broker.Router.route(e);
+                    }
+                });
+                thread.Start();
             }
         }
 
@@ -59,8 +82,9 @@ namespace Subscriber
             {
                 bool wasSentBeforeNewEvent = previousEvent.Id < e.Id; // sent before the new event that arrived
                 bool wasSentAfterLastEvent = previousEvent.Id > GetNumPublisherPost(e.PublisherId); // sent after last event recorded of this publisher
-                bool isSubscribed = Subscriber.HasSubscrition(previousEvent.Topic);
-                bool subscribedBeforePublish = previousEvent.TimeStamp.CompareTo(Subscriber.TopicTimeStamp(previousEvent.Topic)) > 0;
+                bool isSubscribed = Broker.Router.HasSubscrition(previousEvent.Topic);
+                bool subscribedBeforePublish = true;
+                //bool subscribedBeforePublish = previousEvent.TimeStamp.CompareTo(Broker.TopicTimeStamp(previousEvent.Topic)) > 0;
 
                 if (wasSentBeforeNewEvent && wasSentAfterLastEvent && isSubscribed && subscribedBeforePublish)
                     return true;
@@ -118,7 +142,7 @@ namespace Subscriber
             {
                 Event nextEvent = queuedEvents[0];
                 RemoveEventFromQueue(nextEvent);
-                DeliverMessage(nextEvent);
+                DeliverInOrder(nextEvent);
             }
         }
 

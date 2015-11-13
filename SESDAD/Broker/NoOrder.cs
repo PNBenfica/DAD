@@ -5,18 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 using CommonTypes;
 
-namespace Subscriber
+namespace Broker
 {
     class NoOrder: OrderStrategy
     {
-        public NoOrder(Subscriber subscriber) 
-            : base(subscriber)
+        public NoOrder(Broker broker) 
+            : base(broker)
         {
         }
 
-        public override void DeliverMessage(Event e)
+        public override void DeliverInOrder(Event e)
         {
-            Subscriber.PrintMessage(e);
+            Broker.Router.route(e);
         }
     }
 }

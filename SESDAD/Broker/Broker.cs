@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CommonTypes;
 using System.Threading;
+using System.Reflection;
 
 namespace Broker
 {
@@ -13,8 +14,8 @@ namespace Broker
         #region variables
 
         private bool freeze = false;
-        private IPuppetMasterURL puppetMaster;
-        private string loggingLevel;
+        public IPuppetMasterURL puppetMaster;
+        public string loggingLevel;
         public String Name { get; set; }
         public String URL { get; set; }
         public IBroker Parent { get; set; }
@@ -23,6 +24,7 @@ namespace Broker
         public Dictionary<string, ISubscriber> Subscribers { get; set; }
         public List<Event> Events { get; set; }
         public Router Router { get; set; }
+        public OrderStrategy OrderStrategy { get; set; }
 
         #endregion
 
@@ -41,8 +43,10 @@ namespace Broker
             else
             {
                this.Router = new FloodingRouter(this);
-
            }
+
+            OrderStrategy = new FifoOrder(this);
+            //this.OrderStrategy = GetOrderByRefletion(ordering);
             this.Children = new Dictionary<string, IBroker>();
             this.Publishers = new List<IPublisher>();
             this.Subscribers = new Dictionary<string, ISubscriber>();
@@ -54,6 +58,14 @@ namespace Broker
         public bool IsRoot()
         {
             return this.Parent == null;
+        }
+
+        private OrderStrategy GetOrderByRefletion(string order)
+        {
+            order = "Broker." + Char.ToUpper(order[0]) + order.Substring(1).ToLower() + "Order";
+            Assembly assembly = Assembly.Load("Broker");
+            Type t = assembly.GetType(order);
+            return (OrderStrategy)Activator.CreateInstance(t, new Object[] { this });
         }
 
         #endregion
@@ -82,17 +94,7 @@ namespace Broker
         /// </summary>
         public void DiffuseMessage(Event e)
         {
-            Thread thread = new Thread(() =>
-            {
-                Console.WriteLine("Diffusing message {0} from {1}", e.Id, e.PublisherId);
-                if(this.loggingLevel.ToLower().Equals("full"))
-                    puppetMaster.Log("BroEvent " + this.Name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
-                Router.route(e);
-         
-            });
-            thread.Start();
-        
-
+            OrderStrategy.DeliverInOrder(e);
         }
 
         
@@ -109,8 +111,7 @@ namespace Broker
                 timeStamp = DateTime.Now;
                 e.TimeStamp = timeStamp;
                 Thread thread = new Thread(() => { this.DiffuseMessage(e); });
-                thread.Start();
-         
+                thread.Start();         
             }
 
             else

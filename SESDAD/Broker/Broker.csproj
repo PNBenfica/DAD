@@ -43,8 +43,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Broker.cs" />
+    <Compile Include="FifoOrder.cs" />
     <Compile Include="FilteredRouter.cs" />
     <Compile Include="FloodingRouter.cs" />
+    <Compile Include="NoOrder.cs" />
+    <Compile Include="OrderStrategy.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Router.cs" />

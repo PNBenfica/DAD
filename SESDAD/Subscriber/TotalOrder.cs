@@ -5,16 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using CommonTypes;
 
-namespace Subscriber
+namespace Broker
 {
     class TotalOrder : OrderStrategy
     {
-        public TotalOrder(Subscriber subscriber) 
-            : base(subscriber) 
+        public TotalOrder(Broker broker) 
+            : base(broker) 
         { 
         }
 
-        public override void DeliverMessage(Event e)
+        public override void DeliverInOrder(Event e)
         {
             throw new NotImplementedException();
         }

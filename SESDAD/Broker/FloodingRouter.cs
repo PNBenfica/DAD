@@ -47,5 +47,13 @@ namespace Broker
         {
             Console.WriteLine("Flooding to all Brokers");
         }
+
+        /// <summary>
+        /// Always true. The current broker is expecting every events
+        /// </summary>
+        public override bool HasSubscrition(String topic)
+        {
+            return true;
+        }
     }
 }

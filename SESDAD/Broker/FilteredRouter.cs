@@ -71,5 +71,11 @@ namespace Broker
         {
             BrokersSubscriptions.Status();
         }
+
+        public override bool HasSubscrition(string topic)
+        {
+            String[] topicTokens = tokenize(topic);
+            return SubscribersSubscriptions.HaveSubscribers(topicTokens) || BrokersSubscriptions.HaveSubscribers(topicTokens);
+        }
     }
 }

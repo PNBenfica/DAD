@@ -76,13 +76,20 @@ namespace Broker
         #region abstractMethods
 
         public abstract List<String> GetBrokers(Event e);
-        public abstract DateTime addSubscrition(String name, bool isSubscriber, String topic);
+        public abstract DateTime addSubscrition(String name, bool isSubscriber, String topic, bool isClimbing);
         public abstract void deleteSubscrition(String name, bool isSubscriber, String topic);
         public abstract bool HasSubscrition(String topic);
         public abstract void BrokersSubscriptionsStatus();
-
+        public abstract void notifyChildrenOfSubscription(string name, string topic, bool isClimbing = false);
+        public abstract bool checkParentInterested(string topic);
         #endregion
 
 
+
+
+
+
+
+        
     }
 }

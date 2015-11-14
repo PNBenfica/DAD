@@ -11,21 +11,26 @@ namespace Broker
     {
 
         public Topic<String> BrokersSubscriptions { get; set; }
+        public Topic<String> ParentsInterested { get; set; }
 
         public FilteredRouter(Broker broker) : base(broker)
         {
             this.BrokersSubscriptions = new Topic<String>("/");
+            this.ParentsInterested = new Topic<String>("/");
         }
 
         /// <summary>
         /// Updates Topic manager and propagtes subscrition up the tree
         /// </summary>
-        public override DateTime addSubscrition(string name, bool isSubscriber, string topic)
+        public override DateTime addSubscrition(string name, bool isSubscriber, string topic, bool isClimbing)
         {
             if (isSubscriber)
                 SubscribersSubscriptions.Subscribe(name, tokenize(topic));
             else
                 BrokersSubscriptions.Subscribe(name, tokenize(topic));
+
+            //notify every child
+            notifyChildrenOfSubscription(name, topic, true);
 
             if (Broker.IsRoot())
             {
@@ -33,7 +38,7 @@ namespace Broker
             }
             else
             {
-                return Broker.Parent.Subscribe(Broker.Name, false, topic);
+                return Broker.Parent.Subscribe(Broker.Name, false, topic, true);
             }
         }
 
@@ -76,6 +81,27 @@ namespace Broker
         {
             String[] topicTokens = tokenize(topic);
             return SubscribersSubscriptions.HaveSubscribers(topicTokens) || BrokersSubscriptions.HaveSubscribers(topicTokens);
+        }
+
+        public override void notifyChildrenOfSubscription(string name, string topic, bool isClimbing)
+        {
+            //only add if was the parent calling
+            if (!isClimbing)
+            {
+                this.ParentsInterested.Subscribe(Broker.Name, tokenize(topic));
+            }
+            foreach (KeyValuePair<string, IBroker> brokerChild in Broker.Children)
+            {
+                if (!brokerChild.Key.Equals(name))
+                {
+                    brokerChild.Value.notifyChildrenOfSubscription(brokerChild.Key, topic);
+                }
+            }
+        }
+
+        public override bool checkParentInterested(String topic)
+        {
+            return this.ParentsInterested.HasSubscrition(this.Broker.Name, tokenize(topic));
         }
     }
 }

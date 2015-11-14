@@ -19,6 +19,7 @@ namespace Broker
         public String Name { get; set; }
         public String URL { get; set; }
         public IBroker Parent { get; set; }
+        public String ParentName { get; set; }
         public Dictionary<string, IBroker> Children { get; set; }
         public List<IPublisher> Publishers { get; set; }
         public Dictionary<string, ISubscriber> Subscribers { get; set; }
@@ -72,12 +73,12 @@ namespace Broker
 
         #region remoteMethods
 
-        public DateTime Subscribe(String Id, bool isSubscriber, String topic)
+        public DateTime Subscribe(String Id, bool isSubscriber, String topic, bool isClimbing = false)
         {
             lock (this)
             {
                 Console.WriteLine("New subscrition from: {0} on topic: {1}", Id, topic);
-                return Router.addSubscrition(Id, isSubscriber, topic);
+                return Router.addSubscrition(Id, isSubscriber, topic, isClimbing);
             }
         }
 
@@ -105,18 +106,19 @@ namespace Broker
         {
             DateTime timeStamp;
             bool root = IsRoot();
-         
-            if(root)
+
+            //start difusing if is root or parent not interested
+            if (root || (Router.GetType() == typeof(FilteredRouter) && !checkParentInterested(e.Topic)))
             {
                 timeStamp = DateTime.Now;
                 e.TimeStamp = timeStamp;
                 Thread thread = new Thread(() => { this.DiffuseMessage(e); });
                 thread.Start();         
             }
-
             else
             {
-                timeStamp = this.Parent.DiffuseMessageToRoot(e);
+                    timeStamp = this.Parent.DiffuseMessageToRoot(e);
+                
             }
 
             return timeStamp;
@@ -191,5 +193,16 @@ namespace Broker
         }
 
         #endregion
+
+        public void notifyChildrenOfSubscription(string name, string topic, bool isClimbing = false)
+        {
+            Router.notifyChildrenOfSubscription(name, topic, isClimbing);
+        }
+
+
+        public bool checkParentInterested(string topic)
+        {
+            return Router.checkParentInterested(topic);
+        }
     }
 }

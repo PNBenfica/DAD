@@ -62,7 +62,6 @@ namespace Broker
             }
         }
 
-
         public void Status()
         {
             Console.WriteLine("--Subscribers Subscriptions--");
@@ -81,15 +80,7 @@ namespace Broker
         public abstract bool HasSubscrition(String topic);
         public abstract void BrokersSubscriptionsStatus();
         public abstract void notifyChildrenOfSubscription(string name, string topic, bool isClimbing = false);
-        public abstract bool checkParentInterested(string topic);
+        public abstract bool IsParentInterested(string topic);
         #endregion
-
-
-
-
-
-
-
-        
     }
 }

@@ -61,7 +61,7 @@ namespace Broker
             return;
         }
 
-        public override bool checkParentInterested(string topic)
+        public override bool IsParentInterested(string topic)
         {
             return true;
         }

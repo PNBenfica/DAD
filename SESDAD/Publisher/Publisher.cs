@@ -108,7 +108,7 @@ namespace Publisher
             lock (this)
             {
                 Event ev = ProduceEvent(topic, content);
-                DateTime timeStamp = broker.DiffuseMessageToRoot(ev);
+                DateTime timeStamp = broker.Publish(ev);
                 ev.TimeStamp = timeStamp;
                 UpdatePreviousEvents(ev);
                 puppetMaster.Log("PubEvent " + this.Name + ", " + this.Name + ", " + ev.Topic + ", " + this.NumberOfEvents); // faz sentido meter duas vezes o nome do processo? no enunciado esta

@@ -50,10 +50,7 @@ namespace Broker
                 {
                     lock (PublisherLocks[e.PublisherId])
                     {
-
-                        Console.WriteLine("Diffusing message {0} from {1}", e.Id, e.PublisherId);
-                        if (Broker.loggingLevel.ToLower().Equals("full"))
-                            Broker.puppetMaster.Log("BroEvent " + Broker.Name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
+                        Broker.Log(e);
                         Broker.Router.route(e);
                     }
                 });

@@ -11,12 +11,12 @@ namespace Broker
     {
 
         public Topic<String> BrokersSubscriptions { get; set; }
-        public Topic<String> ParentsInterested { get; set; }
+        public Topic<String> ParentSubscriptions { get; set; }
 
         public FilteredRouter(Broker broker) : base(broker)
         {
             this.BrokersSubscriptions = new Topic<String>("/");
-            this.ParentsInterested = new Topic<String>("/");
+            this.ParentSubscriptions = new Topic<String>("/");
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace Broker
             //only add if was the parent calling
             if (!isClimbing)
             {
-                this.ParentsInterested.Subscribe(Broker.Name, tokenize(topic));
+                this.ParentSubscriptions.Subscribe(Broker.Name, tokenize(topic));
             }
             foreach (KeyValuePair<string, IBroker> brokerChild in Broker.Children)
             {
@@ -99,9 +99,9 @@ namespace Broker
             }
         }
 
-        public override bool checkParentInterested(String topic)
+        public override bool IsParentInterested(String topic)
         {
-            return this.ParentsInterested.HasSubscrition(this.Broker.Name, tokenize(topic));
+            return this.ParentSubscriptions.HasSubscrition(this.Broker.Name, tokenize(topic));
         }
     }
 }

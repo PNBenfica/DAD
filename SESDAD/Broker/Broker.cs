@@ -15,7 +15,7 @@ namespace Broker
 
         private bool freeze = false;
         public IPuppetMasterURL puppetMaster;
-        public string loggingLevel;
+        private bool FullLogging;
         public String Name { get; set; }
         public String URL { get; set; }
         public IBroker Parent { get; set; }
@@ -27,6 +27,8 @@ namespace Broker
         public Router Router { get; set; }
         public OrderStrategy OrderStrategy { get; set; }
 
+        public const int UNDEFINEDID = -1;
+
         #endregion
 
         #region classUtils
@@ -36,7 +38,7 @@ namespace Broker
             this.Name = name;
             this.URL = url;
             this.puppetMaster = (IPuppetMasterURL)Activator.GetObject(typeof(IPuppetMasterURL), puppetMasterUrl);
-            this.loggingLevel = loggingLevel;
+            this.FullLogging = loggingLevel.ToLower().Equals("full");
             if (router.Equals("filter"))
             {
                 this.Router = new FilteredRouter(this);
@@ -46,7 +48,7 @@ namespace Broker
                this.Router = new FloodingRouter(this);
            }
 
-            OrderStrategy = new FifoOrder(this);
+            OrderStrategy = new TotalOrder(this);
             //this.OrderStrategy = GetOrderByRefletion(ordering);
             this.Children = new Dictionary<string, IBroker>();
             this.Publishers = new List<IPublisher>();
@@ -68,6 +70,16 @@ namespace Broker
             Type t = assembly.GetType(order);
             return (OrderStrategy)Activator.CreateInstance(t, new Object[] { this });
         }
+
+
+
+        public void Log(Event e)
+        {
+            Console.WriteLine("Diffusing message {0} from {1}", e.Id, e.PublisherId);
+            if (FullLogging)
+                puppetMaster.Log("BroEvent " + Name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
+        }
+
 
         #endregion
 
@@ -95,7 +107,12 @@ namespace Broker
         /// </summary>
         public void DiffuseMessage(Event e)
         {
-            OrderStrategy.DeliverInOrder(e);
+            Console.WriteLine("->->->->->->->->->->->->->->->->->->->->->->->->->->  " + e.Id);
+            Thread thread = new Thread(() =>
+            {
+                OrderStrategy.DeliverInOrder(e);
+            });
+            thread.Start();
         }
 
         
@@ -105,10 +122,9 @@ namespace Broker
         public DateTime DiffuseMessageToRoot(Event e)
         {
             DateTime timeStamp;
-            bool root = IsRoot();
 
             //start difusing if is root or parent not interested
-            if (root || (Router.GetType() == typeof(FilteredRouter) && !checkParentInterested(e.Topic)))
+            if (IsRoot() || !IsParentInterested(e.Topic))
             {
                 timeStamp = DateTime.Now;
                 e.TimeStamp = timeStamp;
@@ -117,12 +133,29 @@ namespace Broker
             }
             else
             {
-                    timeStamp = this.Parent.DiffuseMessageToRoot(e);
-                
+                timeStamp = this.Parent.DiffuseMessageToRoot(e);                
             }
 
             return timeStamp;
         }
+
+
+
+        /// <summary>
+        /// Receive a new event from a publisher
+        /// It must send it to the root, and atach info to that event
+        /// No order does nothing, Fifo does nothing, Total order makes ID undefined
+        /// </summary>
+        public DateTime Publish(Event e)
+        {
+            if (OrderStrategy is TotalOrder)
+            {
+                e.Id = UNDEFINEDID;
+                e.PreviousEvents = new List<Event>();
+            }
+            return DiffuseMessageToRoot(e);
+        }
+
 
         /// <summary>
         /// Notify the broker parent that he has a new born child
@@ -200,9 +233,9 @@ namespace Broker
         }
 
 
-        public bool checkParentInterested(string topic)
+        public bool IsParentInterested(string topic)
         {
-            return Router.checkParentInterested(topic);
+            return Router.IsParentInterested(topic);
         }
     }
 }

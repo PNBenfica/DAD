@@ -28,10 +28,10 @@ namespace PuppetMaster
             System.Diagnostics.Process.Start(startInfo);
         }
 
-        public void startBrokerProcess(String processName, String processUrl, String brokerUrl, String router, String puppetMasterUrl,  String logginglevel)
+        public void startBrokerProcess(String processName, String processUrl, String brokerUrl, String[] neighbourBrokers, String router, String puppetMasterUrl, String logginglevel)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.Arguments = "" + processName + " " + processUrl + " " + brokerUrl + " " + router + " " + puppetMasterUrl + " " + logginglevel;
+            startInfo.Arguments = "" + processName + " " + processUrl + " " + brokerUrl + " " + neighbourBrokers[0] + " " + neighbourBrokers[1] + " " + router + " " + puppetMasterUrl + " " + logginglevel;
             Console.WriteLine(startInfo.Arguments);
             startInfo.FileName = @"Broker.exe";
             System.Diagnostics.Process.Start(startInfo);

@@ -97,6 +97,7 @@ namespace PuppetMaster
                 if (process.Type.Equals("broker"))
                 {
                     process.BrokerUrl = getBrokerParentUrl(process.Site, sites, processes);
+                    process.NeighbourBrokers = getBrokersOfSite(process.Site,process.Name, processes);
                 }
                 else
                 {
@@ -108,7 +109,26 @@ namespace PuppetMaster
             return configurations;
         }
 
-        private string getBrokerParentUrl(string siteName, List<Site> sites, List<Process> processes)
+        private String[] getBrokersOfSite(String site, String processName, List<Process> processes)
+        {
+            int i = 0;
+            String[] siteBrokersUrl = new String[2];
+            foreach (Process p in processes)
+            {
+                if (!p.Name.Equals(processName) && p.Site.Equals(site))
+                {
+                    siteBrokersUrl[i] = p.Name;
+                    i++;
+                }
+                if (i == 2)
+                {
+                    return siteBrokersUrl;
+                }
+            }
+            return siteBrokersUrl;
+        }
+
+        private String getBrokerParentUrl(string siteName, List<Site> sites, List<Process> processes)
         {
             String parentSite = "";
             foreach(Site site in sites)

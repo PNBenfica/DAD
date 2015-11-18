@@ -56,7 +56,7 @@ namespace PuppetMaster
                 Console.WriteLine(process.Type);
                 if (process.Type.Equals("broker"))
                 {
-                    processCreator.startBrokerProcess(process.Name, process.Url, process.BrokerUrl, configurations.RoutingPolicy, centralPuppetMasterUrl, configurations.LoggingLevel);
+                    processCreator.startBrokerProcess(process.Name, process.Url, process.BrokerUrl, process.NeighbourBrokers, configurations.RoutingPolicy, centralPuppetMasterUrl, configurations.LoggingLevel);
                     puppetMaster.AddBroker(process.Name, process.Url);
                 }
                 else if (process.Type.Equals("publisher"))

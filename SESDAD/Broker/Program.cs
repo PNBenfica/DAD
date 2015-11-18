@@ -23,11 +23,12 @@ namespace Broker
             String name = args[0];
             String url = args[1];
             String parentUrl = args[2];
-            String router = args[3];
-            String puppetMasterUrl = args[4];
-            String loggingLevel = args[5];
-            String siteBroker1Url = args[6];
-            String siteBroker2Url = args[7];
+            String siteBroker1Url = args[3];
+            String siteBroker2Url = args[4];
+            String router = args[5];
+            String puppetMasterUrl = args[6];
+            String loggingLevel = args[7];
+
 
             char[] delimiterChars = { ':', '/' }; // "tcp://1.2.3.4:3333/broker"
             string[] urlSplit = url.Split(delimiterChars);

@@ -12,6 +12,7 @@ namespace PuppetMaster
         private String siteName;
         private String url;
         private String brokerUrl;
+        public String[] NeighbourBrokers { get; set; }
 
        
 
@@ -60,6 +61,8 @@ namespace PuppetMaster
         {
             return "name: " + name + " type: " + type + " siteName: " + siteName + " Url: " + url + "\r\n";
         }
+
+
 
     }
 }

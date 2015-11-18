@@ -217,8 +217,10 @@ namespace Broker
         }
 
 
+        #region Replication
+
         /// <summary>
-        /// Register his brothers
+        /// Register the other brokers of this site and elects the new primary broker
         /// </summary>
         public void RegisterSiteBrokers(string siteBroker1Url, string siteBroker2Url)
         {
@@ -228,16 +230,11 @@ namespace Broker
             SiteBrokers.Add(siteBroker1Url, broker1);
             SiteBrokers.Add(siteBroker2Url, broker2);
             ElectSiteLeader();
-            Console.WriteLine(IsPrimaryBroker? "Primary Broker of the site": "Replication Broker of the site");
-
-            if (IsPrimaryBroker)
-                StartPing();
-            else
-                SetSecondaryBrokerTimer();
         }
 
         /// <summary>
         /// Elect the new site leader. Criteria: highest port number
+        /// If it is leader it starts sending Im alives else starts a timer to wait for them
         /// </summary>
         public void ElectSiteLeader()
         {
@@ -254,55 +251,124 @@ namespace Broker
                     this.PrimaryBroker = this.SiteBrokers[url];
                 }
             }
+
+            if (IsPrimaryBroker)
+                StartPing();
+            else
+                SetSecondaryBrokerTimer();
+            Console.WriteLine(IsPrimaryBroker ? "Primary Broker of the site" : "Replication Broker of the site");
         }
         
 
+        /// <summary>
+        /// Creates a thread in the primary broker that sends I'm alives to the secondary brokers
+        /// </summary>
         private void StartPing()
         {
-            ThreadStart ts = new ThreadStart(this.PingSiteBrokers);
+            ThreadStart ts = new ThreadStart(this.SendImAlives);
             this.PingThread = new Thread(ts);
             this.PingThread.Start();
         }
 
-        private void PingSiteBrokers()
+
+        /// <summary>
+        /// Sends a Im Alive message every 1500 ms
+        /// If a replication broker is down it is removed from the list
+        /// </summary>
+        private void SendImAlives()
         {
             while (true)
             {
-                foreach (IBroker broker in SiteBrokers.Values)
-                    broker.ReceivePing();
+                foreach (IBroker broker in new List<IBroker>(SiteBrokers.Values)) // removing while iterating... better create a new list
+                {
+                    Thread thread = new Thread(() => 
+                    {
+                        try
+                        {
+                            broker.ReceiveImAlive();
+                        }
+                        catch (System.Net.Sockets.SocketException) // this exception could take a while, so we send all Im alives in different threads
+                        {
+                            RemoveSiteBroker(broker);
+                        }
+                    });
+                    thread.Start(); 
+                }
                 Thread.Sleep(1500);
             }
         }
 
-        public void ReceivePing()
+
+        /// <summary>
+        /// When a secondary broker receives an Im alive from the primary broker the timer is reset
+        /// </summary>
+        public void ReceiveImAlive()
         {
             RestartTimer();
             Console.WriteLine("Ping From Leader");
         }
 
 
-
-        private void SetSecondaryBrokerTimer()
-        {
-            SecondaryBrokerTimer = new System.Timers.Timer(3000);
-            SecondaryBrokerTimer.Elapsed += OnTimedEvent;
-            SecondaryBrokerTimer.AutoReset = true;
-            SecondaryBrokerTimer.Enabled = true;
-        }
-
-        private void OnTimedEvent(Object source, ElapsedEventArgs e)
-        {
-            Console.WriteLine("The Elapsed event was raised at {0:HH:mm:ss.fff}",
-                              e.SignalTime);
-        }
-
+        /// <summary>
+        /// The timer start the counting from zeroooo
+        /// </summary>
         private void RestartTimer()
         {
             SecondaryBrokerTimer.Stop();
             SecondaryBrokerTimer.Start();
         }
+        
+
+        /// <summary>
+        /// The timer starts counting until 3000ms, if there is no Im alive message 
+        /// from the leader lets pick another one
+        /// </summary>
+        private void SetSecondaryBrokerTimer()
+        {
+            SecondaryBrokerTimer = new System.Timers.Timer(3000);
+            SecondaryBrokerTimer.Elapsed += ReElectSiteLider;
+            SecondaryBrokerTimer.AutoReset = true;
+            SecondaryBrokerTimer.Enabled = true;
+        }
 
 
+        /// <summary>
+        /// If the primary broker is down its time to elect a new leader
+        /// </summary>
+        private void ReElectSiteLider(Object source, ElapsedEventArgs e)
+        {
+            Console.WriteLine("Primary server gone down. Re-electing...");
+            SecondaryBrokerTimer.Enabled = false;
+            RemoveSiteBroker(this.PrimaryBroker);
+            if (SiteBrokers.Count == 1) // check if the other broker is alive
+            {
+                try { SiteBrokers[SiteBrokers.Keys.First()].IsAlive(); }
+                catch (System.Net.Sockets.SocketException)
+                { RemoveSiteBroker(SiteBrokers[SiteBrokers.Keys.First()]); }
+            }
+            ElectSiteLeader();
+        }
+
+
+        /// <summary>
+        /// Removes a broker from the Site Brokers list
+        /// </summary>
+        private void RemoveSiteBroker(IBroker broker)
+        {
+            var entry = SiteBrokers.FirstOrDefault(kvp => kvp.Value == broker);
+            if (entry.Key != null)
+                SiteBrokers.Remove(entry.Key);
+        }
+
+
+        /// <summary>
+        /// Dumb Method Just to say that it is Alive
+        /// </summary>
+        public void IsAlive()
+        {
+        }
+
+        #endregion
 
         public void Freeze()
         {

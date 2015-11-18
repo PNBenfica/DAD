@@ -16,7 +16,8 @@ namespace CommonTypes
         DateTime DiffuseMessageToRoot(Event even);
         DateTime Publish(Event e);
 
-        void ReceivePing();
+        void ReceiveImAlive();
+        void IsAlive();
 
         void registerNewChild(string name, string url);
         void registerPublisher(string url);

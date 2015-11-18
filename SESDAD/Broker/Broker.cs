@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CommonTypes;
 using System.Threading;
 using System.Reflection;
+using System.Timers;
 
 namespace Broker
 {
@@ -18,12 +19,21 @@ namespace Broker
         private bool FullLogging;
         public String Name { get; set; }
         public String URL { get; set; }
+        public int Port { get; set; }
+
         public IBroker Parent { get; set; }
         public String ParentName { get; set; }
         public Dictionary<string, IBroker> Children { get; set; }
+
+        public Dictionary<string, IBroker> SiteBrokers { get; set; }
+        public bool IsPrimaryBroker { get; set; }
+        public IBroker PrimaryBroker { get; set; }
+        public Thread PingThread { get; set; } // thread used by primary broker to ping secondaries
+        private System.Timers.Timer SecondaryBrokerTimer { get; set; } // timer used by secondaries to see how long the primary broker send the last ping
+
         public List<IPublisher> Publishers { get; set; }
         public Dictionary<string, ISubscriber> Subscribers { get; set; }
-        public List<Event> Events { get; set; }
+
         public Router Router { get; set; }
         public OrderStrategy OrderStrategy { get; set; }
 
@@ -37,6 +47,7 @@ namespace Broker
         {
             this.Name = name;
             this.URL = url;
+            this.Port = GetPortFromURL(url);
             this.puppetMaster = (IPuppetMasterURL)Activator.GetObject(typeof(IPuppetMasterURL), puppetMasterUrl);
             this.FullLogging = loggingLevel.ToLower().Equals("full");
             if (router.Equals("filter"))
@@ -71,6 +82,14 @@ namespace Broker
             return (OrderStrategy)Activator.CreateInstance(t, new Object[] { this });
         }
 
+
+        private int GetPortFromURL(string url)
+        {
+            char[] delimiterChars = { ':', '/' }; // "tcp://1.2.3.4:3333/broker"
+            string[] urlSplit = url.Split(delimiterChars);
+            int port = Convert.ToInt32(urlSplit[4]);
+            return port;
+        }
 
 
         public void Log(Event e)
@@ -107,7 +126,6 @@ namespace Broker
         /// </summary>
         public void DiffuseMessage(Event e)
         {
-            Console.WriteLine("->->->->->->->->->->->->->->->->->->->->->->->->->->  " + e.Id);
             Thread thread = new Thread(() =>
             {
                 OrderStrategy.DeliverInOrder(e);
@@ -179,6 +197,7 @@ namespace Broker
             Console.WriteLine("New child broker registed: {0}", url);
         }
 
+
         public void registerPublisher(string url)
         {
             IPublisher publisher = (IPublisher)Activator.GetObject(typeof(IPublisher), url);
@@ -196,6 +215,93 @@ namespace Broker
             Subscribers.Add(name, subscriber);
             Console.WriteLine("New subscriber registed: {0}", url);
         }
+
+
+        /// <summary>
+        /// Register his brothers
+        /// </summary>
+        public void RegisterSiteBrokers(string siteBroker1Url, string siteBroker2Url)
+        {
+            IBroker broker1 = (IBroker)Activator.GetObject(typeof(IBroker), siteBroker1Url);
+            IBroker broker2 = (IBroker)Activator.GetObject(typeof(IBroker), siteBroker2Url);
+            SiteBrokers = new Dictionary<string, IBroker>();
+            SiteBrokers.Add(siteBroker1Url, broker1);
+            SiteBrokers.Add(siteBroker2Url, broker2);
+            ElectSiteLeader();
+            Console.WriteLine(IsPrimaryBroker? "Primary Broker of the site": "Replication Broker of the site");
+
+            if (IsPrimaryBroker)
+                StartPing();
+            else
+                SetSecondaryBrokerTimer();
+        }
+
+        /// <summary>
+        /// Elect the new site leader. Criteria: highest port number
+        /// </summary>
+        public void ElectSiteLeader()
+        {
+            int newLeaderPort = this.Port;
+            this.IsPrimaryBroker = true;
+            this.PrimaryBroker = null;
+
+            foreach (string url in this.SiteBrokers.Keys)
+            {
+                int siteBrokerPort = GetPortFromURL(url);
+                if (siteBrokerPort > newLeaderPort){
+                    newLeaderPort = siteBrokerPort;
+                    this.IsPrimaryBroker = false;
+                    this.PrimaryBroker = this.SiteBrokers[url];
+                }
+            }
+        }
+        
+
+        private void StartPing()
+        {
+            ThreadStart ts = new ThreadStart(this.PingSiteBrokers);
+            this.PingThread = new Thread(ts);
+            this.PingThread.Start();
+        }
+
+        private void PingSiteBrokers()
+        {
+            while (true)
+            {
+                foreach (IBroker broker in SiteBrokers.Values)
+                    broker.ReceivePing();
+                Thread.Sleep(1500);
+            }
+        }
+
+        public void ReceivePing()
+        {
+            RestartTimer();
+            Console.WriteLine("Ping From Leader");
+        }
+
+
+
+        private void SetSecondaryBrokerTimer()
+        {
+            SecondaryBrokerTimer = new System.Timers.Timer(3000);
+            SecondaryBrokerTimer.Elapsed += OnTimedEvent;
+            SecondaryBrokerTimer.AutoReset = true;
+            SecondaryBrokerTimer.Enabled = true;
+        }
+
+        private void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            Console.WriteLine("The Elapsed event was raised at {0:HH:mm:ss.fff}",
+                              e.SignalTime);
+        }
+
+        private void RestartTimer()
+        {
+            SecondaryBrokerTimer.Stop();
+            SecondaryBrokerTimer.Start();
+        }
+
 
 
         public void Freeze()

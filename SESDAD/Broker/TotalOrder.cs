@@ -30,15 +30,16 @@ namespace Broker
         {
             if (e.Id == UNDEFINEDID)
             {
-                e.Id = ++SequenceID;
-                RouteEvent(e);
+                lock (this)
+                    RouteEvent(e);
             }
 
             else if (IsInOrder(e))
             {
-                ReceivedEvents++;
-                e.Id = ++SequenceID;
-                RouteEvent(e);
+                lock (this) { 
+                    ReceivedEvents++;
+                    RouteEvent(e);
+                }
                 ResendQueuedEvents();
             }
             else
@@ -50,13 +51,11 @@ namespace Broker
 
         private void RouteEvent(Event e)
         {
-            lock (this)
-            {
-                e.PreviousEvents = new List<Event>(SentEvents.Skip(SentEvents.Count - 10).Take(10));
-                SentEvents.Add(new Event(e.Id, e.TimeStamp, e.PublisherId, e.Topic));
-                Broker.Log(e);
-                Broker.Router.route(e);
-            }
+            e.Id = ++SequenceID;
+            e.PreviousEvents = new List<Event>(SentEvents.Skip(SentEvents.Count - 10).Take(10));
+            SentEvents.Add(new Event(e.Id, e.TimeStamp, e.PublisherId, e.Topic));
+            Broker.Log(e);
+            Broker.Router.route(e);
         }
 
 

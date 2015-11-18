@@ -15,6 +15,9 @@ namespace CommonTypes
         void DiffuseMessage(Event even);
         DateTime DiffuseMessageToRoot(Event even);
         DateTime Publish(Event e);
+
+        void ReceivePing();
+
         void registerNewChild(string name, string url);
         void registerPublisher(string url);
         void registerSubscriber(string name, string url);

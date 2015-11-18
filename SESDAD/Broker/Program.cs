@@ -26,6 +26,8 @@ namespace Broker
             String router = args[3];
             String puppetMasterUrl = args[4];
             String loggingLevel = args[5];
+            String siteBroker1Url = args[6];
+            String siteBroker2Url = args[7];
 
             char[] delimiterChars = { ':', '/' }; // "tcp://1.2.3.4:3333/broker"
             string[] urlSplit = url.Split(delimiterChars);
@@ -46,6 +48,8 @@ namespace Broker
             {
                 broker.notifyParent(parentUrl);
             }
+
+            broker.RegisterSiteBrokers(siteBroker1Url, siteBroker2Url);
 
             Console.ReadLine();
         }

@@ -10,6 +10,7 @@ namespace CommonTypes
     {
         DateTime Subscribe(String name, bool isSubscriber, String topic, bool isClimbing = false);
         bool IsParentInterested(String topic);
+        string PrimaryBrokerUrl();
         void notifyChildrenOfSubscription(String name, String topic, bool isClimbing = false);
         void UnSubscribe(String name, bool isSubscriber, String topic);
         void DiffuseMessage(Event even);

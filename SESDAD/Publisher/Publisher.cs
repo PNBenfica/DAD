@@ -15,16 +15,18 @@ namespace Publisher
 
         public String Name { get; set; }
         private String url;
-        private IBroker broker;
+        private IBroker primaryBroker;
+        private List<string> secondariesBrokers = new List<string>();
         public Queue<Event> PreviousEvents { get; set; }
         public int NumberOfEvents { get; set; }
-        private const int MAXEVENTSQUEUE = 10;
+        private string loggingLevel;
 
         private bool isFrozen = false;
         Object freezeLock = new Object();
         AutoResetEvent notFreezed = new AutoResetEvent(true);
         private IPuppetMasterURL puppetMaster;
-        private string loggingLevel;
+
+        private const int MAXEVENTSQUEUE = 10;
 
         #endregion variables
 
@@ -107,11 +109,23 @@ namespace Publisher
         {
             lock (this)
             {
+                bool published = false;
                 Event ev = ProduceEvent(topic, content);
-                DateTime timeStamp = broker.Publish(ev);
-                ev.TimeStamp = timeStamp;
-                UpdatePreviousEvents(ev);
-                puppetMaster.Log("PubEvent " + this.Name + ", " + this.Name + ", " + ev.Topic + ", " + this.NumberOfEvents); // faz sentido meter duas vezes o nome do processo? no enunciado esta
+                while (!published)
+                {
+                    try
+                    {
+                        DateTime timeStamp = primaryBroker.Publish(ev);
+                        ev.TimeStamp = timeStamp;
+                        UpdatePreviousEvents(ev);
+                        published = true;
+                        //puppetMaster.Log("PubEvent " + this.Name + ", " + this.Name + ", " + ev.Topic + ", " + this.NumberOfEvents); // faz sentido meter duas vezes o nome do processo? no enunciado esta
+                    }
+                    catch (System.Net.Sockets.SocketException)
+                    {
+                        ConnectPrimaryBroker();
+                    }
+                }
             }            
         }
 
@@ -144,11 +158,77 @@ namespace Publisher
 
         }
 
-        public void registerInBroker(String brokerUrl)
+
+        /// <summary>
+        /// Must get the primary broker and notify him that a brand new publisher is in town
+        /// </summary>
+        public void RegisterInSite(String brokerUrl1, String brokerUrl2, String brokerUrl3)
         {
-            Console.WriteLine("Registing in broker at {0}", brokerUrl);
-            this.broker = (IBroker)Activator.GetObject(typeof(IBroker), brokerUrl);
-            this.broker.registerPublisher(this.url);
+            AddSiteBrokers(brokerUrl1, brokerUrl2, brokerUrl3);
+            ConnectPrimaryBroker();
+            this.primaryBroker.registerPublisher(this.url);
+        }
+
+
+        /// <summary>
+        /// Adds the three brokers to the secondaries brokers. Currently the publisher doesn't know who is primary broker
+        /// </summary>
+        private void AddSiteBrokers(String brokerUrl1, String brokerUrl2, String brokerUrl3)
+        {
+            secondariesBrokers.Add(brokerUrl1);
+            secondariesBrokers.Add(brokerUrl2);
+            secondariesBrokers.Add(brokerUrl3);
+        }
+
+
+        /// <summary>
+        /// Asks the first replication broker what is the primary broker URL
+        /// </summary>
+        private void ConnectPrimaryBroker()
+        {
+            if (secondariesBrokers.Count > 0)
+            {
+                try
+                {
+                    String primaryBrokerUrl = GetPrimaryBrokerUrl();
+                    secondariesBrokers.Remove(primaryBrokerUrl);
+                    SetPrimaryBroker(primaryBrokerUrl);
+                }
+                catch (System.Net.Sockets.SocketException)
+                {
+                    secondariesBrokers.RemoveAt(0);
+                    ConnectPrimaryBroker();
+                }
+            }
+            else
+                Console.WriteLine("Can't connect to any broker...");
+        }
+
+
+        /// <summary>
+        /// Asks the URL of the primary broker to a secondary broker
+        /// </summary>
+        private string GetPrimaryBrokerUrl()
+        {
+            IBroker broker = (IBroker)Activator.GetObject(typeof(IBroker), secondariesBrokers[0]);
+            String primaryBrokerUrl = broker.PrimaryBrokerUrl();
+            while (!secondariesBrokers.Contains(primaryBrokerUrl)) // if it doesnt contain means that the reeletion isnt over
+            {
+                Thread.Sleep(200);
+                primaryBrokerUrl = broker.PrimaryBrokerUrl();
+            }
+            return primaryBrokerUrl;
+        }
+
+
+        /// <summary>
+        /// Gets the remote object from the URL of the primary broker
+        /// </summary>
+        /// <param name="primaryBrokerUrl">Url of the primary broker</param>
+        private void SetPrimaryBroker(String primaryBrokerUrl)
+        {
+            this.primaryBroker = (IBroker)Activator.GetObject(typeof(IBroker), primaryBrokerUrl);
+            Console.WriteLine("Connecting with primary broker at {0}", primaryBrokerUrl);
         }
 
         #endregion

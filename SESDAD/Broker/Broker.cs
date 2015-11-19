@@ -28,6 +28,7 @@ namespace Broker
         public Dictionary<string, IBroker> SiteBrokers { get; set; }
         public bool IsPrimaryBroker { get; set; }
         public IBroker PrimaryBroker { get; set; }
+        private string primaryBrokerUrl;
         public Thread PingThread { get; set; } // thread used by primary broker to ping secondaries
         private System.Timers.Timer SecondaryBrokerTimer { get; set; } // timer used by secondaries to see how long the primary broker send the last ping
 
@@ -240,7 +241,8 @@ namespace Broker
         {
             int newLeaderPort = this.Port;
             this.IsPrimaryBroker = true;
-            this.PrimaryBroker = null;
+            this.PrimaryBroker = this;
+            this.primaryBrokerUrl = this.URL;
 
             foreach (string url in this.SiteBrokers.Keys)
             {
@@ -249,6 +251,7 @@ namespace Broker
                     newLeaderPort = siteBrokerPort;
                     this.IsPrimaryBroker = false;
                     this.PrimaryBroker = this.SiteBrokers[url];
+                    this.primaryBrokerUrl = url;
                 }
             }
 
@@ -337,16 +340,19 @@ namespace Broker
         /// </summary>
         private void ReElectSiteLider(Object source, ElapsedEventArgs e)
         {
-            Console.WriteLine("Primary server gone down. Re-electing...");
-            SecondaryBrokerTimer.Enabled = false;
-            RemoveSiteBroker(this.PrimaryBroker);
-            if (SiteBrokers.Count == 1) // check if the other broker is alive
+            lock (this)
             {
-                try { SiteBrokers[SiteBrokers.Keys.First()].IsAlive(); }
-                catch (System.Net.Sockets.SocketException)
-                { RemoveSiteBroker(SiteBrokers[SiteBrokers.Keys.First()]); }
+                Console.WriteLine("Primary server gone down. Re-electing...");
+                SecondaryBrokerTimer.Enabled = false;
+                RemoveSiteBroker(this.PrimaryBroker);
+                if (SiteBrokers.Count == 1) // check if the other broker is alive
+                {
+                    try { SiteBrokers[SiteBrokers.Keys.First()].IsAlive(); }
+                    catch (System.Net.Sockets.SocketException)
+                    { RemoveSiteBroker(SiteBrokers[SiteBrokers.Keys.First()]); }
+                }
+                ElectSiteLeader();
             }
-            ElectSiteLeader();
         }
 
 
@@ -358,6 +364,11 @@ namespace Broker
             var entry = SiteBrokers.FirstOrDefault(kvp => kvp.Value == broker);
             if (entry.Key != null)
                 SiteBrokers.Remove(entry.Key);
+        }
+
+        public string PrimaryBrokerUrl()
+        {
+            return primaryBrokerUrl;
         }
 
 

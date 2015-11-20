@@ -16,7 +16,7 @@ namespace Subscriber
         private String name;
         private bool freeze = false;
         private String url;
-        private IBroker broker;
+        private SiteBrokers siteBrokers;
         private IPuppetMasterURL puppetMaster;
         private string loggingLevel;
         public Topic<Subscription> Subscriptions { get; set; }
@@ -35,7 +35,7 @@ namespace Subscriber
 
         public void PrintMessage(Event e)
         {
-            puppetMaster.Log("SubEvent " + this.name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
+            //puppetMaster.Log("SubEvent " + this.name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
             Console.WriteLine("");
             Console.WriteLine("------- New Message -------");
             Console.WriteLine("Post ID:" + e.Id);
@@ -68,15 +68,26 @@ namespace Subscriber
             return DateTime.Now;
         }
 
+
         /// <summary>
-        /// notify site broker to add this new subscriber
+        /// Must get the primary broker and notify him that a brand new subscriber is in town
         /// </summary>
-        internal void registerInBroker(string brokerUrl)
+        public void RegisterInSite(String brokerUrl1, String brokerUrl2, String brokerUrl3)
         {
-            Console.WriteLine("Registing in broker at {0}", brokerUrl);
-            this.broker = (IBroker)Activator.GetObject(typeof(IBroker), brokerUrl);
-            this.broker.registerSubscriber(this.name, this.url);
+            this.siteBrokers = new SiteBrokers(brokerUrl1, brokerUrl2, brokerUrl3);
+            this.siteBrokers.ConnectPrimaryBroker();
+            PrimaryBroker().registerPublisher(this.url);
         }
+
+
+        /// <summary>
+        /// Returns the primary broker of the site
+        /// </summary>
+        public IBroker PrimaryBroker()
+        {
+            return siteBrokers.PrimaryBroker;
+        }
+
         #endregion
    
         #region remoteMethods
@@ -86,9 +97,21 @@ namespace Subscriber
             lock (this)
             {
                 Console.WriteLine("New Subscrition on Topic: {0}", topic);
-                DateTime timeStamp = broker.Subscribe(this.name, true, topic);
-                Subscription subscription = new Subscription(name, timeStamp);
-                Subscriptions.Subscribe(subscription, tokenize(topic));
+                bool subscribed = false;
+                while (!subscribed)
+                {
+                    try
+                    {
+                        DateTime timeStamp = PrimaryBroker().Subscribe(this.name, true, topic);
+                        Subscription subscription = new Subscription(name, timeStamp);
+                        Subscriptions.Subscribe(subscription, tokenize(topic));
+                        subscribed = true;
+                    }
+                    catch (System.Net.Sockets.SocketException) // primary broker is down. lets ask to see if there is a new one
+                    {
+                        this.siteBrokers.ConnectPrimaryBroker();
+                    }
+                }
             }
         }
 
@@ -97,8 +120,19 @@ namespace Subscriber
             lock (this)
             {
                 Console.WriteLine("Unsubscrition on Topic: {0}", topic);
-                Subscriptions.UnSubscribe(new Subscription(name), tokenize(topic));
-                broker.UnSubscribe(this.name, true, topic);
+                bool unsubscribed = false;
+                while (!unsubscribed)
+                {
+                    try
+                    {
+                        Subscriptions.UnSubscribe(new Subscription(name), tokenize(topic));
+                        PrimaryBroker().UnSubscribe(this.name, true, topic);
+                    }
+                    catch (System.Net.Sockets.SocketException) // primary broker is down. lets ask to see if there is a new one
+                    {
+                        this.siteBrokers.ConnectPrimaryBroker();
+                    }
+                }
             }
         }
 

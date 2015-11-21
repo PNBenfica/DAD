@@ -47,6 +47,7 @@ namespace Subscriber
 
             Console.ReadLine();
             subscriber.Subscribe("/benfica/ola/*");
+            Console.ReadLine();
             subscriber.Subscribe("/benfica/Samaris");
             Console.ReadLine();
         }

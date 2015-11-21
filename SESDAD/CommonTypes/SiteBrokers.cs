@@ -9,12 +9,19 @@ namespace CommonTypes
 {
     public class SiteBrokers
     {
+        public string Name { get; set;}
         public IBroker PrimaryBroker { get; set; }
         private List<string> secondariesBrokers = new List<string>();
 
         public SiteBrokers(String brokerUrl1, String brokerUrl2, String brokerUrl3)
         {
             AddSiteBrokers(brokerUrl1, brokerUrl2, brokerUrl3);
+        }
+
+        public SiteBrokers(String name, String brokerUrl1, String brokerUrl2, String brokerUrl3)
+            : this(brokerUrl1, brokerUrl2, brokerUrl3)
+        {
+            this.Name = name;
         }
 
 
@@ -31,9 +38,11 @@ namespace CommonTypes
 
         /// <summary>
         /// Asks the first replication broker what is the primary broker URL
+        /// Returns true if sucessfully connected 
         /// </summary>
-        public void ConnectPrimaryBroker()
+        public bool ConnectPrimaryBroker()
         {
+            bool connected = false;
             if (secondariesBrokers.Count > 0)
             {
                 try
@@ -41,15 +50,17 @@ namespace CommonTypes
                     String primaryBrokerUrl = GetPrimaryBrokerUrl();
                     secondariesBrokers.Remove(primaryBrokerUrl);
                     SetPrimaryBroker(primaryBrokerUrl);
+                    connected = true;
                 }
                 catch (System.Net.Sockets.SocketException)
                 {
                     secondariesBrokers.RemoveAt(0);
-                    ConnectPrimaryBroker();
+                    connected = ConnectPrimaryBroker();
                 }
             }
             else
                 Console.WriteLine("Can't connect to any broker...");
+            return connected;
         }
 
 

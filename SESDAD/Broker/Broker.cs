@@ -14,23 +14,23 @@ namespace Broker
     {
         #region variables
 
-        private bool freeze = false;
+        private bool isFrozen = false;
         public IPuppetMasterURL puppetMaster;
-        private bool FullLogging;
+        private bool fullLogging;
         public String Name { get; set; }
-        public String URL { get; set; }
-        public int Port { get; set; }
+        public String SiteName { get; set; }
+        private String url;
+        private int port;
 
-        public IBroker Parent { get; set; }
-        public String ParentName { get; set; }
+        public SiteBrokers ParentBrokers { get; set; }
         public Dictionary<string, IBroker> Children { get; set; }
 
-        public Dictionary<string, IBroker> SiteBrokers { get; set; }
-        public bool IsPrimaryBroker { get; set; }
-        public IBroker PrimaryBroker { get; set; }
+        private Dictionary<string, IBroker> siteBrokers;
+        private bool isPrimaryBroker;
+        private IBroker primaryBroker;
         private string primaryBrokerUrl;
-        public Thread PingThread { get; set; } // thread used by primary broker to ping secondaries
-        private System.Timers.Timer SecondaryBrokerTimer { get; set; } // timer used by secondaries to see how long the primary broker send the last ping
+        private Thread pingThread; // thread used by primary broker to ping secondaries
+        private System.Timers.Timer secondaryBrokerTimer; // timer used by secondaries to see how long the primary broker send the last ping
 
         public List<IPublisher> Publishers { get; set; }
         public Dictionary<string, ISubscriber> Subscribers { get; set; }
@@ -44,13 +44,14 @@ namespace Broker
 
         #region classUtils
 
-        public Broker(string name, string url, string router, string puppetMasterUrl, string loggingLevel)
+        public Broker(string name, string siteName, string url, string router, string puppetMasterUrl, string loggingLevel)
         {
             this.Name = name;
-            this.URL = url;
-            this.Port = GetPortFromURL(url);
+            this.url = url;
+            this.SiteName = siteName;
+            this.port = GetPortFromURL(url);
             this.puppetMaster = (IPuppetMasterURL)Activator.GetObject(typeof(IPuppetMasterURL), puppetMasterUrl);
-            this.FullLogging = loggingLevel.ToLower().Equals("full");
+            this.fullLogging = loggingLevel.ToLower().Equals("full");
             if (router.Equals("filter"))
             {
                 this.Router = new FilteredRouter(this);
@@ -72,7 +73,7 @@ namespace Broker
         /// </summary>
         public bool IsRoot()
         {
-            return this.Parent == null;
+            return this.ParentBrokers == null;
         }
 
         private OrderStrategy GetOrderByRefletion(string order)
@@ -96,7 +97,7 @@ namespace Broker
         public void Log(Event e)
         {
             Console.WriteLine("Diffusing message {0} from {1}", e.Id, e.PublisherId);
-            if (FullLogging)
+            if (fullLogging)
                 puppetMaster.Log("BroEvent " + Name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
         }
 
@@ -152,7 +153,7 @@ namespace Broker
             }
             else
             {
-                timeStamp = this.Parent.DiffuseMessageToRoot(e);                
+                timeStamp = ParentPrimaryBroker().DiffuseMessageToRoot(e);                
             }
 
             return timeStamp;
@@ -180,11 +181,15 @@ namespace Broker
         /// Notify the broker parent that he has a new born child
         /// </summary>
         /// <param name="parentUrl">Broker parent url</param>
-        internal void notifyParent(string parentUrl)
+        public void RegisterParentSite(string parentUrl1, string parentUrl2, string parentUrl3)
         {
-            Console.WriteLine("Registing in parent at {0}", parentUrl);
-            this.Parent = (IBroker)Activator.GetObject(typeof(IBroker), parentUrl);
-            this.Parent.registerNewChild(this.Name, this.URL);
+            Console.WriteLine("Registing in parent...");
+            ParentBrokers = new SiteBrokers(parentUrl1, parentUrl2, parentUrl3);
+            if (isPrimaryBroker)
+            {
+                ParentBrokers.ConnectPrimaryBroker();
+                ParentPrimaryBroker().registerNewChild(this.Name, this.url);
+            }
         }
 
         /// <summary>
@@ -195,7 +200,7 @@ namespace Broker
         {
             IBroker child = (IBroker)Activator.GetObject(typeof(IBroker), url);
             Children.Add(name, child);
-            Console.WriteLine("New child broker registed: {0}", url);
+            Console.WriteLine("New child broker registered: {0}", url);
         }
 
 
@@ -203,8 +208,9 @@ namespace Broker
         {
             IPublisher publisher = (IPublisher)Activator.GetObject(typeof(IPublisher), url);
             Publishers.Add(publisher);
-            Console.WriteLine("New publisher registed: {0}", url);
+            Console.WriteLine("New publisher registered: {0}", url);
         }
+
 
         /// <summary>
         /// Register a new subscriber
@@ -218,7 +224,22 @@ namespace Broker
         }
 
 
+        /// <summary>
+        /// Returns the primary broker of the parent site
+        /// </summary>
+        public IBroker ParentPrimaryBroker()
+        {
+            return ParentBrokers.PrimaryBroker;
+        }
+
+        public string ParentSiteName()
+        {
+            return ParentBrokers.Name;
+        }
+
+
         #region Replication
+
 
         /// <summary>
         /// Register the other brokers of this site and elects the new primary broker
@@ -227,9 +248,9 @@ namespace Broker
         {
             IBroker broker1 = (IBroker)Activator.GetObject(typeof(IBroker), siteBroker1Url);
             IBroker broker2 = (IBroker)Activator.GetObject(typeof(IBroker), siteBroker2Url);
-            SiteBrokers = new Dictionary<string, IBroker>();
-            SiteBrokers.Add(siteBroker1Url, broker1);
-            SiteBrokers.Add(siteBroker2Url, broker2);
+            siteBrokers = new Dictionary<string, IBroker>();
+            siteBrokers.Add(siteBroker1Url, broker1);
+            siteBrokers.Add(siteBroker2Url, broker2);
             ElectSiteLeader();
         }
 
@@ -239,27 +260,27 @@ namespace Broker
         /// </summary>
         public void ElectSiteLeader()
         {
-            int newLeaderPort = this.Port;
-            this.IsPrimaryBroker = true;
-            this.PrimaryBroker = this;
-            this.primaryBrokerUrl = this.URL;
+            int newLeaderPort = this.port;
+            this.isPrimaryBroker = true;
+            this.primaryBroker = this;
+            this.primaryBrokerUrl = this.url;
 
-            foreach (string url in this.SiteBrokers.Keys)
+            foreach (string url in this.siteBrokers.Keys)
             {
                 int siteBrokerPort = GetPortFromURL(url);
                 if (siteBrokerPort > newLeaderPort){
                     newLeaderPort = siteBrokerPort;
-                    this.IsPrimaryBroker = false;
-                    this.PrimaryBroker = this.SiteBrokers[url];
+                    this.isPrimaryBroker = false;
+                    this.primaryBroker = this.siteBrokers[url];
                     this.primaryBrokerUrl = url;
                 }
             }
 
-            if (IsPrimaryBroker)
+            if (isPrimaryBroker)
                 StartPing();
             else
                 SetSecondaryBrokerTimer();
-            Console.WriteLine(IsPrimaryBroker ? "Primary Broker of the site" : "Replication Broker of the site");
+            Console.WriteLine(isPrimaryBroker ? "Primary Broker in " + SiteName: "Replication Broker in " + SiteName);
         }
         
 
@@ -269,8 +290,8 @@ namespace Broker
         private void StartPing()
         {
             ThreadStart ts = new ThreadStart(this.SendImAlives);
-            this.PingThread = new Thread(ts);
-            this.PingThread.Start();
+            this.pingThread = new Thread(ts);
+            this.pingThread.Start();
         }
 
 
@@ -282,7 +303,7 @@ namespace Broker
         {
             while (true)
             {
-                foreach (IBroker broker in new List<IBroker>(SiteBrokers.Values)) // removing while iterating... better create a new list
+                foreach (IBroker broker in new List<IBroker>(siteBrokers.Values)) // removing while iterating... better create a new list
                 {
                     Thread thread = new Thread(() => 
                     {
@@ -308,7 +329,6 @@ namespace Broker
         public void ReceiveImAlive()
         {
             RestartTimer();
-            Console.WriteLine("Ping From Leader");
         }
 
 
@@ -317,8 +337,8 @@ namespace Broker
         /// </summary>
         private void RestartTimer()
         {
-            SecondaryBrokerTimer.Stop();
-            SecondaryBrokerTimer.Start();
+            secondaryBrokerTimer.Stop();
+            secondaryBrokerTimer.Start();
         }
         
 
@@ -328,10 +348,10 @@ namespace Broker
         /// </summary>
         private void SetSecondaryBrokerTimer()
         {
-            SecondaryBrokerTimer = new System.Timers.Timer(3000);
-            SecondaryBrokerTimer.Elapsed += ReElectSiteLider;
-            SecondaryBrokerTimer.AutoReset = true;
-            SecondaryBrokerTimer.Enabled = true;
+            secondaryBrokerTimer = new System.Timers.Timer(3000);
+            secondaryBrokerTimer.Elapsed += ReElectSiteLider;
+            secondaryBrokerTimer.AutoReset = true;
+            secondaryBrokerTimer.Enabled = true;
         }
 
 
@@ -343,13 +363,13 @@ namespace Broker
             lock (this)
             {
                 Console.WriteLine("Primary server gone down. Re-electing...");
-                SecondaryBrokerTimer.Enabled = false;
-                RemoveSiteBroker(this.PrimaryBroker);
-                if (SiteBrokers.Count == 1) // check if the other broker is alive
+                secondaryBrokerTimer.Enabled = false;
+                RemoveSiteBroker(this.primaryBroker);
+                if (siteBrokers.Count == 1) // check if the other broker is alive
                 {
-                    try { SiteBrokers[SiteBrokers.Keys.First()].IsAlive(); }
+                    try { siteBrokers[siteBrokers.Keys.First()].IsAlive(); }
                     catch (System.Net.Sockets.SocketException)
-                    { RemoveSiteBroker(SiteBrokers[SiteBrokers.Keys.First()]); }
+                    { RemoveSiteBroker(siteBrokers[siteBrokers.Keys.First()]); }
                 }
                 ElectSiteLeader();
             }
@@ -361,9 +381,9 @@ namespace Broker
         /// </summary>
         private void RemoveSiteBroker(IBroker broker)
         {
-            var entry = SiteBrokers.FirstOrDefault(kvp => kvp.Value == broker);
+            var entry = siteBrokers.FirstOrDefault(kvp => kvp.Value == broker);
             if (entry.Key != null)
-                SiteBrokers.Remove(entry.Key);
+                siteBrokers.Remove(entry.Key);
         }
 
         public string PrimaryBrokerUrl()
@@ -377,18 +397,19 @@ namespace Broker
         /// </summary>
         public void IsAlive()
         {
+            Console.WriteLine("I'm Alive");
         }
 
         #endregion
 
         public void Freeze()
         {
-            this.freeze = true;
+            this.isFrozen = true;
         }
 
         public void Unfreeze()
         {
-            this.freeze = false;
+            this.isFrozen = false;
         }
 
         public void Crash()

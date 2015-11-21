@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommonTypes;
+using System.Threading;
 
 namespace Broker
 {
-    class FilteredRouter : Router
+    public class FilteredRouter : Router
     {
 
         public Topic<String> BrokersSubscriptions { get; set; }
@@ -29,7 +30,6 @@ namespace Broker
             else
                 BrokersSubscriptions.Subscribe(name, tokenize(topic));
 
-            //notify every child
             notifyChildrenOfSubscription(name, topic, true);
 
             if (Broker.IsRoot())
@@ -38,7 +38,7 @@ namespace Broker
             }
             else
             {
-                return Broker.Parent.Subscribe(Broker.Name, false, topic, true);
+                return SendToParent(topic, true);
             }
         }
 
@@ -56,8 +56,31 @@ namespace Broker
             bool parentNeedUpdate = !Broker.IsRoot() && !SubscribersSubscriptions.HaveSubscribers(tokenize(topic)) && !BrokersSubscriptions.HaveSubscribers(tokenize(topic));
             if (parentNeedUpdate)
             {
-                Broker.Parent.UnSubscribe(Broker.Name, false, topic);
+                SendToParent(topic, false);
             }
+        }
+
+
+        private DateTime SendToParent(string topic, bool isSubscription)
+        {
+            bool sent = false;
+            DateTime timeStamp = DateTime.Now;
+            while (!sent)
+            {
+                try
+                {
+                    if (isSubscription)
+                        timeStamp = Broker.ParentPrimaryBroker().Subscribe(Broker.SiteName, false, topic, true);
+                    else
+                        Broker.ParentPrimaryBroker().UnSubscribe(Broker.SiteName, false, topic);
+                    sent = true;
+                }
+                catch (System.Net.Sockets.SocketException) // primary broker is down. lets ask to see if there is a new one
+                {
+                    Broker.ParentBrokers.ConnectPrimaryBroker();
+                }
+            }
+            return timeStamp;
         }
 
 
@@ -88,7 +111,7 @@ namespace Broker
             //only add if was the parent calling
             if (!isClimbing)
             {
-                this.ParentSubscriptions.Subscribe(Broker.Name, tokenize(topic));
+                this.ParentSubscriptions.Subscribe(Broker.SiteName, tokenize(topic));
             }
             foreach (KeyValuePair<string, IBroker> brokerChild in Broker.Children)
             {
@@ -101,7 +124,7 @@ namespace Broker
 
         public override bool IsParentInterested(String topic)
         {
-            return this.ParentSubscriptions.HasSubscrition(this.Broker.Name, tokenize(topic));
+            return this.ParentSubscriptions.HasSubscrition(Broker.SiteName, tokenize(topic));
         }
     }
 }

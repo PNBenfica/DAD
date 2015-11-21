@@ -76,7 +76,7 @@ namespace Subscriber
         {
             this.siteBrokers = new SiteBrokers(brokerUrl1, brokerUrl2, brokerUrl3);
             this.siteBrokers.ConnectPrimaryBroker();
-            PrimaryBroker().registerPublisher(this.url);
+            PrimaryBroker().registerSubscriber(this.name, this.url);
         }
 
 
@@ -89,7 +89,7 @@ namespace Subscriber
         }
 
         #endregion
-   
+
         #region remoteMethods
 
         public void Subscribe(string topic)
@@ -173,6 +173,6 @@ namespace Subscriber
         }
 
         #endregion
-    
+
     }
 }

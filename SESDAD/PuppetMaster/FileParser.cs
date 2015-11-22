@@ -96,12 +96,12 @@ namespace PuppetMaster
             {
                 if (process.Type.Equals("broker"))
                 {
-                    process.BrokerUrl = getBrokerParentUrl(process.Site, sites, processes);
+                    process.BrokersUrl = getBrokerParentUrl(process.Site, sites, processes);
                     process.NeighbourBrokers = getBrokersOfSite(process.Site,process.Name, processes);
                 }
                 else
                 {
-                    process.BrokerUrl = getBrokerUrl(process.Site, processes);
+                    process.BrokersUrl = getBrokerUrl(process.Site, processes);
                 }
             }
 
@@ -117,7 +117,7 @@ namespace PuppetMaster
             {
                 if (!p.Name.Equals(processName) && p.Site.Equals(site))
                 {
-                    siteBrokersUrl[i] = p.Name;
+                    siteBrokersUrl[i] = p.Url;
                     i++;
                 }
                 if (i == 2)
@@ -128,7 +128,7 @@ namespace PuppetMaster
             return siteBrokersUrl;
         }
 
-        private String getBrokerParentUrl(string siteName, List<Site> sites, List<Process> processes)
+        private String[] getBrokerParentUrl(string siteName, List<Site> sites, List<Process> processes)
         {
             String parentSite = "";
             foreach(Site site in sites)
@@ -141,14 +141,16 @@ namespace PuppetMaster
             }
             if (parentSite.Equals("none"))
             {
-                return "none";
+                String[] parents = {"none", "none", "none"};
+                return parents;
             }
             return getBrokerUrl(parentSite, processes);
         }
 
-        private String getBrokerUrl(string siteName, List<Process> processes)
+        private String[] getBrokerUrl(string siteName, List<Process> processes)
         {
-            String brokerUrl = ""; 
+            String[] brokersUrl = new String[3];
+            int i = 0;
             foreach (Process process in processes)
             {
                 if(!process.Type.Equals("broker"))
@@ -157,11 +159,13 @@ namespace PuppetMaster
                 }
                 else if (process.Site.Equals(siteName))
                 {
-                    brokerUrl = process.Url;
-                    break;
+                    brokersUrl[i] = process.Url;
+                    i++;
+                    if(i == 3)
+                        break;
                 }
             }
-            return brokerUrl;
+            return brokersUrl;
         }
     }
 }

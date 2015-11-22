@@ -56,17 +56,17 @@ namespace PuppetMaster
                 Console.WriteLine(process.Type);
                 if (process.Type.Equals("broker"))
                 {
-                    processCreator.startBrokerProcess(process.Name, process.Url, process.BrokerUrl, process.NeighbourBrokers, configurations.RoutingPolicy, centralPuppetMasterUrl, configurations.LoggingLevel);
+                    processCreator.startBrokerProcess(process.Name, process.Url, process.BrokersUrl, process.NeighbourBrokers, configurations.RoutingPolicy, configurations.Ordering, centralPuppetMasterUrl, configurations.LoggingLevel, process.Site);
                     puppetMaster.AddBroker(process.Name, process.Url);
                 }
                 else if (process.Type.Equals("publisher"))
                 {
-                    processCreator.startPublisherProcess(process.Name, process.Url, process.BrokerUrl, centralPuppetMasterUrl, configurations.LoggingLevel);
+                    processCreator.startPublisherProcess(process.Name, process.Url, process.BrokersUrl, centralPuppetMasterUrl, configurations.LoggingLevel);
                     puppetMaster.AddPublisher(process.Name, process.Url);
                 }
                 else if (process.Type.Equals("subscriber"))
                 {
-                    processCreator.startSubscriberProcess(process.Name, process.Url, process.BrokerUrl, configurations.Ordering, centralPuppetMasterUrl, configurations.LoggingLevel );
+                    processCreator.startSubscriberProcess(process.Name, process.Url, process.BrokersUrl, centralPuppetMasterUrl, configurations.LoggingLevel );
                     puppetMaster.AddSubscriber(process.Name, process.Url);                
                 }
                 else

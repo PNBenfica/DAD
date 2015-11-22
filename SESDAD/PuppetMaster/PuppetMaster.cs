@@ -46,20 +46,20 @@ namespace PuppetMaster
             Console.WriteLine(processName + " send: " + message);
         }
 
-        public void CreateProcess(String type, String processName, String url, String brokerUrl, String[] brokerNeighbours)
+        public void CreateProcess(String type, String processName, String url, String[] brokersUrl, String site, String[] brokerNeighbours)
         {
             ProcessCreator processCreator = new ProcessCreator();
             if (type.Equals("broker"))
             {
-                processCreator.startBrokerProcess(processName, url, brokerUrl, brokerNeighbours, this.routingPolicy, this.loggingLevel, this.centralPuppetMasterUrl);
+                processCreator.startBrokerProcess(processName, url, brokersUrl, brokerNeighbours, this.routingPolicy, this.ordering, this.loggingLevel, this.centralPuppetMasterUrl, site);
             }
             else if (type.Equals("publisher"))
             {
-                processCreator.startPublisherProcess(processName, url, brokerUrl, this.loggingLevel, this.centralPuppetMasterUrl);
+                processCreator.startPublisherProcess(processName, url, brokersUrl, this.loggingLevel, this.centralPuppetMasterUrl);
             }
             else if (type.Equals("subscriber"))
             {
-                processCreator.startSubscriberProcess(processName, url, brokerUrl, this.ordering, this.loggingLevel, this.centralPuppetMasterUrl);
+                processCreator.startSubscriberProcess(processName, url, brokersUrl, this.loggingLevel, this.centralPuppetMasterUrl);
             }
             else
             {

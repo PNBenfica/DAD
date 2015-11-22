@@ -27,9 +27,8 @@ namespace Subscriber
             String brokerUrl1 = args[2];
             String brokerUrl2 = args[3];
             String brokerUrl3 = args[4];
-            String ordering = args[5];
-            String puppetMasterUrl = args[6];
-            String loggingLevel = args[7];
+            String puppetMasterUrl = args[5];
+            String loggingLevel = args[6];
 
             char[] delimiterChars = { ':', '/' }; // "tcp://1.2.3.4:3335/sub"
             string[] urlSplit = url.Split(delimiterChars);
@@ -38,7 +37,7 @@ namespace Subscriber
             TcpChannel channel = new TcpChannel(port);
             ChannelServices.RegisterChannel(channel, false);
 
-            Subscriber subscriber = new Subscriber(name, url, ordering, puppetMasterUrl, loggingLevel);
+            Subscriber subscriber = new Subscriber(name, url, puppetMasterUrl, loggingLevel);
             RemotingServices.Marshal(subscriber, "sub", typeof(ISubscriber));
 
             Console.WriteLine("Subscriber {0} running on {1}", name, url);

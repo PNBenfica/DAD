@@ -11,7 +11,7 @@ namespace PuppetMaster
         private String type;
         private String siteName;
         private String url;
-        private String brokerUrl;
+        private String[] brokersUrl;
         public String[] NeighbourBrokers { get; set; }
 
        
@@ -24,10 +24,10 @@ namespace PuppetMaster
             this.url = url;
         }
 
-        public String BrokerUrl
+        public String[] BrokersUrl
         {
-            get { return brokerUrl; }
-            set { brokerUrl = value; }
+            get { return brokersUrl; }
+            set { brokersUrl = value; }
         }
 
         public String Name

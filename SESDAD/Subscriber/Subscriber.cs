@@ -24,7 +24,7 @@ namespace Subscriber
 
         #region classUtils
 
-        public Subscriber(string name, string url, string ordering, string puppetMasterUrl, string loggingLevel)
+        public Subscriber(string name, string url, string puppetMasterUrl, string loggingLevel)
         {
             this.name = name;
             this.url = url;

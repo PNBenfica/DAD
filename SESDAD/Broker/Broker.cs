@@ -44,7 +44,7 @@ namespace Broker
 
         #region classUtils
 
-        public Broker(string name, string siteName, string url, string router, string puppetMasterUrl, string loggingLevel)
+        public Broker(string name, string url, string siteName, string router, String ordering, string puppetMasterUrl, string loggingLevel)
         {
             this.Name = name;
             this.url = url;
@@ -61,9 +61,13 @@ namespace Broker
                this.Router = new FloodingRouter(this);
            }
 
+
             OrderStrategy = new NoOrder(this);
             //this.OrderStrategy = GetOrderByRefletion(ordering);
             this.ChildrenSites = new Dictionary<string, SiteBrokers>();
+
+            //OrderStrategy = new TotalOrder(this);
+            this.OrderStrategy = GetOrderByRefletion(ordering);
             this.Publishers = new List<IPublisher>();
             this.Subscribers = new Dictionary<string, ISubscriber>();
         }

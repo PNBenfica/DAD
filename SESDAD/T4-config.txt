@@ -3,6 +3,6 @@ Ordering NO
 LoggingLevel full
 Site site0 Parent none
 Process broker0 is broker On site0 URL tcp://localhost:3330/broker
-Process broker5 is broker On site0 URL tcp://localhost:3335/broker
-Process broker2 is broker On site0 URL tcp://localhost:3336/broker
+Process broker1 is broker On site0 URL tcp://localhost:3335/broker
+Process broker3 is broker On site0 URL tcp://localhost:3336/broker
 

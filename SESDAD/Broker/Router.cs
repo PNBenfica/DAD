@@ -28,11 +28,10 @@ namespace Broker
         /// </summary>
         public void route(Event e)
         {
-
+            Console.WriteLine("routing..");
             foreach (String s in GetSubscribers(e))
             {
-                Console.WriteLine(s);
-                Broker.Subscribers[s].ReceiveMessage(e);
+                SendToSubscriber(e, s);
             }
 
             foreach (String site in GetBrokersSites(e))
@@ -40,6 +39,20 @@ namespace Broker
                 SendToBroker(e, site);    
             }
         }
+
+
+        private void SendToSubscriber(Event e, String subscriber)
+        {
+            try
+            {
+                Broker.Subscribers[subscriber].ReceiveMessage(e);
+            }
+            catch (System.Net.Sockets.SocketException)
+            {
+                // TODO - remove all subscriptions of this subscriber
+            }
+        }
+
 
         private void SendToBroker(Event e, String site)
         {

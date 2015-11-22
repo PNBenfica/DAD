@@ -187,11 +187,11 @@ namespace Broker
         /// <param name="parentUrl">Broker parent url</param>
         public void RegisterParentSite(string parentUrl1, string parentUrl2, string parentUrl3)
         {
+            Console.WriteLine("Registing in parent...");
             ParentBrokers = new SiteBrokers(parentUrl1, parentUrl2, parentUrl3);
+            ParentBrokers.ConnectPrimaryBroker();
             if (isPrimaryBroker)
             {
-                Console.WriteLine("Registing in parent...");
-                ParentBrokers.ConnectPrimaryBroker();
                 List<string> siteBrokersUrl = siteBrokers.Keys.ToList();
                 ParentPrimaryBroker().registerNewChildSite(this.SiteName, this.url, siteBrokersUrl[0], siteBrokersUrl[1]);
             }
@@ -207,6 +207,11 @@ namespace Broker
             SiteBrokers childrenSite = new SiteBrokers(siteName, primaryBroker, secondaryBroker1, secondaryBroker2);
             childrenSite.SetPrimaryBroker(primaryBroker);
             ChildrenSites.Add(siteName, childrenSite);
+            if (isPrimaryBroker)
+            {
+                foreach (IBroker broker in siteBrokers.Values)
+                    broker.registerNewChildSite(siteName, primaryBroker, secondaryBroker1, secondaryBroker2);
+            }
         }
 
 
@@ -215,6 +220,11 @@ namespace Broker
             IPublisher publisher = (IPublisher)Activator.GetObject(typeof(IPublisher), url);
             Publishers.Add(publisher);
             Console.WriteLine("New publisher registered: {0}", url);
+            if (isPrimaryBroker)
+            {
+                foreach (IBroker broker in siteBrokers.Values)
+                    broker.registerPublisher(url);
+            }
         }
 
 
@@ -226,7 +236,12 @@ namespace Broker
         {
             ISubscriber subscriber = (ISubscriber)Activator.GetObject(typeof(ISubscriber), url);
             Subscribers.Add(name, subscriber);
-            Console.WriteLine("New subscriber registed: {0}", url);
+            Console.WriteLine("New subscriber registered: {0}", url);
+            if (isPrimaryBroker)
+            {
+                foreach (IBroker broker in siteBrokers.Values)
+                    broker.registerSubscriber(name, url);
+            }
         }
 
 

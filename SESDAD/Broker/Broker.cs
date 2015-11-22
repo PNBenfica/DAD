@@ -26,7 +26,7 @@ namespace Broker
         public Dictionary<string, SiteBrokers> ChildrenSites { get; set; }
 
         private Dictionary<string, IBroker> siteBrokers;
-        private bool isPrimaryBroker;
+        public bool isPrimaryBroker { get; set;}
         private IBroker primaryBroker;
         private string primaryBrokerUrl;
         private Thread pingThread; // thread used by primary broker to ping secondaries
@@ -61,9 +61,7 @@ namespace Broker
                this.Router = new FloodingRouter(this);
            }
 
-
-            OrderStrategy = new NoOrder(this);
-            //this.OrderStrategy = GetOrderByRefletion(ordering);
+            this.OrderStrategy = GetOrderByRefletion(ordering);
             this.ChildrenSites = new Dictionary<string, SiteBrokers>();
 
             //OrderStrategy = new TotalOrder(this);
@@ -132,13 +130,29 @@ namespace Broker
         /// </summary>
         public void DiffuseMessage(Event e)
         {
-            Thread thread = new Thread(() =>
-            {
-                OrderStrategy.DeliverInOrder(e);
-            });
+            if (isPrimaryBroker)
+                SendEventToReplicas(e);
+            Thread thread = new Thread(() => { OrderStrategy.DeliverInOrder(e); });
             thread.Start();
         }
 
+        public void SendEventToReplicas(Event e)
+        {
+            foreach (IBroker broker in new List<IBroker>(siteBrokers.Values)) // removing while iterating... better create a new list
+            {
+                Thread thread = new Thread(() => {
+                    try
+                    { 
+                        broker.DiffuseMessage(e); 
+                    }
+                    catch (System.Net.Sockets.SocketException)
+                    {
+                        RemoveSiteBroker(broker);
+                    }
+                });
+                thread.Start();
+            }
+        }
         
         /// <summary>
         /// Diffuse the event to the root

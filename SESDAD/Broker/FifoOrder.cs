@@ -30,7 +30,8 @@ namespace Broker
             if (IsInOrder(e))
             {
                 UpdatePublisherPost(e);
-                RouteEvent(e);
+                if (Broker.isPrimaryBroker)
+                    RouteEvent(e);
                 ResendQueuedEvents(e.PublisherId);
             }
             else

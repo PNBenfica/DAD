@@ -28,7 +28,6 @@ namespace Broker
         /// </summary>
         public void route(Event e)
         {
-            Console.WriteLine("routing..");
             foreach (String s in GetSubscribers(e))
             {
                 SendToSubscriber(e, s);

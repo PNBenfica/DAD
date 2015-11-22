@@ -16,10 +16,14 @@ namespace Broker
 
         public override void DeliverInOrder(Event e)
         {
+            Console.WriteLine("hey hey");
             lock (this)
             {
-                Broker.Log(e);
-                Broker.Router.route(e);
+                if (Broker.isPrimaryBroker)
+                {
+                    Broker.Log(e);
+                    Broker.Router.route(e);
+                }
             }
         }
     }

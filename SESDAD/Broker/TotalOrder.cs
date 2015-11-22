@@ -54,8 +54,11 @@ namespace Broker
             e.Id = ++SequenceID;
             e.PreviousEvents = new List<Event>(SentEvents.Skip(SentEvents.Count - 10).Take(10));
             SentEvents.Add(new Event(e.Id, e.TimeStamp, e.PublisherId, e.Topic));
-            Broker.Log(e);
-            Broker.Router.route(e);
+            if (Broker.isPrimaryBroker)
+            {
+                Broker.Log(e);
+                Broker.Router.route(e);
+            }
         }
 
 

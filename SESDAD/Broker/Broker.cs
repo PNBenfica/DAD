@@ -103,6 +103,16 @@ namespace Broker
                 puppetMaster.Log("BroEvent " + Name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
         }
 
+        public void notifyChildrenOfSubscription(string name, string topic, bool isClimbing = false)
+        {
+            Router.notifyChildrenOfSubscription(name, topic, isClimbing);
+        }
+
+
+        public bool IsParentInterested(string topic)
+        {
+            return Router.IsParentInterested(topic);
+        }
 
         #endregion
 
@@ -113,7 +123,28 @@ namespace Broker
             lock (this)
             {
                 Console.WriteLine("New subscrition from: {0} on topic: {1}", Id, topic);
+                if (isPrimaryBroker)
+                    SendSubscribeToReplicas(Id, isSubscriber, topic, isClimbing);
                 return Router.addSubscrition(Id, isSubscriber, topic, isClimbing);
+            }
+        }
+
+        private void SendSubscribeToReplicas(string Id, bool isSubscriber, string topic, bool isClimbing)
+        {
+            foreach (IBroker broker in new List<IBroker>(siteBrokers.Values)) // removing while iterating... better create a new list
+            {
+                Thread thread = new Thread(() =>
+                {
+                    try
+                    {
+                        broker.Subscribe(Id, isSubscriber, topic, isClimbing);
+                    }
+                    catch (System.Net.Sockets.SocketException)
+                    {
+                        RemoveSiteBroker(broker);
+                    }
+                });
+                thread.Start();
             }
         }
 
@@ -121,7 +152,28 @@ namespace Broker
         {
             lock (this)
             {
+                if (isPrimaryBroker)
+                    SendUnSubscribeToReplicas(Id, isSubscriber, topic);
                 Router.deleteSubscrition(Id, isSubscriber, topic);
+            }
+        }
+
+        private void SendUnSubscribeToReplicas(string Id, bool isSubscriber, string topic)
+        {
+            foreach (IBroker broker in new List<IBroker>(siteBrokers.Values)) // removing while iterating... better create a new list
+            {
+                Thread thread = new Thread(() =>
+                {
+                    try
+                    {
+                        broker.UnSubscribe(Id, isSubscriber, topic);
+                    }
+                    catch (System.Net.Sockets.SocketException)
+                    {
+                        RemoveSiteBroker(broker);
+                    }
+                });
+                thread.Start();
             }
         }
 
@@ -466,15 +518,5 @@ namespace Broker
 
         #endregion
 
-        public void notifyChildrenOfSubscription(string name, string topic, bool isClimbing = false)
-        {
-            Router.notifyChildrenOfSubscription(name, topic, isClimbing);
-        }
-
-
-        public bool IsParentInterested(string topic)
-        {
-            return Router.IsParentInterested(topic);
-        }
     }
 }

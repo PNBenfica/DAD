@@ -30,16 +30,20 @@ namespace Broker
             else
                 BrokersSubscriptions.Subscribe(name, tokenize(topic));
 
-            notifyChildrenOfSubscription(name, topic, true);
+            if (Broker.isPrimaryBroker)
+            {
+                notifyChildrenOfSubscription(name, topic, true);
 
-            if (Broker.IsRoot())
-            {
-                return DateTime.Now;
+                if (Broker.IsRoot())
+                {
+                    return DateTime.Now;
+                }
+                else
+                {
+                    return SendToParent(topic, true);
+                }
             }
-            else
-            {
-                return SendToParent(topic, true);
-            }
+            return DateTime.Now;
         }
 
 
@@ -53,10 +57,13 @@ namespace Broker
             else
                 BrokersSubscriptions.UnSubscribe(name, tokenize(topic));
 
-            bool parentNeedUpdate = !Broker.IsRoot() && !SubscribersSubscriptions.HaveSubscribers(tokenize(topic)) && !BrokersSubscriptions.HaveSubscribers(tokenize(topic));
-            if (parentNeedUpdate)
+            if (Broker.isPrimaryBroker)
             {
-                SendToParent(topic, false);
+                bool parentNeedUpdate = !Broker.IsRoot() && !SubscribersSubscriptions.HaveSubscribers(tokenize(topic)) && !BrokersSubscriptions.HaveSubscribers(tokenize(topic));
+                if (parentNeedUpdate)
+                {
+                    SendToParent(topic, false);
+                }
             }
         }
 

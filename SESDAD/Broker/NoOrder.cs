@@ -16,8 +16,11 @@ namespace Broker
 
         public override void DeliverInOrder(Event e)
         {
-            Broker.Log(e);
-            Broker.Router.route(e);
+            lock (this)
+            {
+                Broker.Log(e);
+                Broker.Router.route(e);
+            }
         }
     }
 }

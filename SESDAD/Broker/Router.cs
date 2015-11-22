@@ -31,13 +31,30 @@ namespace Broker
 
             foreach (String s in GetSubscribers(e))
             {
+                Console.WriteLine(s);
                 Broker.Subscribers[s].ReceiveMessage(e);
             }
 
-            foreach (String broker in GetBrokers(e))
+            foreach (String site in GetBrokersSites(e))
             {
+                SendToBroker(e, site);    
+            }
+        }
 
-                Broker.Children[broker].DiffuseMessage(e);
+        private void SendToBroker(Event e, String site)
+        {
+            bool sent = false;
+            while (!sent)
+            {
+                try
+                {
+                    Broker.ChildrenSites[site].PrimaryBroker.DiffuseMessage(e);
+                    sent = true;
+                }
+                catch (System.Net.Sockets.SocketException) // primary broker is down. lets ask to see if there is a new one
+                {
+                    Broker.ChildrenSites[site].ConnectPrimaryBroker();
+                }
             }
         }
 
@@ -74,7 +91,7 @@ namespace Broker
 
         #region abstractMethods
 
-        public abstract List<String> GetBrokers(Event e);
+        public abstract List<String> GetBrokersSites(Event e);
         public abstract DateTime addSubscrition(String name, bool isSubscriber, String topic, bool isClimbing);
         public abstract void deleteSubscrition(String name, bool isSubscriber, String topic);
         public abstract bool HasSubscrition(String topic);

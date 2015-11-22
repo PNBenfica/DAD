@@ -20,7 +20,7 @@ namespace CommonTypes
         void ReceiveImAlive();
         void IsAlive();
 
-        void registerNewChild(string name, string url);
+        void registerNewChildSite(string name, string primaryBroker, string secondaryBroker1, string secondaryBroker2);
         void registerPublisher(string url);
         void registerSubscriber(string name, string url);
         void Status();

@@ -23,7 +23,7 @@ namespace Broker
         private int port;
 
         public SiteBrokers ParentBrokers { get; set; }
-        public Dictionary<string, IBroker> Children { get; set; }
+        public Dictionary<string, SiteBrokers> ChildrenSites { get; set; }
 
         private Dictionary<string, IBroker> siteBrokers;
         private bool isPrimaryBroker;
@@ -61,9 +61,9 @@ namespace Broker
                this.Router = new FloodingRouter(this);
            }
 
-            OrderStrategy = new TotalOrder(this);
+            OrderStrategy = new NoOrder(this);
             //this.OrderStrategy = GetOrderByRefletion(ordering);
-            this.Children = new Dictionary<string, IBroker>();
+            this.ChildrenSites = new Dictionary<string, SiteBrokers>();
             this.Publishers = new List<IPublisher>();
             this.Subscribers = new Dictionary<string, ISubscriber>();
         }
@@ -183,24 +183,26 @@ namespace Broker
         /// <param name="parentUrl">Broker parent url</param>
         public void RegisterParentSite(string parentUrl1, string parentUrl2, string parentUrl3)
         {
-            Console.WriteLine("Registing in parent...");
             ParentBrokers = new SiteBrokers(parentUrl1, parentUrl2, parentUrl3);
             if (isPrimaryBroker)
             {
+                Console.WriteLine("Registing in parent...");
                 ParentBrokers.ConnectPrimaryBroker();
-                ParentPrimaryBroker().registerNewChild(this.Name, this.url);
+                List<string> siteBrokersUrl = siteBrokers.Keys.ToList();
+                ParentPrimaryBroker().registerNewChildSite(this.SiteName, this.url, siteBrokersUrl[0], siteBrokersUrl[1]);
             }
         }
 
         /// <summary>
-        /// Register a new child
+        /// Register a new child site
         /// </summary>
         /// <param name="url">Url of the new broker child</param>
-        public void registerNewChild(string name, string url)
+        public void registerNewChildSite(string siteName, string primaryBroker, string secondaryBroker1, string secondaryBroker2)
         {
-            IBroker child = (IBroker)Activator.GetObject(typeof(IBroker), url);
-            Children.Add(name, child);
-            Console.WriteLine("New child broker registered: {0}", url);
+            Console.WriteLine("New child site registered: {0}", siteName);
+            SiteBrokers childrenSite = new SiteBrokers(siteName, primaryBroker, secondaryBroker1, secondaryBroker2);
+            childrenSite.SetPrimaryBroker(primaryBroker);
+            ChildrenSites.Add(siteName, childrenSite);
         }
 
 

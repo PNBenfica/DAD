@@ -84,7 +84,7 @@ namespace CommonTypes
         /// Gets the remote object from the URL of the primary broker
         /// </summary>
         /// <param name="primaryBrokerUrl">Url of the primary broker</param>
-        private void SetPrimaryBroker(String primaryBrokerUrl)
+        public void SetPrimaryBroker(String primaryBrokerUrl)
         {
             this.PrimaryBroker = (IBroker)Activator.GetObject(typeof(IBroker), primaryBrokerUrl);
             Console.WriteLine("Connecting with primary broker at {0}", primaryBrokerUrl);

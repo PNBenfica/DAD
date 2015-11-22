@@ -44,7 +44,9 @@ namespace Publisher
 
             publisher.RegisterInSite(brokerUrl1, brokerUrl2, brokerUrl3);
 
-            publisher.SequencePublish("100","/benfica", "500");
+            Console.ReadLine();
+
+            publisher.SequencePublish("100", "/benfica/Samaris", "500");
 
             Console.ReadLine();
         }

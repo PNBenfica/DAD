@@ -87,7 +87,7 @@ namespace Broker
         /// <summary>
         /// Returns the list of interested brokers in some event
         /// </summary>
-        public override List<String> GetBrokers(Event e)
+        public override List<String> GetBrokersSites(Event e)
         {
             lock (SubscribersSubscriptions)
             {
@@ -113,11 +113,11 @@ namespace Broker
             {
                 this.ParentSubscriptions.Subscribe(Broker.SiteName, tokenize(topic));
             }
-            foreach (KeyValuePair<string, IBroker> brokerChild in Broker.Children)
+            foreach (KeyValuePair<string, SiteBrokers> site in Broker.ChildrenSites)
             {
-                if (!brokerChild.Key.Equals(name))
+                if (!site.Key.Equals(name))
                 {
-                    brokerChild.Value.notifyChildrenOfSubscription(brokerChild.Key, topic);
+                    site.Value.PrimaryBroker.notifyChildrenOfSubscription(site.Key, topic);
                 }
             }
         }

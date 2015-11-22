@@ -36,9 +36,9 @@ namespace Broker
         /// <summary>
         /// Returns the list of interested brokers in some event
         /// </summary>
-        public override List<String> GetBrokers(Event e)
+        public override List<String> GetBrokersSites(Event e)
         {
-            String[] brokers = Broker.Children.Keys.ToArray();
+            String[] brokers = Broker.ChildrenSites.Keys.ToArray();
             return new List<string>(brokers);
         }
 

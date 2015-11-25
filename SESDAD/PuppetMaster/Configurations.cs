@@ -11,12 +11,14 @@ namespace PuppetMaster
         private String ordering;
         List<String> puppetMastersUrl;
         String centralPuppetMasterUrl;
+        String puppetMasterUrl;
         private List<Site> sites;
         private List<Process> processes;
         private String loggingLevel;
 
-        public Configurations(String routingPolicy, String ordering, String centralPuppetMasterUrl, List<String> puppetMastersUrl, List<Site> sites, List<Process> processes, String loggingLevel)
+        public Configurations(String createdPuppetMaster, String routingPolicy, String ordering, String centralPuppetMasterUrl, List<String> puppetMastersUrl, List<Site> sites, List<Process> processes, String loggingLevel)
         {
+            this.puppetMasterUrl = createdPuppetMaster;
             this.routingPolicy = routingPolicy;
             this.ordering = ordering;
             this.centralPuppetMasterUrl = centralPuppetMasterUrl;
@@ -33,6 +35,7 @@ namespace PuppetMaster
         }
 
 
+
         public String RoutingPolicy
         {
             get { return routingPolicy; }
@@ -45,6 +48,13 @@ namespace PuppetMaster
             get { return ordering; }
             set { ordering = value; }
         }
+
+        public String PuppetMasterUrl
+        {
+            get { return puppetMasterUrl; }
+            set { puppetMasterUrl = value; }
+        }
+
 
         public List<String> PuppetMastersUrl
         {

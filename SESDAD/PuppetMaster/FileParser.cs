@@ -20,6 +20,7 @@ namespace PuppetMaster
             List<Process> processes = new List<Process>();
             String centralPuppetMasterURL = "";
             List<String> puppetMastersURL = new List<String>();
+            String createdPuppetMasterUrl = "";
             String ordering = "";
             String routingPolicy = "";
             String loggingLevel = "";
@@ -32,10 +33,19 @@ namespace PuppetMaster
                 words = line.Split(delimiter);
                 if (words[0].ToLower().Equals("centralpuppetmaster"))
                 {
+                    if (line.ToLower().Contains("create"))
+                    {
+                        createdPuppetMasterUrl = words[1];
+                    }
                     centralPuppetMasterURL = words[1];
                 }
                 else if (words[0].ToLower().Equals("puppetmaster"))
                 {
+                    if (line.ToLower().Contains("create"))
+                    {
+                        createdPuppetMasterUrl = words[1];
+                        continue;
+                    }
                     puppetMastersURL.Add(words[1]);
                 }
             }
@@ -105,7 +115,7 @@ namespace PuppetMaster
                 }
             }
 
-            Configurations configurations = new Configurations(routingPolicy, ordering, centralPuppetMasterURL, puppetMastersURL, sites, processes, loggingLevel);
+            Configurations configurations = new Configurations(createdPuppetMasterUrl, routingPolicy, ordering, centralPuppetMasterURL, puppetMastersURL, sites, processes, loggingLevel);
             return configurations;
         }
 

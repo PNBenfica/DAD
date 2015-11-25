@@ -18,7 +18,7 @@ namespace PuppetMaster
 
         public static void Main(string[] args)
         {
-            String filename = @"..\..\..\T3-config.txt";
+            String filename = @"..\..\..\T4-config.txt";
             if (args.Length > 0)
                 filename = @args[0];
 
@@ -38,35 +38,38 @@ namespace PuppetMaster
             ProcessCreator processCreator = new ProcessCreator();
             Console.WriteLine("Initializing processes");
 
-            String centralPuppetMasterUrl = configurations.CentralPuppetMasterUrl;
+            String url = configurations.PuppetMasterUrl;
             char[] delimiterChars = { ':', '/' }; // "tcp://1.2.3.4:3335/sub"
-            string[] urlSplit = centralPuppetMasterUrl.Split(delimiterChars);
+            string[] urlSplit = url.Split(delimiterChars);
             int port = Convert.ToInt32(urlSplit[4]);
 
             
             TcpChannel channel = new TcpChannel(port);
             ChannelServices.RegisterChannel(channel, false);
 
-            puppetMaster = new PuppetMaster(centralPuppetMasterUrl, configurations.RoutingPolicy, configurations.Ordering, configurations.LoggingLevel, centralPuppetMasterUrl);
+            puppetMaster = new PuppetMaster(configurations.PuppetMasterUrl, configurations.RoutingPolicy, configurations.Ordering, configurations.LoggingLevel, configurations.CentralPuppetMasterUrl, configurations.PuppetMastersUrl);
 
+            
             RemotingServices.Marshal(puppetMaster, "puppet", typeof(IPuppetMasterURL));
+
+            Console.WriteLine("puppetMaster running on {0}", url);
 
             foreach (Process process in configurations.Processes)
             {
                 Console.WriteLine(process.Type);
                 if (process.Type.Equals("broker"))
                 {
-                    processCreator.startBrokerProcess(process.Name, process.Url, process.BrokersUrl, process.NeighbourBrokers, configurations.RoutingPolicy, configurations.Ordering, centralPuppetMasterUrl, configurations.LoggingLevel, process.Site);
+                    processCreator.startBrokerProcess(process.Name, process.Url, process.BrokersUrl, process.NeighbourBrokers, configurations.RoutingPolicy, configurations.Ordering, configurations.CentralPuppetMasterUrl, configurations.LoggingLevel, process.Site);
                     puppetMaster.AddBroker(process.Name, process.Url);
                 }
                 else if (process.Type.Equals("publisher"))
                 {
-                    processCreator.startPublisherProcess(process.Name, process.Url, process.BrokersUrl, centralPuppetMasterUrl, configurations.LoggingLevel);
+                    processCreator.startPublisherProcess(process.Name, process.Url, process.BrokersUrl, configurations.CentralPuppetMasterUrl, configurations.LoggingLevel);
                     puppetMaster.AddPublisher(process.Name, process.Url);
                 }
                 else if (process.Type.Equals("subscriber"))
                 {
-                    processCreator.startSubscriberProcess(process.Name, process.Url, process.BrokersUrl, centralPuppetMasterUrl, configurations.LoggingLevel );
+                    processCreator.startSubscriberProcess(process.Name, process.Url, process.BrokersUrl, configurations.CentralPuppetMasterUrl, configurations.LoggingLevel);
                     puppetMaster.AddSubscriber(process.Name, process.Url);                
                 }
                 else

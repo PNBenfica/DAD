@@ -13,8 +13,10 @@ namespace PuppetMaster
         #region variables
 
         List<String> puppetMastersUrl;
+        List<String> puppetMastersIpAddress;
         String centralPuppetMasterUrl;
         String url;
+        String ip;
         String routingPolicy;
         String ordering;
         String loggingLevel;
@@ -25,16 +27,33 @@ namespace PuppetMaster
         private Dictionary<String, IBroker> brokers = new Dictionary<String, IBroker>();
         private Dictionary<String, ISubscriber> subscribers = new Dictionary<String, ISubscriber>();
         private Dictionary<String, IPublisher> publishers = new Dictionary<String, IPublisher>();
+        private Dictionary<String, IPuppetMasterURL> puppetMasters = new Dictionary<String, IPuppetMasterURL>();
+
 
         #endregion
 
-        public PuppetMaster(String url, String routingPolicy, String ordering, String loggingLevel, String centralPuppetMasterUrl)
+        public PuppetMaster(String url, String routingPolicy, String ordering, String loggingLevel, String centralPuppetMasterUrl, List<String> puppetMasters)
         {
             this.url = url;
             this.routingPolicy = routingPolicy;
             this.ordering = ordering;
             this.loggingLevel = loggingLevel;
             this.centralPuppetMasterUrl = centralPuppetMasterUrl;
+            this.puppetMastersUrl = puppetMasters;
+            this.puppetMastersIpAddress = new List<String>();
+            char[] delimiter = { ':', '/' };
+            this.ip = url.Split(delimiter)[3];
+            String ip = "";
+            foreach (String puppet in puppetMastersUrl)
+            {
+                Console.WriteLine(puppet);
+                ip = puppet.Split(delimiter)[3];
+                Console.WriteLine(ip);
+                if (!this.puppetMasters.Keys.Contains(ip))
+                {
+                    this.puppetMasters.Add(ip, (IPuppetMasterURL)Activator.GetObject(typeof(IPuppetMasterURL), puppet));
+                }
+            }
             this.datefile = DateTime.Now.ToString("yyyy-MM-dd-HH-mm");
             Log("\n\n");
         }
@@ -48,6 +67,18 @@ namespace PuppetMaster
 
         public void CreateProcess(String type, String processName, String url, String[] brokersUrl, String site, String[] brokerNeighbours)
         {
+            char[] delimiter = { ':', '/' };
+            String processIp = url.Split(delimiter)[3];
+            if (!processIp.Equals("localhost") && !puppetMasters.Keys.Contains(processIp) && !processIp.Equals(ip))
+            {
+                throw new UnknownProcessException("process ip isn't a valid ip: " + processIp);
+            }
+            //create in other puppetMaster
+            if (puppetMasters.Keys.Contains(processIp) && !processIp.Equals(ip))
+            {
+                puppetMasters[processIp].CreateProcess(type, processName, url, brokersUrl, site, brokerNeighbours);
+                return;
+            }
             ProcessCreator processCreator = new ProcessCreator();
             if (type.Equals("broker"))
             {

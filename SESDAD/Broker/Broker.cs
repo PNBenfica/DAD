@@ -30,7 +30,9 @@ namespace Broker
         private IBroker primaryBroker;
         private string primaryBrokerUrl;
         private Thread pingThread; // thread used by primary broker to ping secondaries
-        private System.Timers.Timer secondaryBrokerTimer; // timer used by secondaries to see how long the primary broker send the last ping
+        private System.Timers.Timer secondaryBrokerTimer; // timer used by secondaries to see how long the primary broker send the last ping         
+        private List<Event> queuedEvents = new List<Event>();  // queued events in replicas waiting the confirmation of primary that they were sent
+        private HashSet<Event> receivedEvents = new HashSet<Event>();
 
         public List<IPublisher> Publishers { get; set; }
         public Dictionary<string, ISubscriber> Subscribers { get; set; }
@@ -99,8 +101,8 @@ namespace Broker
         public void Log(Event e)
         {
             Console.WriteLine("Diffusing message {0} from {1}", e.Id, e.PublisherId);
-            if (fullLogging)
-                puppetMaster.Log("BroEvent " + Name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
+            //if (fullLogging)
+            //    puppetMaster.Log("BroEvent " + Name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
         }
 
         public void notifyChildrenOfSubscription(string name, string topic, bool isClimbing = false)
@@ -177,6 +179,21 @@ namespace Broker
             }
         }
 
+
+        private void SendQueuedEvents()
+        {
+            lock (this)
+            {
+                Console.WriteLine(queuedEvents.Count);
+                foreach (Event e in queuedEvents)
+                {
+                    Log(e);
+                    Router.route(e);
+                }
+                queuedEvents = new List<Event>();
+            }
+        }
+
         /// <summary>
         /// Diffuse the message down the tree. Router knows where this need to go
         /// </summary>
@@ -184,9 +201,11 @@ namespace Broker
         {
             if (isPrimaryBroker)
                 SendEventToReplicas(e);
-            Thread thread = new Thread(() => { OrderStrategy.DeliverInOrder(e); });
-            thread.Start();
+            else
+                queuedEvents.Add(e);
+            OrderStrategy.DeliverInOrder(e);
         }
+
 
         public void SendEventToReplicas(Event e)
         {
@@ -205,7 +224,40 @@ namespace Broker
                 thread.Start();
             }
         }
-        
+
+
+        /// <summary>
+        /// notify replicas that a event was sent
+        /// </summary>
+        public void SendReplicasEventSent(Event e)
+        {
+            foreach (IBroker broker in new List<IBroker>(siteBrokers.Values)) // removing while iterating... better create a new list
+            {
+                Thread thread = new Thread(() =>
+                {
+                    try
+                    {
+                        broker.SentEventNotification(e);
+                    }
+                    catch (System.Net.Sockets.SocketException)
+                    {
+                        RemoveSiteBroker(broker);
+                    }
+                });
+                thread.Start();
+            }
+        }
+
+
+        /// <summary>
+        /// primary broker notify replica that have send an event to all interested
+        /// </summary>
+        public void SentEventNotification(Event e)
+        {
+            queuedEvents.Remove(e);
+        }
+
+                
         /// <summary>
         /// Diffuse the event to the root
         /// </summary>
@@ -459,6 +511,10 @@ namespace Broker
                     { RemoveSiteBroker(siteBrokers[siteBrokers.Keys.First()]); }
                 }
                 ElectSiteLeader();
+                if (isPrimaryBroker)
+                {
+                    SendQueuedEvents();
+                }
             }
         }
 

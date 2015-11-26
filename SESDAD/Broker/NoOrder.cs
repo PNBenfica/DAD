@@ -16,7 +16,6 @@ namespace Broker
 
         public override void DeliverInOrder(Event e)
         {
-            Console.WriteLine("hey hey");
             lock (this)
             {
                 if (Broker.isPrimaryBroker)

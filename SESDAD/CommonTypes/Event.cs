@@ -43,6 +43,33 @@ namespace CommonTypes
             this.Topic = topic;
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+
+            Event e = obj as Event;
+            if ((Object)e == null)
+                return false;
+
+            return this.Id == e.Id && this.PublisherId.Equals(e.PublisherId) && this.Content.Equals(e.Content);
+        }
+
+        public bool Equals(Event e)
+        {
+            if ((Object)e == null)
+                return false;
+
+            return this.Id == e.Id && this.PublisherId.Equals(e.PublisherId);
+        }
+
+        public override int GetHashCode()
+        {
+            int prime = 31;
+            int result = 1;
+            result = result * prime + (""+ this.PublisherId).GetHashCode();
+            return result;
+        }
         #endregion
 
     }

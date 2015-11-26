@@ -19,6 +19,7 @@ namespace CommonTypes
 
         void ReceiveImAlive();
         void IsAlive();
+        void SentEventNotification(Event e);
 
         void registerNewChildSite(string name, string primaryBroker, string secondaryBroker1, string secondaryBroker2);
         void registerPublisher(string url);

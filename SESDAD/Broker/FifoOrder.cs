@@ -13,7 +13,7 @@ namespace Broker
 
         public Dictionary<string, int> PublishersPosts { get; set; }
         public Dictionary<string, List<Event>> QueuedEvents { get; set; } //queued events of a publisher
-        public Dictionary<string, Object> PublisherLocks { get; set; } //queued events of a publisher
+        public Dictionary<string, Object> PublisherLocks { get; set; }
 
 
         public FifoOrder(Broker broker) 

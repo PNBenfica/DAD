@@ -78,7 +78,7 @@ namespace Broker
             foreach (Event previousEvent in e.PreviousEvents)
             {
                 bool wasSentBeforeNewEvent = previousEvent.Id < e.Id; // sent before the new event that arrived
-                bool wasSentAfterLastEvent = previousEvent.Id > ReceivedEvents; // sent after last event recorded of this publisher
+                bool wasSentAfterLastEvent = previousEvent.Id > ReceivedEvents; // sent after last event recorded
                 bool isSubscribed = Broker.Router.HasSubscrition(previousEvent.Topic);
                 bool subscribedBeforePublish = true;
                 //bool subscribedBeforePublish = previousEvent.TimeStamp.CompareTo(Broker.TopicTimeStamp(previousEvent.Topic)) > 0;

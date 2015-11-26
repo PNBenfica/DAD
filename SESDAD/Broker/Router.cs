@@ -141,7 +141,7 @@ namespace Broker
         #region abstractMethods
 
         public abstract List<String> GetBrokersSites(Event e);
-        public abstract DateTime addSubscrition(String name, bool isSubscriber, String topic, bool isClimbing);
+        public abstract void addSubscrition(String name, bool isSubscriber, String topic, bool isClimbing);
         public abstract void deleteSubscrition(String name, bool isSubscriber, String topic);
         public abstract bool HasSubscrition(String topic);
         public abstract void BrokersSubscriptionsStatus();

@@ -84,8 +84,7 @@ namespace Broker
                 bool subscribedBeforePublish = true;
                 //bool subscribedBeforePublish = previousEvent.TimeStamp.CompareTo(Broker.TopicTimeStamp(previousEvent.Topic)) > 0;
 
-                if (wasSentBeforeNewEvent && wasSentAfterLastEvent && isSubscribed && subscribedBeforePublish)
-                    return true;
+                return (wasSentBeforeNewEvent && wasSentAfterLastEvent && isSubscribed && subscribedBeforePublish);
             }
             return false;
         }

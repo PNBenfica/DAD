@@ -18,10 +18,9 @@ namespace Broker
         /// <summary>
         /// param isSubscriber is always True. Doesn t update parent broker, only subscribers.
         /// </summary>
-        public override DateTime addSubscrition(string name, bool isSubscriber, string topic, bool isClimbing)
+        public override void addSubscrition(string name, bool isSubscriber, string topic, bool isClimbing)
         {
             SubscribersSubscriptions.Subscribe(name, tokenize(topic));
-            return DateTime.Now;
         }
 
         /// <summary>

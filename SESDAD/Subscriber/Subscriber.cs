@@ -19,7 +19,6 @@ namespace Subscriber
         private SiteBrokers siteBrokers;
         private IPuppetMasterURL puppetMaster;
         private string loggingLevel;
-        public Topic<Subscription> Subscriptions { get; set; }
         #endregion
 
         #region classUtils
@@ -30,7 +29,6 @@ namespace Subscriber
             this.url = url;
             this.puppetMaster = (IPuppetMasterURL)Activator.GetObject(typeof(IPuppetMasterURL), puppetMasterUrl);
             this.loggingLevel = loggingLevel;
-            this.Subscriptions = new Topic<Subscription>("/");
         }
 
         public void PrintMessage(Event e)
@@ -51,23 +49,7 @@ namespace Subscriber
             string[] topicSplit = topic.Split(delimiterChars, StringSplitOptions.RemoveEmptyEntries);
             return topicSplit;
         }
-
-        /// <summary>
-        /// returns true if the subscriber has a subscrition in the topic
-        /// </summary>
-        public bool HasSubscrition(string topic)
-        {
-            return Subscriptions.HasSubscrition(new Subscription(name), tokenize(topic));
-        }
-
-        public DateTime TopicTimeStamp(string topic)
-        {
-            List<Subscription> subscriptions = Subscriptions.GetSubscribers(tokenize(topic));
-            if (subscriptions != null && subscriptions.Count > 0)
-                return subscriptions[0].TimeStamp;
-            return DateTime.Now;
-        }
-
+        
 
         /// <summary>
         /// Must get the primary broker and notify him that a brand new subscriber is in town
@@ -102,9 +84,7 @@ namespace Subscriber
                 {
                     try
                     {
-                        DateTime timeStamp = PrimaryBroker().Subscribe(this.name, true, topic);
-                        Subscription subscription = new Subscription(name, timeStamp);
-                        Subscriptions.Subscribe(subscription, tokenize(topic));
+                        PrimaryBroker().Subscribe(this.name, true, topic);
                         subscribed = true;
                     }
                     catch (System.Net.Sockets.SocketException) // primary broker is down. lets ask to see if there is a new one
@@ -125,7 +105,6 @@ namespace Subscriber
                 {
                     try
                     {
-                        Subscriptions.UnSubscribe(new Subscription(name), tokenize(topic));
                         PrimaryBroker().UnSubscribe(this.name, true, topic);
                     }
                     catch (System.Net.Sockets.SocketException) // primary broker is down. lets ask to see if there is a new one
@@ -152,8 +131,6 @@ namespace Subscriber
         {
             Console.WriteLine("\r\n<------Status------>");
             Console.WriteLine("Name: {0}", name);
-            Console.WriteLine("--Subscriptions--");
-            Subscriptions.Status();
             Console.WriteLine("");
 
         }

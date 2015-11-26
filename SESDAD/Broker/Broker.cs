@@ -32,8 +32,7 @@ namespace Broker
         private Thread pingThread; // thread used by primary broker to ping secondaries
         private System.Timers.Timer secondaryBrokerTimer; // timer used by secondaries to see how long the primary broker send the last ping         
         private List<Event> queuedEvents = new List<Event>();  // queued events in replicas waiting the confirmation of primary that they were sent
-        private HashSet<Event> receivedEvents = new HashSet<Event>();
-
+    
         public List<IPublisher> Publishers { get; set; }
         public Dictionary<string, ISubscriber> Subscribers { get; set; }
 
@@ -120,14 +119,14 @@ namespace Broker
 
         #region remoteMethods
 
-        public DateTime Subscribe(String Id, bool isSubscriber, String topic, bool isClimbing = false)
+        public void Subscribe(String Id, bool isSubscriber, String topic, bool isClimbing = false)
         {
             lock (this)
             {
                 Console.WriteLine("New subscrition from: {0} on topic: {1}", Id, topic);
                 if (isPrimaryBroker)
                     SendSubscribeToReplicas(Id, isSubscriber, topic, isClimbing);
-                return Router.addSubscrition(Id, isSubscriber, topic, isClimbing);
+                Router.addSubscrition(Id, isSubscriber, topic, isClimbing);
             }
         }
 
@@ -261,24 +260,18 @@ namespace Broker
         /// <summary>
         /// Diffuse the event to the root
         /// </summary>
-        public DateTime DiffuseMessageToRoot(Event e)
+        public void DiffuseMessageToRoot(Event e)
         {
-            DateTime timeStamp;
-
             //start difusing if is root or parent not interested
             if (IsRoot() || !IsParentInterested(e.Topic))
             {
-                timeStamp = DateTime.Now;
-                e.TimeStamp = timeStamp;
                 Thread thread = new Thread(() => { this.DiffuseMessage(e); });
                 thread.Start();         
             }
             else
             {
-                timeStamp = ParentPrimaryBroker().DiffuseMessageToRoot(e);                
+                ParentPrimaryBroker().DiffuseMessageToRoot(e);                
             }
-
-            return timeStamp;
         }
 
 
@@ -288,14 +281,14 @@ namespace Broker
         /// It must send it to the root, and atach info to that event
         /// No order does nothing, Fifo does nothing, Total order makes ID undefined
         /// </summary>
-        public DateTime Publish(Event e)
+        public void Publish(Event e)
         {
             if (OrderStrategy is TotalOrder)
             {
                 e.Id = UNDEFINEDID;
                 e.PreviousEvents = new List<Event>();
             }
-            return DiffuseMessageToRoot(e);
+            DiffuseMessageToRoot(e);
         }
 
 

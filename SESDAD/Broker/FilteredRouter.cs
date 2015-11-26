@@ -23,7 +23,7 @@ namespace Broker
         /// <summary>
         /// Updates Topic manager and propagtes subscrition up the tree
         /// </summary>
-        public override DateTime addSubscrition(string name, bool isSubscriber, string topic, bool isClimbing)
+        public override void addSubscrition(string name, bool isSubscriber, string topic, bool isClimbing)
         {
             if (isSubscriber)
                 SubscribersSubscriptions.Subscribe(name, tokenize(topic));
@@ -33,17 +33,11 @@ namespace Broker
             if (Broker.isPrimaryBroker)
             {
                 notifyChildrenOfSubscription(name, topic, true);
-
-                if (Broker.IsRoot())
+                if (!Broker.IsRoot())
                 {
-                    return DateTime.Now;
-                }
-                else
-                {
-                    return SendToParent(topic, true);
+                    SendToParent(topic, true);
                 }
             }
-            return DateTime.Now;
         }
 
 
@@ -68,16 +62,15 @@ namespace Broker
         }
 
 
-        private DateTime SendToParent(string topic, bool isSubscription)
+        private void SendToParent(string topic, bool isSubscription)
         {
             bool sent = false;
-            DateTime timeStamp = DateTime.Now;
             while (!sent)
             {
                 try
                 {
                     if (isSubscription)
-                        timeStamp = Broker.ParentPrimaryBroker().Subscribe(Broker.SiteName, false, topic, true);
+                        Broker.ParentPrimaryBroker().Subscribe(Broker.SiteName, false, topic, true);
                     else
                         Broker.ParentPrimaryBroker().UnSubscribe(Broker.SiteName, false, topic);
                     sent = true;
@@ -87,7 +80,6 @@ namespace Broker
                     Broker.ParentBrokers.ConnectPrimaryBroker();
                 }
             }
-            return timeStamp;
         }
 
 

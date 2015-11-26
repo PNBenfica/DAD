@@ -114,8 +114,7 @@ namespace Publisher
                 {
                     try
                     {
-                        DateTime timeStamp = PrimaryBroker().Publish(ev);
-                        ev.TimeStamp = timeStamp;
+                        PrimaryBroker().Publish(ev);
                         UpdatePreviousEvents(ev);
                         published = true;
                         //puppetMaster.Log("PubEvent " + this.Name + ", " + this.Name + ", " + ev.Topic + ", " + this.NumberOfEvents); // faz sentido meter duas vezes o nome do processo? no enunciado esta
@@ -140,7 +139,7 @@ namespace Publisher
             {
                 PreviousEvents.Dequeue();
             }
-            PreviousEvents.Enqueue(new Event(e.Id, e.TimeStamp, e.PublisherId, e.Topic));
+            PreviousEvents.Enqueue(new Event(e.Id, e.PublisherId, e.Topic));
         }
 
         public void SequencePublish(String numberOfEvents, String topic, String waitXms)

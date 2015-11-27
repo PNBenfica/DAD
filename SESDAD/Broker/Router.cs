@@ -16,6 +16,8 @@ namespace Broker
 
         private Dictionary<string, List<Event>> subscribersSentEvents;
         private Dictionary<string, List<Event>> brokersSentEvents;
+        private Dictionary<string, Object> brokerLocks = new Dictionary<string, Object>();
+        private Dictionary<string, Object> subscribersLocks = new Dictionary<string, Object>();
 
         #endregion
 
@@ -33,47 +35,72 @@ namespace Broker
         /// </summary>
         public void route(Event e)
         {
-            foreach (String s in GetSubscribers(e))
+            lock (this)
             {
-                SendToSubscriber(e, s);
-            }
+                Thread thread1 = new Thread(() => {
+                    List<Thread> threads = new List<Thread>();
+                    foreach (String s in GetSubscribers(e))
+                    {
+                        Thread thread = new Thread(() => { SendToSubscriber(e, s); });
+                        thread.Start();
+                        threads.Add(thread);
+                    }
 
-            foreach (String site in GetBrokersSites(e))
-            {
-                SendToBroker(e, site);
+                    foreach (String site in GetBrokersSites(e))
+                    {
+                        Thread thread = new Thread(() => { SendToBroker(e, site); });
+                        thread.Start();
+                        threads.Add(thread);
+                    }
+                    foreach (Thread thread in threads)
+                    {
+                        thread.Join();
+                    }
+                    Broker.SendToReplicas("SentEventNotification", e);
+                });
+                thread1.Start();
             }
-            Broker.SendToReplicas("SentEventNotification", e);
         }
 
 
         private void SendToSubscriber(Event e, String subscriber)
         {
-            try
+            if (!subscribersLocks.ContainsKey(subscriber))
+                subscribersLocks[subscriber] = new Object();
+            lock (subscribersLocks[subscriber])
             {
-                Broker.Subscribers[subscriber].ReceiveMessage(e);
-                RecordSentInfo(e, subscriber, true);
-            }
-            catch (System.Net.Sockets.SocketException)
-            {
-                Broker.Subscribers.Remove(subscriber);
-                // TODO remove all subscriptions of this subscriber
+                try
+                {
+                    Broker.Subscribers[subscriber].ReceiveMessage(e);
+                    RecordSentInfo(e, subscriber, true);
+                }
+                catch (System.Net.Sockets.SocketException)
+                {
+                    Broker.Subscribers.Remove(subscriber);
+                    // TODO remove all subscriptions of this subscriber
+                }
             }
         }
 
         private void SendToBroker(Event e, String site)
         {
-            bool sent = false;
-            while (!sent)
+            if (!brokerLocks.ContainsKey(site))
+                brokerLocks[site] = new Object();
+            lock (brokerLocks[site])
             {
-                try
+                bool sent = false;
+                while (!sent)
                 {
-                    Broker.ChildrenSites[site].PrimaryBroker.DiffuseMessage(e);
-                    RecordSentInfo(e, site, false);
-                    sent = true;
-                }
-                catch (System.Net.Sockets.SocketException) // primary broker is down. lets ask to see if there is a new one
-                {
-                    Broker.ChildrenSites[site].ConnectPrimaryBroker();
+                    try
+                    {
+                        Broker.ChildrenSites[site].PrimaryBroker.DiffuseMessage(e);
+                        RecordSentInfo(e, site, false);
+                        sent = true;
+                    }
+                    catch (System.Net.Sockets.SocketException) // primary broker is down. lets ask to see if there is a new one
+                    {
+                        Broker.ChildrenSites[site].ConnectPrimaryBroker();
+                    }
                 }
             }
         }

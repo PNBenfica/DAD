@@ -80,10 +80,8 @@ namespace Broker
                 bool wasSentBeforeNewEvent = previousEvent.Id < e.Id; // sent before the new event that arrived
                 bool wasSentAfterLastEvent = previousEvent.Id > ReceivedEvents; // sent after last event recorded
                 bool isSubscribed = Broker.Router.HasSubscrition(previousEvent.Topic);
-                bool subscribedBeforePublish = true;
-                //bool subscribedBeforePublish = previousEvent.TimeStamp.CompareTo(Broker.TopicTimeStamp(previousEvent.Topic)) > 0;
 
-                if (wasSentBeforeNewEvent && wasSentAfterLastEvent && isSubscribed && subscribedBeforePublish)
+                if (wasSentBeforeNewEvent && wasSentAfterLastEvent && isSubscribed && Broker.HasSentEvent(e, Broker.SiteName))
                     return true;
             }
             return false;

@@ -97,6 +97,17 @@ namespace Broker
         }
 
 
+        /// <summary>
+        /// return true if has send this event to the site
+        /// </summary>
+        public bool HasSentEvent(Event e, string siteName)
+        {
+            if (brokersSentEvents.ContainsKey(siteName))
+                return brokersSentEvents[siteName].Contains(e);
+            return false;
+        }
+
+
         public void ResendEvents(Event e, string siteName)
         {
             lock (this)

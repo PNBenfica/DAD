@@ -99,7 +99,7 @@ namespace Broker
 
         public void Log(Event e)
         {
-            Console.WriteLine("Routing | Id: {0} | Pub: {1} | Topic: {1} | Content: {2}", e.Id, e.PublisherId, e.Topic, e.Content);
+            Console.WriteLine("Routing | Id: {0} | Pub: {1} | Topic: {2} | Content: {3}", e.Id, e.PublisherId, e.Topic, e.Content);
             //if (fullLogging)
             //    puppetMaster.Log("BroEvent " + Name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
         }
@@ -208,6 +208,15 @@ namespace Broker
             {
                 this.Router.RecordSentInfo(e, name, isSubscriber);
             }
+        }
+
+
+        /// <summary>
+        /// return true if has send this event to the site
+        /// </summary>
+        public bool HasSentEvent(Event e, string siteName)
+        {
+            return Router.HasSentEvent(e, siteName);
         }
               
   

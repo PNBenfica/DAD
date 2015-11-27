@@ -21,6 +21,7 @@ namespace CommonTypes
         void IsAlive();
         void SentEventNotification(Event e);
         void UpdateSentEvents(Event e, string name, bool isSubscriber);
+        bool HasSentEvent(Event e, string name);
 
         void registerNewChildSite(string name, string primaryBroker, string secondaryBroker1, string secondaryBroker2);
         void registerPublisher(string url);

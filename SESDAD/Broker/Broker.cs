@@ -99,7 +99,7 @@ namespace Broker
 
         public void Log(Event e)
         {
-            Console.WriteLine("Diffusing message {0} from {1}", e.Id, e.PublisherId);
+            Console.WriteLine("Routing | Id: {0} | Pub: {1} | Topic: {1} | Content: {2}", e.Id, e.PublisherId, e.Topic, e.Content);
             //if (fullLogging)
             //    puppetMaster.Log("BroEvent " + Name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
         }
@@ -123,43 +123,27 @@ namespace Broker
         {
             lock (this)
             {
-                Console.WriteLine("New subscrition from: {0} on topic: {1}", Id, topic);
+                Console.WriteLine("Subscrition | Subscriber: {0} | Topic: {1}", Id, topic);
                 if (isPrimaryBroker)
-                    SendSubscribeToReplicas(Id, isSubscriber, topic, isClimbing);
+                    SendToReplicas("Subscribe", Id, isSubscriber, topic, isClimbing);
                 Router.addSubscrition(Id, isSubscriber, topic, isClimbing);
             }
         }
-
-        private void SendSubscribeToReplicas(string Id, bool isSubscriber, string topic, bool isClimbing)
-        {
-            foreach (IBroker broker in new List<IBroker>(siteBrokers.Values)) // removing while iterating... better create a new list
-            {
-                Thread thread = new Thread(() =>
-                {
-                    try
-                    {
-                        broker.Subscribe(Id, isSubscriber, topic, isClimbing);
-                    }
-                    catch (System.Net.Sockets.SocketException)
-                    {
-                        RemoveSiteBroker(broker);
-                    }
-                });
-                thread.Start();
-            }
-        }
+        
 
         public void UnSubscribe(String Id, bool isSubscriber, String topic)
         {
             lock (this)
             {
+                Console.WriteLine("Unsubscrition | Subscriber: {0} | Topic: {1}", Id, topic);
                 if (isPrimaryBroker)
-                    SendUnSubscribeToReplicas(Id, isSubscriber, topic);
+                    SendToReplicas("UnSubscribe", Id, isSubscriber, topic);
                 Router.deleteSubscrition(Id, isSubscriber, topic);
             }
         }
 
-        private void SendUnSubscribeToReplicas(string Id, bool isSubscriber, string topic)
+
+        public void SendToReplicas(string method, params object[] args)
         {
             foreach (IBroker broker in new List<IBroker>(siteBrokers.Values)) // removing while iterating... better create a new list
             {
@@ -167,7 +151,7 @@ namespace Broker
                 {
                     try
                     {
-                        broker.UnSubscribe(Id, isSubscriber, topic);
+                        typeof(IBroker).GetMethod(method).Invoke(broker, args);
                     }
                     catch (System.Net.Sockets.SocketException)
                     {
@@ -199,55 +183,13 @@ namespace Broker
         public void DiffuseMessage(Event e)
         {
             if (isPrimaryBroker)
-                SendEventToReplicas(e);
+                SendToReplicas("DiffuseMessage", e);
             else
                 queuedEvents.Add(e);
             OrderStrategy.DeliverInOrder(e);
         }
 
-
-        public void SendEventToReplicas(Event e)
-        {
-            foreach (IBroker broker in new List<IBroker>(siteBrokers.Values)) // removing while iterating... better create a new list
-            {
-                Thread thread = new Thread(() => {
-                    try
-                    { 
-                        broker.DiffuseMessage(e); 
-                    }
-                    catch (System.Net.Sockets.SocketException)
-                    {
-                        RemoveSiteBroker(broker);
-                    }
-                });
-                thread.Start();
-            }
-        }
-
-
-        /// <summary>
-        /// notify replicas that a event was sent
-        /// </summary>
-        public void SendReplicasEventSent(Event e)
-        {
-            foreach (IBroker broker in new List<IBroker>(siteBrokers.Values)) // removing while iterating... better create a new list
-            {
-                Thread thread = new Thread(() =>
-                {
-                    try
-                    {
-                        broker.SentEventNotification(e);
-                    }
-                    catch (System.Net.Sockets.SocketException)
-                    {
-                        RemoveSiteBroker(broker);
-                    }
-                });
-                thread.Start();
-            }
-        }
-
-
+        
         /// <summary>
         /// primary broker notify replica that have send an event to all interested
         /// </summary>
@@ -255,8 +197,20 @@ namespace Broker
         {
             queuedEvents.Remove(e);
         }
+        
 
-                
+        /// <summary>
+        /// primary broker notify replica that have send an event to all interested
+        /// </summary>
+        public void UpdateSentEvents(Event e, string name, bool isSubscriber)
+        {
+            lock (this)
+            {
+                this.Router.RecordSentInfo(e, name, isSubscriber);
+            }
+        }
+              
+  
         /// <summary>
         /// Diffuse the event to the root
         /// </summary>
@@ -435,21 +389,7 @@ namespace Broker
         {
             while (true)
             {
-                foreach (IBroker broker in new List<IBroker>(siteBrokers.Values)) // removing while iterating... better create a new list
-                {
-                    Thread thread = new Thread(() => 
-                    {
-                        try
-                        {
-                            broker.ReceiveImAlive();
-                        }
-                        catch (System.Net.Sockets.SocketException) // this exception could take a while, so we send all Im alives in different threads
-                        {
-                            RemoveSiteBroker(broker);
-                        }
-                    });
-                    thread.Start(); 
-                }
+                SendToReplicas("ReceiveImAlive");
                 Thread.Sleep(1500);
             }
         }

@@ -31,15 +31,6 @@ namespace Subscriber
             this.loggingLevel = loggingLevel;
         }
 
-        public void PrintMessage(Event e)
-        {
-            //puppetMaster.Log("SubEvent " + this.name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
-            Console.WriteLine("");
-            Console.WriteLine("------- New Message -------");
-            Console.WriteLine("Post ID:" + e.Id);
-            Console.WriteLine("Publisher: {0}\r\nTopic: {1}\r\nContent: {2}", e.PublisherId, e.Topic, e.Content);
-        }
-
         /// <summary>
         /// Divides the string topic into String[]
         /// </summary>
@@ -78,20 +69,8 @@ namespace Subscriber
         {
             lock (this)
             {
-                Console.WriteLine("New Subscrition on Topic: {0}", topic);
-                bool subscribed = false;
-                while (!subscribed)
-                {
-                    try
-                    {
-                        PrimaryBroker().Subscribe(this.name, true, topic);
-                        subscribed = true;
-                    }
-                    catch (System.Net.Sockets.SocketException) // primary broker is down. lets ask to see if there is a new one
-                    {
-                        this.siteBrokers.ConnectPrimaryBroker();
-                    }
-                }
+                Console.WriteLine("Subscrition | Topic: {0}", topic);
+                SendToParent(() => PrimaryBroker().Subscribe(this.name, true, topic));
             }
         }
 
@@ -99,18 +78,23 @@ namespace Subscriber
         {
             lock (this)
             {
-                Console.WriteLine("Unsubscrition on Topic: {0}", topic);
-                bool unsubscribed = false;
-                while (!unsubscribed)
+                Console.WriteLine("Unsubscrition | Topic: {0}", topic);
+                SendToParent(() => PrimaryBroker().UnSubscribe(this.name, true, topic));
+            }
+        }
+
+        public void SendToParent(Action method)
+        {
+            while (true)
+            {
+                try
                 {
-                    try
-                    {
-                        PrimaryBroker().UnSubscribe(this.name, true, topic);
-                    }
-                    catch (System.Net.Sockets.SocketException) // primary broker is down. lets ask to see if there is a new one
-                    {
-                        this.siteBrokers.ConnectPrimaryBroker();
-                    }
+                    method();
+                    break;
+                }
+                catch (System.Net.Sockets.SocketException) // primary broker is down. lets ask to see if there is a new one
+                {
+                    this.siteBrokers.ConnectPrimaryBroker();
                 }
             }
         }
@@ -125,6 +109,12 @@ namespace Subscriber
             {
                 PrintMessage(e);
             }
+        }
+
+        public void PrintMessage(Event e)
+        {
+            //puppetMaster.Log("SubEvent " + this.name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
+            Console.WriteLine("Event ID: {0} | Publisher: {1} | Topic: {2} | Content: {3}", e.Id, e.PublisherId, e.Topic, e.Content);
         }
 
         public void Status()

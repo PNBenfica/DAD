@@ -42,7 +42,7 @@ namespace Broker
             {
                 SendToBroker(e, site);
             }
-            Broker.SendReplicasEventSent(e);
+            Broker.SendToReplicas("SentEventNotification", e);
         }
 
 
@@ -56,7 +56,7 @@ namespace Broker
             catch (System.Net.Sockets.SocketException)
             {
                 Broker.Subscribers.Remove(subscriber);
-                // TODO - remove all subscriptions of this subscriber
+                // TODO remove all subscriptions of this subscriber
             }
         }
 
@@ -80,6 +80,8 @@ namespace Broker
 
         public void RecordSentInfo(Event e, string receiverName, bool isSubscriber)
         {
+            if (Broker.isPrimaryBroker)
+                Broker.SendToReplicas("UpdateSentEvents", e, receiverName, isSubscriber);
             if (isSubscriber)
             {
                 if (!subscribersSentEvents.ContainsKey(receiverName))

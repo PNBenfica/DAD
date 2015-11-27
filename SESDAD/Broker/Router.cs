@@ -32,6 +32,8 @@ namespace Broker
 
         /// <summary>
         /// Get the proper interested in the event and sends them the event
+        /// Every event is sent in parallel so that in case of crash of a child the other childs dont stop receiving events
+        /// After sendind to all the childs broker must notify replicas
         /// </summary>
         public void route(Event e)
         {
@@ -63,6 +65,9 @@ namespace Broker
         }
 
 
+        /// <summary>
+        /// send a event to a subscriber, and then records the info and sends it to the replicas
+        /// </summary>
         private void SendToSubscriber(Event e, String subscriber)
         {
             if (!subscribersLocks.ContainsKey(subscriber))
@@ -82,6 +87,10 @@ namespace Broker
             }
         }
 
+
+        /// <summary>
+        /// send a event to a broker, and then records the info and sends it to the replicas
+        /// </summary>
         private void SendToBroker(Event e, String site)
         {
             if (!brokerLocks.ContainsKey(site))
@@ -105,6 +114,10 @@ namespace Broker
             }
         }
 
+
+        /// <summary>
+        /// method called when a event e was sucessful send to receiverName. records that info
+        /// </summary>
         public void RecordSentInfo(Event e, string receiverName, bool isSubscriber)
         {
             if (Broker.isPrimaryBroker)
@@ -134,20 +147,7 @@ namespace Broker
             return false;
         }
 
-
-        public void ResendEvents(Event e, string siteName)
-        {
-            lock (this)
-            {
-                Console.WriteLine(brokersSentEvents[siteName].Count);
-                foreach (Event ev in brokersSentEvents[siteName])
-                {
-                    SendToBroker(ev, siteName);
-                }
-            }
-        }
-
-
+        
         /// <summary>
         /// Divides the string topic into String[]
         /// </summary>

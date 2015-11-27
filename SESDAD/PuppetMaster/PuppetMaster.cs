@@ -172,16 +172,20 @@ namespace PuppetMaster
 
         public void Crash(String processName)
         {
-            if (publishers.ContainsKey(processName))
-                publishers[processName].Crash();
+            try
+            {
+                if (publishers.ContainsKey(processName))
+                    publishers[processName].Crash();
 
-            if (subscribers.ContainsKey(processName))
-                subscribers[processName].Crash();
+                if (subscribers.ContainsKey(processName))
+                    subscribers[processName].Crash();
 
-            if (brokers.ContainsKey(processName))
-                brokers[processName].Crash();
+                if (brokers.ContainsKey(processName))
+                    brokers[processName].Crash();
+            }
+            catch (System.Net.Sockets.SocketException) { }
         }
-
+        
         public void Freeze(String processName)
         {
             if (publishers.ContainsKey(processName))

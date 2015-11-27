@@ -65,7 +65,6 @@ namespace Broker
             this.OrderStrategy = GetOrderByRefletion(ordering);
             this.ChildrenSites = new Dictionary<string, SiteBrokers>();
 
-            //OrderStrategy = new TotalOrder(this);
             this.OrderStrategy = GetOrderByRefletion(ordering);
             this.Publishers = new List<IPublisher>();
             this.Subscribers = new Dictionary<string, ISubscriber>();
@@ -104,12 +103,16 @@ namespace Broker
             //    puppetMaster.Log("BroEvent " + Name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
         }
 
+
         public void notifyChildrenOfSubscription(string name, string topic, bool isClimbing = false)
         {
             Router.notifyChildrenOfSubscription(name, topic, isClimbing);
         }
 
 
+        /// <summary>
+        /// returns true if the broker parent is interested in this topic
+        /// </summary>
         public bool IsParentInterested(string topic)
         {
             return Router.IsParentInterested(topic);
@@ -119,18 +122,24 @@ namespace Broker
 
         #region remoteMethods
 
-        public void Subscribe(String Id, bool isSubscriber, String topic, bool isClimbing = false)
+        /// <summary>
+        /// received a new subscription. Lets add to the router so that he knows where to send stuff and also replicate this info
+        /// </summary>
+        public void Subscribe(String name, bool isSubscriber, String topic, bool isClimbing = false)
         {
             lock (this)
             {
-                Console.WriteLine("Subscrition | Subscriber: {0} | Topic: {1}", Id, topic);
+                Console.WriteLine("Subscrition | Subscriber: {0} | Topic: {1}", name, topic);
                 if (isPrimaryBroker)
-                    SendToReplicas("Subscribe", Id, isSubscriber, topic, isClimbing);
-                Router.addSubscrition(Id, isSubscriber, topic, isClimbing);
+                    SendToReplicas("Subscribe", name, isSubscriber, topic, isClimbing);
+                Router.addSubscrition(name, isSubscriber, topic, isClimbing);
             }
         }
-        
 
+
+        /// <summary>
+        /// received a new unsubscription. Lets add to the router so that he knows where to send stuff and also replicate this info
+        /// </summary>
         public void UnSubscribe(String Id, bool isSubscriber, String topic)
         {
             lock (this)
@@ -143,6 +152,10 @@ namespace Broker
         }
 
 
+        /// <summary>
+        /// Generic funtion that receives a method and an unspecified number of args and dynamically
+        /// call this method in every replica of the site
+        /// </summary>
         public void SendToReplicas(string method, params object[] args)
         {
             foreach (IBroker broker in new List<IBroker>(siteBrokers.Values)) // removing while iterating... better create a new list
@@ -162,7 +175,11 @@ namespace Broker
             }
         }
 
-
+        
+        /// <summary>
+        /// this method is called when a broker is elected as the new leader and is recovering from a crash
+        /// The broker must send all the queued messages
+        /// </summary>
         private void SendQueuedEvents()
         {
             lock (this)
@@ -178,7 +195,7 @@ namespace Broker
         }
 
         /// <summary>
-        /// Diffuse the message down the tree. Router knows where this need to go
+        /// Diffuse the message down the tree. First lets order the event, then give the event o to router
         /// </summary>
         public void DiffuseMessage(Event e)
         {
@@ -191,16 +208,19 @@ namespace Broker
 
         
         /// <summary>
-        /// primary broker notify replica that have send an event to all interested
+        /// Method call when the primary broker send an event to all interested childs
+        /// He must call this method on the replicas so that
+        /// In case of crash, this event doenst have to be sent again
         /// </summary>
         public void SentEventNotification(Event e)
         {
             queuedEvents.Remove(e);
         }
-        
+
 
         /// <summary>
-        /// primary broker notify replica that have send an event to all interested
+        /// Method call when the primary broker send an event to a interested childs
+        /// He must call this method on the replicas
         /// </summary>
         public void UpdateSentEvents(Event e, string name, bool isSubscriber)
         {
@@ -212,7 +232,7 @@ namespace Broker
 
 
         /// <summary>
-        /// return true if has send this event to the site
+        /// return true if broker has sent this event to the site
         /// </summary>
         public bool HasSentEvent(Event e, string siteName)
         {

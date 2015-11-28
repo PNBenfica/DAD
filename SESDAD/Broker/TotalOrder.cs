@@ -81,7 +81,7 @@ namespace Broker
                 bool wasSentAfterLastEvent = previousEvent.Id > ReceivedEvents; // sent after last event recorded
                 bool isSubscribed = Broker.Router.HasSubscrition(previousEvent.Topic);
 
-                if (wasSentBeforeNewEvent && wasSentAfterLastEvent && isSubscribed && Broker.HasSentEvent(e, Broker.SiteName))
+                if (wasSentBeforeNewEvent && wasSentAfterLastEvent && isSubscribed && Broker.HasSentEvent(e, Broker.SiteName, false))
                     return true;
             }
             return false;

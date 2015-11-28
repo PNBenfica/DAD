@@ -61,6 +61,7 @@ namespace Broker
                     Broker.SendToReplicas("SentEventNotification", e);
                 });
                 thread1.Start();
+                Thread.Sleep(100);
             }
         }
 
@@ -76,8 +77,11 @@ namespace Broker
             {
                 try
                 {
-                    Broker.Subscribers[subscriber].ReceiveMessage(e);
-                    RecordSentInfo(e, subscriber, true);
+                    if (!HasSentEvent(e, subscriber, true))
+                    {
+                        Broker.Subscribers[subscriber].ReceiveMessage(e);
+                        RecordSentInfo(e, subscriber, true);
+                    }
                 }
                 catch (System.Net.Sockets.SocketException)
                 {
@@ -102,8 +106,11 @@ namespace Broker
                 {
                     try
                     {
-                        Broker.ChildrenSites[site].PrimaryBroker.DiffuseMessage(e);
-                        RecordSentInfo(e, site, false);
+                        if (!HasSentEvent(e, site, false))
+                        {
+                            Broker.ChildrenSites[site].PrimaryBroker.DiffuseMessage(e);
+                            RecordSentInfo(e, site, false);
+                        }
                         sent = true;
                     }
                     catch (System.Net.Sockets.SocketException) // primary broker is down. lets ask to see if there is a new one
@@ -140,10 +147,12 @@ namespace Broker
         /// <summary>
         /// return true if has send this event to the site
         /// </summary>
-        public bool HasSentEvent(Event e, string siteName)
+        public bool HasSentEvent(Event e, string name, bool isSubscriber)
         {
-            if (brokersSentEvents.ContainsKey(siteName))
-                return brokersSentEvents[siteName].Contains(e);
+            if (isSubscriber && subscribersSentEvents.ContainsKey(name))
+                return subscribersSentEvents[name].Contains(e);
+            else if (brokersSentEvents.ContainsKey(name))
+                return brokersSentEvents[name].Contains(e);
             return false;
         }
 

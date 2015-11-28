@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CommonTypes;
 using System.Reflection;
+using System.Threading;
 
 
 namespace Subscriber
@@ -14,11 +15,14 @@ namespace Subscriber
 
         #region variables
         private String name;
-        private bool freeze = false;
         private String url;
         private SiteBrokers siteBrokers;
         private IPuppetMasterURL puppetMaster;
         private string loggingLevel;
+
+        private bool isFrozen = false;
+        Object freezeLock = new Object();
+        AutoResetEvent notFreezed = new AutoResetEvent(true);
         #endregion
 
         #region classUtils
@@ -69,6 +73,7 @@ namespace Subscriber
         {
             lock (this)
             {
+                CheckFroozen();
                 Console.WriteLine("Subscrition | Topic: {0}", topic);
                 SendToParent(() => PrimaryBroker().Subscribe(this.name, true, topic));
             }
@@ -78,6 +83,7 @@ namespace Subscriber
         {
             lock (this)
             {
+                CheckFroozen();
                 Console.WriteLine("Unsubscrition | Topic: {0}", topic);
                 SendToParent(() => PrimaryBroker().UnSubscribe(this.name, true, topic));
             }
@@ -107,6 +113,7 @@ namespace Subscriber
         {
             lock (this)
             {
+                CheckFroozen();
                 PrintMessage(e);
             }
         }
@@ -127,12 +134,35 @@ namespace Subscriber
 
         public void Freeze()
         {
-            this.freeze = true;
+            Console.WriteLine("Freezed");
+            lock (freezeLock)
+            {
+                isFrozen = true;
+                notFreezed.Reset();
+            }
         }
 
         public void Unfreeze()
         {
-            this.freeze = false;
+            Console.WriteLine("UnFreezed");
+            lock (freezeLock)
+            {
+                isFrozen = false;
+                notFreezed.Set();
+            }
+        }
+
+        private void CheckFroozen()
+        {
+            AutoResetEvent[] handles = { notFreezed };
+            WaitHandle.WaitAll(handles);
+            lock (freezeLock)
+            {
+                if (!isFrozen)
+                {
+                    notFreezed.Set();
+                }
+            }
         }
         public void Crash()
         {

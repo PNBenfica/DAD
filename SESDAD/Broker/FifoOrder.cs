@@ -42,20 +42,13 @@ namespace Broker
 
         private void RouteEvent(Event e)
         {
-            lock (this)
-            {
-                if (!PublisherLocks.ContainsKey(e.PublisherId))
-                    PublisherLocks[e.PublisherId] = new Object();
+            if (!PublisherLocks.ContainsKey(e.PublisherId))
+                PublisherLocks[e.PublisherId] = new Object();
 
-                Thread thread = new Thread(() =>
-                {
-                    lock (PublisherLocks[e.PublisherId])
-                    {
-                        Broker.Log(e);
-                        Broker.Router.route(e);
-                    }
-                });
-                thread.Start();
+            lock (PublisherLocks[e.PublisherId])
+            {
+                Broker.Log(e);
+                Broker.Router.route(e);
             }
         }
 
@@ -83,7 +76,7 @@ namespace Broker
                 bool isSubscribed = Broker.Router.HasSubscrition(previousEvent.Topic);
                 //bool subscribedBeforePublish = previousEvent.TimeStamp.CompareTo(Broker.TopicTimeStamp(previousEvent.Topic)) > 0;
 
-                if (wasSentBeforeNewEvent && wasSentAfterLastEvent && isSubscribed && Broker.HasSentEvent(e, Broker.SiteName))
+                if (wasSentBeforeNewEvent && wasSentAfterLastEvent && isSubscribed && Broker.HasSentEvent(e, Broker.SiteName, false))
                 {
                     return true;
                 }

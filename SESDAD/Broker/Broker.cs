@@ -202,7 +202,9 @@ namespace Broker
             if (isPrimaryBroker)
                 SendToReplicas("DiffuseMessage", e);
             else
+            {
                 queuedEvents.Add(e);
+            }
             OrderStrategy.DeliverInOrder(e);
         }
 
@@ -234,9 +236,9 @@ namespace Broker
         /// <summary>
         /// return true if broker has sent this event to the site
         /// </summary>
-        public bool HasSentEvent(Event e, string siteName)
+        public bool HasSentEvent(Event e, string name, bool isSubscriber)
         {
-            return Router.HasSentEvent(e, siteName);
+            return Router.HasSentEvent(e, name, isSubscriber);
         }
               
   

@@ -39,16 +39,18 @@ namespace Broker
         {
             lock (this)
             {
+                List<string> subscribersInterested = GetSubscribers(e);
+                List<string> brokersInterested = GetBrokersSites(e);
                 Thread thread1 = new Thread(() => {
                     List<Thread> threads = new List<Thread>();
-                    foreach (String s in GetSubscribers(e))
+                    foreach (String s in subscribersInterested)
                     {
                         Thread thread = new Thread(() => { SendToSubscriber(e, s); });
                         thread.Start();
                         threads.Add(thread);
                     }
 
-                    foreach (String site in GetBrokersSites(e))
+                    foreach (String site in brokersInterested)
                     {
                         Thread thread = new Thread(() => { SendToBroker(e, site); });
                         thread.Start();
@@ -77,7 +79,7 @@ namespace Broker
             {
                 try
                 {
-                    if (!HasSentEvent(e, subscriber, true))
+                    if (!HasSentEvent(e, subscriber, true) && Broker.Subscribers.ContainsKey(subscriber))
                     {
                         Broker.Subscribers[subscriber].ReceiveMessage(e);
                         RecordSentInfo(e, subscriber, true);
@@ -85,8 +87,7 @@ namespace Broker
                 }
                 catch (System.Net.Sockets.SocketException)
                 {
-                    Broker.Subscribers.Remove(subscriber);
-                    // TODO remove all subscriptions of this subscriber
+                    Broker.RemoveSubscriber(subscriber);
                 }
             }
         }
@@ -154,6 +155,15 @@ namespace Broker
             else if (brokersSentEvents.ContainsKey(name))
                 return brokersSentEvents[name].Contains(e);
             return false;
+        }
+
+
+        // remove all subscriptions of this subscriber
+        public void UnsubscribeAllTopics(string subscriber)
+        {
+            List<string> topicsSubscribed = SubscribersSubscriptions.GetAllSubscriptions(subscriber);
+            foreach (string topic in topicsSubscribed)
+                deleteSubscrition(subscriber, true, topic);
         }
 
         

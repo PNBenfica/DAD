@@ -96,6 +96,21 @@ namespace CommonTypes
             return GetSubscribers(topic).Count() > 0;
         }
 
+
+
+        public List<string> GetAllSubscriptions(T subscriber)
+        {
+            List<string> subscriptions = new List<string>();
+            if (Subscribers.Contains(subscriber))
+                subscriptions.Add(this.ToString());
+            else if (SubscribersAllSubTopics.Contains(subscriber))
+                subscriptions.Add(this.ToString() + "/*");
+
+            foreach (Topic<T> subtopic in subTopics.Values)
+                subscriptions.AddRange(subtopic.GetAllSubscriptions(subscriber));
+            return subscriptions;
+        }
+
         /// <summary>
         /// returns true if the subscriber has a subscrition in the topic
         /// </summary>
@@ -115,7 +130,6 @@ namespace CommonTypes
 
             foreach (Topic<T> subtopic in subTopics.Values)
                 subtopic.Status();
-            Console.WriteLine("");
         }
 
         private void PrintInfo(String description, HashSet<T> collection)
@@ -124,11 +138,20 @@ namespace CommonTypes
             {
                 foreach (T s in collection)
                 {
-                    Console.Write("Topic: {0} | {1} |", this.Name, description);
-                    Console.WriteLine(" {0} ", s);
+                    Console.WriteLine("{0} | {1} | Topic: {2}", s, description, this);
                 }
             }
         }
+
+        public override string ToString()
+        {
+            if (IsRoot())
+                return "";
+            else
+                return Parent.ToString() + "/" + this.Name;
+            return base.ToString();
+        }
+
         #endregion
 
         #region subscribeTopic
@@ -269,6 +292,6 @@ namespace CommonTypes
             String[] restSubTopics = (String[])topicArray.Skip(1).ToArray(); // removes first element
             subTopic.UnSubscribe(processName, restSubTopics);
         }
-        #endregion      
+        #endregion    
     }
 }

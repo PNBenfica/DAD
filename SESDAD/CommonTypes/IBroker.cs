@@ -26,6 +26,7 @@ namespace CommonTypes
         void registerNewChildSite(string name, string primaryBroker, string secondaryBroker1, string secondaryBroker2);
         void registerPublisher(string url);
         void registerSubscriber(string name, string url);
+        void RemoveSubscriber(string name);
         void Status();
         void Freeze();
         void Unfreeze();

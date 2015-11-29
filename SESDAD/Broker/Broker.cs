@@ -342,6 +342,18 @@ namespace Broker
 
 
         /// <summary>
+        /// Removes a subscriber when he crashes
+        /// </summary>
+        public void RemoveSubscriber(string subscriber)
+        {
+            if (isPrimaryBroker)
+                SendToReplicas("RemoveSubscriber", subscriber);
+            Subscribers.Remove(subscriber);
+            Router.UnsubscribeAllTopics(subscriber);
+        }
+
+
+        /// <summary>
         /// Returns the primary broker of the parent site
         /// </summary>
         public IBroker ParentPrimaryBroker()

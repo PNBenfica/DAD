@@ -175,13 +175,25 @@ namespace PuppetMaster
             try
             {
                 if (publishers.ContainsKey(processName))
-                    publishers[processName].Crash();
+                {
+                    IPublisher publisher = publishers[processName];
+                    publishers.Remove(processName);
+                    publisher.Crash();
+                }
 
                 if (subscribers.ContainsKey(processName))
-                    subscribers[processName].Crash();
+                {
+                    ISubscriber subscriber = subscribers[processName];
+                    subscribers.Remove(processName);
+                    subscriber.Crash();
+                }
 
                 if (brokers.ContainsKey(processName))
-                    brokers[processName].Crash();
+                {
+                    IBroker broker = brokers[processName];
+                    brokers.Remove(processName);
+                    broker.Crash();
+                }
             }
             catch (System.Net.Sockets.SocketException) { }
         }

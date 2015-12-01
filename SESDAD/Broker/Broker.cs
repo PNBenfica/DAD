@@ -14,7 +14,6 @@ namespace Broker
     {
         #region variables
 
-        private bool isFrozen = false;
         public IPuppetMasterURL puppetMaster;
         private bool fullLogging;
         public String Name { get; set; }
@@ -38,6 +37,11 @@ namespace Broker
 
         public Router Router { get; set; }
         public OrderStrategy OrderStrategy { get; set; }
+
+
+        private bool isFrozen = false;
+        Object freezeLock = new Object();
+        AutoResetEvent notFreezed = new AutoResetEvent(true);
 
         public const int UNDEFINEDID = -1;
 
@@ -158,20 +162,50 @@ namespace Broker
         /// </summary>
         public void SendToReplicas(string method, params object[] args)
         {
-            foreach (IBroker broker in new List<IBroker>(siteBrokers.Values)) // removing while iterating... better create a new list
+            lock (this)
             {
-                Thread thread = new Thread(() =>
+                List<Thread> threads = new List<Thread>();
+                foreach (IBroker broker in new List<IBroker>(siteBrokers.Values)) // removing while iterating... better create a new list
                 {
-                    try
+                    Thread thread = new Thread(() =>
                     {
-                        typeof(IBroker).GetMethod(method).Invoke(broker, args);
-                    }
-                    catch (System.Net.Sockets.SocketException)
-                    {
-                        RemoveSiteBroker(broker);
-                    }
-                });
-                thread.Start();
+                        try
+                        {
+                            typeof(IBroker).GetMethod(method).Invoke(broker, args);
+                        }
+                        catch (TargetInvocationException tie)
+                        {
+                            if (tie.InnerException is System.Net.Sockets.SocketException)
+                                RemoveSiteBroker(broker);
+                        }
+                    });
+                    thread.Start();
+                    threads.Add(thread);
+                }
+                foreach (Thread thread in threads)
+                {
+                    thread.Join();
+                }
+            }
+        }
+
+        
+        /// <summary>
+        /// calls the action on the parent site
+        /// </summary>
+        public void SendToSite(SiteBrokers site, Action action)
+        {
+            while (true)
+            {
+                try
+                {
+                    action();
+                    break;
+                }
+                catch (System.Net.Sockets.SocketException) // primary broker is down. lets ask to see if there is a new one
+                {
+                    site.ConnectPrimaryBroker();
+                }
             }
         }
 
@@ -184,13 +218,15 @@ namespace Broker
         {
             lock (this)
             {
-                Console.WriteLine(queuedEvents.Count);
+                Console.WriteLine("----------------------------");
+                queuedEvents = queuedEvents.OrderBy(o => o.Id).ToList();
                 foreach (Event e in queuedEvents)
                 {
                     Log(e);
                     Router.route(e);
                 }
                 queuedEvents = new List<Event>();
+                Console.WriteLine("----------------------------");
             }
         }
 
@@ -216,7 +252,10 @@ namespace Broker
         /// </summary>
         public void SentEventNotification(Event e)
         {
-            queuedEvents.Remove(e);
+            lock (queuedEvents)
+            {
+                queuedEvents.Remove(e);
+            }
         }
 
 
@@ -247,7 +286,6 @@ namespace Broker
         /// </summary>
         public void DiffuseMessageToRoot(Event e)
         {
-            //start difusing if is root or parent not interested
             if (IsRoot() || !IsParentInterested(e.Topic))
             {
                 Thread thread = new Thread(() => { this.DiffuseMessage(e); });
@@ -255,10 +293,12 @@ namespace Broker
             }
             else
             {
-                ParentPrimaryBroker().DiffuseMessageToRoot(e);                
+                lock (this)
+                {
+                    SendToSite(ParentBrokers, () => ParentPrimaryBroker().DiffuseMessageToRoot(e));
+                }
             }
         }
-
 
 
         /// <summary>
@@ -268,12 +308,15 @@ namespace Broker
         /// </summary>
         public void Publish(Event e)
         {
-            if (OrderStrategy is TotalOrder)
+            lock (this)
             {
-                e.Id = UNDEFINEDID;
-                e.PreviousEvents = new List<Event>();
+                if (OrderStrategy is TotalOrder)
+                {
+                    e.Id = UNDEFINEDID;
+                    e.PreviousEvents = new List<Event>();
+                }
+                DiffuseMessageToRoot(e);
             }
-            DiffuseMessageToRoot(e);
         }
 
 
@@ -418,7 +461,7 @@ namespace Broker
         /// </summary>
         private void StartPing()
         {
-            ThreadStart ts = new ThreadStart(this.SendImAlives);
+            ThreadStart ts = new ThreadStart(this.SendImAlive);
             this.pingThread = new Thread(ts);
             this.pingThread.Start();
         }
@@ -428,12 +471,37 @@ namespace Broker
         /// Sends a Im Alive message every 1500 ms
         /// If a replication broker is down it is removed from the list
         /// </summary>
-        private void SendImAlives()
+        private void SendImAlive()
         {
-            while (true)
+            while (isPrimaryBroker)
             {
-                SendToReplicas("ReceiveImAlive");
+                CheckFroozen();
+                SendImAlives();
                 Thread.Sleep(1500);
+            }
+        }
+
+
+        /// <summary>
+        /// Generic funtion that receives a method and an unspecified number of args and dynamically
+        /// call this method in every replica of the site
+        /// </summary>
+        public void SendImAlives()
+        {
+            foreach (IBroker broker in new List<IBroker>(siteBrokers.Values)) // removing while iterating... better create a new list
+            {
+                Thread thread = new Thread(() =>
+                {
+                    try
+                    {
+                        broker.ReceiveImAlive();
+                    }
+                    catch (System.Net.Sockets.SocketException)
+                    {
+                        RemoveSiteBroker(broker);
+                    }
+                });
+                thread.Start();
             }
         }
 
@@ -443,7 +511,10 @@ namespace Broker
         /// </summary>
         public void ReceiveImAlive()
         {
-            RestartTimer();
+            lock (this)
+            {
+                RestartTimer();
+            }
         }
 
 
@@ -479,18 +550,85 @@ namespace Broker
             {
                 Console.WriteLine("Primary server gone down. Re-electing...");
                 secondaryBrokerTimer.Enabled = false;
+
+                bool isPrimaryBrokerAlive = IsBrokerAlive(this.primaryBroker);
+                Dictionary<string, IBroker> previousBroker = new Dictionary<string, IBroker>();
+                if (isPrimaryBrokerAlive)
+                    previousBroker.Add(primaryBrokerUrl, primaryBroker);
                 RemoveSiteBroker(this.primaryBroker);
-                if (siteBrokers.Count == 1) // check if the other broker is alive
-                {
-                    try { siteBrokers[siteBrokers.Keys.First()].IsAlive(); }
-                    catch (System.Net.Sockets.SocketException)
-                    { RemoveSiteBroker(siteBrokers[siteBrokers.Keys.First()]); }
-                }
+
+                CheckAnyBrotherAlive();
                 ElectSiteLeader();
+                if (isPrimaryBrokerAlive)
+                    siteBrokers.Add(previousBroker.First().Key, previousBroker.First().Value);
+
                 if (isPrimaryBroker)
                 {
+                    if (isPrimaryBrokerAlive)
+                        NotifyPreviousPrimaryAlive(previousBroker.First().Value); // may be frozen
                     SendQueuedEvents();
                 }
+            }
+        }
+
+
+        /// <summary>
+        /// if the previous parent is frozen he must know that he is no longer the primary broker
+        /// </summary>
+        private void NotifyPreviousPrimaryAlive(IBroker broker)
+        {
+            Thread thread = new Thread(() =>
+            {
+                try
+                {
+                    broker.NewPrimaryBroker(this.url, this.Name);
+                }
+                catch (System.Net.Sockets.SocketException)
+                {
+                    RemoveSiteBroker(broker);
+                }
+            });
+            thread.Start();
+        }
+
+
+        public void NewPrimaryBroker(string primaryBrokerUrl, string primaryBrokername)
+        {
+            lock (this)
+            {
+                Console.WriteLine("I'm too slow. New leader ({0}) was elected", primaryBrokername);
+                this.isPrimaryBroker = false;
+                this.primaryBrokerUrl = primaryBrokerUrl;
+                this.primaryBroker = siteBrokers[primaryBrokerUrl];
+                SetSecondaryBrokerTimer();
+            }
+        }
+
+
+        /// <summary>
+        /// check if the other possible primary broker of the site is alive
+        /// </summary>
+        private void CheckAnyBrotherAlive()
+        {
+            if (siteBrokers.Count == 1)
+            {
+                IBroker brokerBrother = siteBrokers[siteBrokers.Keys.First()];
+                if (!IsBrokerAlive(brokerBrother))
+                    RemoveSiteBroker(brokerBrother);
+            }
+        }
+
+
+        private bool IsBrokerAlive(IBroker broker)
+        {
+            try
+            {
+                broker.IsAlive();
+                return true;
+            }
+            catch (System.Net.Sockets.SocketException)
+            {
+                return false;
             }
         }
 
@@ -516,20 +654,43 @@ namespace Broker
         /// </summary>
         public void IsAlive()
         {
-            Console.WriteLine("I'm Alive");
         }
 
         #endregion
-
+        
         public void Freeze()
         {
-            this.isFrozen = true;
+            Console.WriteLine("Freezed");
+            lock (freezeLock)
+            {
+                isFrozen = true;
+                notFreezed.Reset();
+            }
         }
 
         public void Unfreeze()
         {
-            this.isFrozen = false;
+            Console.WriteLine("UnFreezed");
+            lock (freezeLock)
+            {
+                isFrozen = false;
+                notFreezed.Set();
+            }
         }
+
+        private void CheckFroozen()
+        {
+            AutoResetEvent[] handles = { notFreezed };
+            WaitHandle.WaitAll(handles);
+            lock (freezeLock)
+            {
+                if (!isFrozen)
+                {
+                    notFreezed.Set();
+                }
+            }
+        }
+
 
         public void Crash()
         {

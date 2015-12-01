@@ -39,23 +39,23 @@ namespace Broker
         {
             lock (this)
             {
-                List<string> subscribersInterested = GetSubscribers(e);
-                List<string> brokersInterested = GetBrokersSites(e);
-                Thread thread1 = new Thread(() => {
-                    List<Thread> threads = new List<Thread>();
-                    foreach (String s in subscribersInterested)
-                    {
-                        Thread thread = new Thread(() => { SendToSubscriber(e, s); });
-                        thread.Start();
-                        threads.Add(thread);
-                    }
+                List<Thread> threads = new List<Thread>();
 
-                    foreach (String site in brokersInterested)
-                    {
-                        Thread thread = new Thread(() => { SendToBroker(e, site); });
-                        thread.Start();
-                        threads.Add(thread);
-                    }
+                foreach (String s in GetSubscribers(e))
+                {
+                    Thread thread = new Thread(() => { SendToSubscriber(e, s); });
+                    thread.Start();
+                    threads.Add(thread);
+                }
+
+                foreach (String site in GetBrokersSites(e))
+                {
+                    Thread thread = new Thread(() => { SendToBroker(e, site); });
+                    thread.Start();
+                    threads.Add(thread);
+                }
+
+                Thread thread1 = new Thread(() => {
                     foreach (Thread thread in threads)
                     {
                         thread.Join();
@@ -63,7 +63,6 @@ namespace Broker
                     Broker.SendToReplicas("SentEventNotification", e);
                 });
                 thread1.Start();
-                Thread.Sleep(100);
             }
         }
 

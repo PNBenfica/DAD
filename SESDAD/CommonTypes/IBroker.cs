@@ -30,6 +30,7 @@ namespace CommonTypes
         void Status();
         void Freeze();
         void Unfreeze();
+        void NewPrimaryBroker(string brokerUrl = null, string brokerName = null);
         void Crash();        
     }
 }

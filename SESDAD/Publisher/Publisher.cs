@@ -122,6 +122,7 @@ namespace Publisher
                     catch (System.Net.Sockets.SocketException) // primary broker is down. lets ask to see if there is a new one
                     {
                         this.siteBrokers.ConnectPrimaryBroker();
+                        Console.WriteLine("Reconnected");
                     }
                 }
             }            

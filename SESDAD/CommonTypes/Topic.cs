@@ -149,7 +149,6 @@ namespace CommonTypes
                 return "";
             else
                 return Parent.ToString() + "/" + this.Name;
-            return base.ToString();
         }
 
         #endregion

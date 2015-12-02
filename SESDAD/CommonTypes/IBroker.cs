@@ -30,7 +30,6 @@ namespace CommonTypes
         void Status();
         void Freeze();
         void Unfreeze();
-        void NewPrimaryBroker();
         void Crash();        
     }
 }

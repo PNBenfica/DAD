@@ -131,11 +131,12 @@ namespace Broker
         /// </summary>
         public void Subscribe(String name, bool isSubscriber, String topic, bool isClimbing = false)
         {
-            lock (this)
+            lock (Subscribers)
             {
-                Console.WriteLine("Subscrition | Subscriber: {0} | Topic: {1}", name, topic);
                 if (isPrimaryBroker)
                     SendToReplicas("Subscribe", name, isSubscriber, topic, isClimbing);
+                CheckFroozen();
+                Console.WriteLine("Subscrition | Subscriber: {0} | Topic: {1}", name, topic);
                 Router.addSubscrition(name, isSubscriber, topic, isClimbing);
             }
         }
@@ -146,11 +147,12 @@ namespace Broker
         /// </summary>
         public void UnSubscribe(String Id, bool isSubscriber, String topic)
         {
-            lock (this)
+            lock (Subscribers)
             {
-                Console.WriteLine("Unsubscrition | Subscriber: {0} | Topic: {1}", Id, topic);
                 if (isPrimaryBroker)
                     SendToReplicas("UnSubscribe", Id, isSubscriber, topic);
+                CheckFroozen();
+                Console.WriteLine("Unsubscrition | Subscriber: {0} | Topic: {1}", Id, topic);
                 Router.deleteSubscrition(Id, isSubscriber, topic);
             }
         }
@@ -212,7 +214,6 @@ namespace Broker
         {
             lock (this)
             {
-                Console.WriteLine("----------------------------");
                 queuedEvents = queuedEvents.OrderBy(o => o.Id).ToList();
                 foreach (Event e in queuedEvents)
                 {
@@ -220,7 +221,6 @@ namespace Broker
                     Router.route(e);
                 }
                 queuedEvents = new List<Event>();
-                Console.WriteLine("----------------------------");
             }
         }
 
@@ -232,7 +232,10 @@ namespace Broker
             lock (this)
             {
                 if (isPrimaryBroker)
+                {
                     SendToReplicas("DiffuseMessage", e);
+                    CheckFroozen();
+                }
                 else
                     queuedEvents.Add(e);
             }
@@ -471,7 +474,6 @@ namespace Broker
             {
                 SendImAlives();
                 Thread.Sleep(1500);
-                CheckFroozen();
             }
         }
 
@@ -550,14 +552,10 @@ namespace Broker
                     Console.WriteLine("Primary server gone down. Re-electing...");
                     secondaryBrokerTimer.Enabled = false;
 
-                    //Dictionary<string, IBroker> previousBroker = NotifyPreviousPrimary(); // may be frozen, if it is we have to add to the list of site brokers after 
                     RemoveSiteBroker(this.primaryBroker);   // it must be removed because the election uses the current active site brokers
 
                     CheckAnyBrotherAlive();
                     ElectSiteLeader();
-
-                    //if (previousBroker != null) // if the previous broker is alive lets re add him to the list
-                    //    siteBrokers.Add(previousBroker.First().Key, previousBroker.First().Value);
 
                     if (isPrimaryBroker)
                     {
@@ -566,40 +564,7 @@ namespace Broker
                 }
             }
         }
-
-
-        /// <summary>
-        /// if the previous parent is frozen he must know that he is no longer the primary broker
-        /// </summary>
-        private Dictionary<string, IBroker> NotifyPreviousPrimary()
-        {
-            try
-            {
-                this.primaryBroker.NewPrimaryBroker();
-                Dictionary<string, IBroker> previousBroker = new Dictionary<string, IBroker>();
-                previousBroker.Add(this.primaryBrokerUrl, this.primaryBroker);
-                return previousBroker;
-            }
-            catch (System.Net.Sockets.SocketException)
-            {
-                RemoveSiteBroker(this.primaryBroker);
-                return null;
-            }
-        }
-
-
-        public void NewPrimaryBroker()
-        {
-            lock (this)
-            {
-                Console.WriteLine("I'm too slow. New leader was elected");
-                this.isPrimaryBroker = false;
-                //this.primaryBrokerUrl = primaryBrokerUrl;
-                //this.primaryBroker = siteBrokers[primaryBrokerUrl];
-                //SetSecondaryBrokerTimer();
-            }
-        }
-
+        
 
         /// <summary>
         /// check if the other possible primary broker of the site is alive

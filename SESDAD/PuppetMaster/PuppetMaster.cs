@@ -135,21 +135,27 @@ namespace PuppetMaster
 
         public void Subscribe(String processName, String topic)
         {
-            subscribers[processName].Subscribe(topic);
+            Thread thread = new Thread(() =>
+            {
+                subscribers[processName].Subscribe(topic);
+            });
+            thread.Start();
         }
 
         public void Unsubscribe(String processName, String topic)
         {
-            subscribers[processName].UnSubscribe(topic);
+            Thread thread = new Thread(() =>
+            {
+                subscribers[processName].UnSubscribe(topic);
+            });
+            thread.Start();
         }
 
         public void Publish(String processName, String numberOfEvents, String topic, String waitXms)
         {
             Thread thread = new Thread(() =>
             {
-            publishers[processName].SequencePublish(numberOfEvents, topic, waitXms);
-
-
+                publishers[processName].SequencePublish(numberOfEvents, topic, waitXms);
             });
             thread.Start();
         }

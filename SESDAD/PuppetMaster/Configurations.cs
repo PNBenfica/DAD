@@ -15,8 +15,9 @@ namespace PuppetMaster
         private List<Site> sites;
         private List<Process> processes;
         private String loggingLevel;
+        public bool waitToCreateProcesses { get; set; }
 
-        public Configurations(String createdPuppetMaster, String routingPolicy, String ordering, String centralPuppetMasterUrl, List<String> puppetMastersUrl, List<Site> sites, List<Process> processes, String loggingLevel)
+        public Configurations(String createdPuppetMaster, String routingPolicy, String ordering, String centralPuppetMasterUrl, List<String> puppetMastersUrl, List<Site> sites, List<Process> processes, String loggingLevel, bool waitToCreateProcesses)
         {
             this.puppetMasterUrl = createdPuppetMaster;
             this.routingPolicy = routingPolicy;
@@ -26,6 +27,7 @@ namespace PuppetMaster
             this.sites = sites;
             this.processes = processes;
             this.loggingLevel = loggingLevel;
+            this.waitToCreateProcesses = waitToCreateProcesses;
         }
 
         public String CentralPuppetMasterUrl
@@ -98,6 +100,7 @@ namespace PuppetMaster
             info += "Ordering: " + ordering + "\r\n";
             return info;
         }
+
     }
     
 }

@@ -4,7 +4,7 @@ Subscriber subscriber3 Subscribe /guedes
 Subscriber subscriber3 Subscribe /guedes
 Subscriber subscriber4 Subscribe /guedes
 Subscriber subscriber5 Subscribe /silva
-Publisher publisher5 Publish 40 Ontopic /silva Interval 500
+Publisher publisher00 Publish 40 Ontopic /silva Interval 500
 Wait 10000
 Status
 Wait 10000

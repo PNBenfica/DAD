@@ -18,7 +18,7 @@ namespace PuppetMaster
 
         public static void Main(string[] args)
         {
-            String filename = @"..\..\..\T4-config.txt";
+            String filename = @"..\..\..\T3-config.txt";
             if (args.Length > 0)
                 filename = @args[0];
 
@@ -52,7 +52,13 @@ namespace PuppetMaster
             
             RemotingServices.Marshal(puppetMaster, "puppet", typeof(IPuppetMasterURL));
 
-            Console.WriteLine("puppetMaster running on {0}", url);
+            if (configurations.waitToCreateProcesses)
+            {
+                Console.WriteLine("Press any key to proceed initialization");
+                Console.ReadLine();
+            }
+
+            Console.WriteLine("puppetMaster running on {0} central puppet is {1}", url, configurations.CentralPuppetMasterUrl);
 
             foreach (Process process in configurations.Processes)
             {
@@ -85,7 +91,7 @@ namespace PuppetMaster
         {
             if (script == null)
             {
-                string[] scriptFiles = { "easyPublishSubscribe", "twoPublishers", "freezeTest" };//, "unSubscribeTest" };
+                string[] scriptFiles = { "T3-commands" };//, "unSubscribeTest" };
                 foreach (string file in scriptFiles)
                 {
                     string[] lines = System.IO.File.ReadAllLines(@"../../../" + file + ".txt");

@@ -164,7 +164,6 @@ namespace Broker
         {
             lock (this)
             {
-                List<Thread> threads = new List<Thread>();
                 foreach (IBroker broker in new List<IBroker>(siteBrokers.Values)) // removing while iterating... better create a new list
                 {
                     Thread thread = new Thread(() =>
@@ -180,11 +179,6 @@ namespace Broker
                         }
                     });
                     thread.Start();
-                    threads.Add(thread);
-                }
-                foreach (Thread thread in threads)
-                {
-                    thread.Join();
                 }
             }
         }
@@ -235,11 +229,12 @@ namespace Broker
         /// </summary>
         public void DiffuseMessage(Event e)
         {
-            if (isPrimaryBroker)
-                SendToReplicas("DiffuseMessage", e);
-            else
+            lock (this)
             {
-                queuedEvents.Add(e);
+                if (isPrimaryBroker)
+                    SendToReplicas("DiffuseMessage", e);
+                else
+                    queuedEvents.Add(e);
             }
             OrderStrategy.DeliverInOrder(e);
         }
@@ -288,8 +283,7 @@ namespace Broker
         {
             if (IsRoot() || !IsParentInterested(e.Topic))
             {
-                Thread thread = new Thread(() => { this.DiffuseMessage(e); });
-                thread.Start();         
+                this.DiffuseMessage(e);
             }
             else
             {
@@ -475,9 +469,9 @@ namespace Broker
         {
             while (isPrimaryBroker)
             {
-                CheckFroozen();
                 SendImAlives();
                 Thread.Sleep(1500);
+                CheckFroozen();
             }
         }
 
@@ -523,8 +517,11 @@ namespace Broker
         /// </summary>
         private void RestartTimer()
         {
-            secondaryBrokerTimer.Stop();
-            secondaryBrokerTimer.Start();
+            if (secondaryBrokerTimer != null)
+            {
+                secondaryBrokerTimer.Stop();
+                secondaryBrokerTimer.Start();
+            }
         }
         
 
@@ -548,25 +545,24 @@ namespace Broker
         {
             lock (this)
             {
-                Console.WriteLine("Primary server gone down. Re-electing...");
-                secondaryBrokerTimer.Enabled = false;
-
-                bool isPrimaryBrokerAlive = IsBrokerAlive(this.primaryBroker);
-                Dictionary<string, IBroker> previousBroker = new Dictionary<string, IBroker>();
-                if (isPrimaryBrokerAlive)
-                    previousBroker.Add(primaryBrokerUrl, primaryBroker);
-                RemoveSiteBroker(this.primaryBroker);
-
-                CheckAnyBrotherAlive();
-                ElectSiteLeader();
-                if (isPrimaryBrokerAlive)
-                    siteBrokers.Add(previousBroker.First().Key, previousBroker.First().Value);
-
-                if (isPrimaryBroker)
+                if (!IsBrokerAlive(primaryBroker))
                 {
-                    if (isPrimaryBrokerAlive)
-                        NotifyPreviousPrimaryAlive(previousBroker.First().Value); // may be frozen
-                    SendQueuedEvents();
+                    Console.WriteLine("Primary server gone down. Re-electing...");
+                    secondaryBrokerTimer.Enabled = false;
+
+                    //Dictionary<string, IBroker> previousBroker = NotifyPreviousPrimary(); // may be frozen, if it is we have to add to the list of site brokers after 
+                    RemoveSiteBroker(this.primaryBroker);   // it must be removed because the election uses the current active site brokers
+
+                    CheckAnyBrotherAlive();
+                    ElectSiteLeader();
+
+                    //if (previousBroker != null) // if the previous broker is alive lets re add him to the list
+                    //    siteBrokers.Add(previousBroker.First().Key, previousBroker.First().Value);
+
+                    if (isPrimaryBroker)
+                    {
+                        SendQueuedEvents();
+                    }
                 }
             }
         }
@@ -575,32 +571,32 @@ namespace Broker
         /// <summary>
         /// if the previous parent is frozen he must know that he is no longer the primary broker
         /// </summary>
-        private void NotifyPreviousPrimaryAlive(IBroker broker)
+        private Dictionary<string, IBroker> NotifyPreviousPrimary()
         {
-            Thread thread = new Thread(() =>
+            try
             {
-                try
-                {
-                    broker.NewPrimaryBroker(this.url, this.Name);
-                }
-                catch (System.Net.Sockets.SocketException)
-                {
-                    RemoveSiteBroker(broker);
-                }
-            });
-            thread.Start();
+                this.primaryBroker.NewPrimaryBroker();
+                Dictionary<string, IBroker> previousBroker = new Dictionary<string, IBroker>();
+                previousBroker.Add(this.primaryBrokerUrl, this.primaryBroker);
+                return previousBroker;
+            }
+            catch (System.Net.Sockets.SocketException)
+            {
+                RemoveSiteBroker(this.primaryBroker);
+                return null;
+            }
         }
 
 
-        public void NewPrimaryBroker(string primaryBrokerUrl, string primaryBrokername)
+        public void NewPrimaryBroker()
         {
             lock (this)
             {
-                Console.WriteLine("I'm too slow. New leader ({0}) was elected", primaryBrokername);
+                Console.WriteLine("I'm too slow. New leader was elected");
                 this.isPrimaryBroker = false;
-                this.primaryBrokerUrl = primaryBrokerUrl;
-                this.primaryBroker = siteBrokers[primaryBrokerUrl];
-                SetSecondaryBrokerTimer();
+                //this.primaryBrokerUrl = primaryBrokerUrl;
+                //this.primaryBroker = siteBrokers[primaryBrokerUrl];
+                //SetSecondaryBrokerTimer();
             }
         }
 

@@ -23,8 +23,16 @@ namespace PuppetMaster
                 filename = @args[0];
 
             Configurations configurations = ReadConfig(filename);
-            initializeProcesses(configurations);
-            createMenu();
+            bool isCentral = initializeProcesses(configurations);
+            if (isCentral)
+            {
+                createMenu();
+            }
+            else
+            {
+                Console.WriteLine("Press any key to kill puppetMaster");
+                Console.ReadLine();
+            }
         }
 
         public static Configurations ReadConfig(String filename)
@@ -33,10 +41,9 @@ namespace PuppetMaster
             return parser.parse(filename, @"..\..\..\puppetMasters.txt");
         }
 
-        public static void initializeProcesses(Configurations configurations)
+        public static bool initializeProcesses(Configurations configurations)
         {
             ProcessCreator processCreator = new ProcessCreator();
-            Console.WriteLine("Initializing processes");
 
             String url = configurations.PuppetMasterUrl;
             char[] delimiterChars = { ':', '/' }; // "tcp://1.2.3.4:3335/sub"
@@ -52,7 +59,9 @@ namespace PuppetMaster
             
             RemotingServices.Marshal(puppetMaster, "puppet", typeof(IPuppetMasterURL));
 
-            if (configurations.waitToCreateProcesses)
+            bool isCentral = configurations.PuppetMasterUrl.Equals(configurations.CentralPuppetMasterUrl);
+          
+            if (configurations.waitToCreateProcesses && isCentral)
             {
                 Console.WriteLine("Press any key to proceed initialization");
                 Console.ReadLine();
@@ -60,30 +69,35 @@ namespace PuppetMaster
 
             Console.WriteLine("puppetMaster running on {0} central puppet is {1}", url, configurations.CentralPuppetMasterUrl);
 
-            foreach (Process process in configurations.Processes)
+            if (isCentral)
             {
-                Console.WriteLine(process.Type);
-                if (process.Type.Equals("broker"))
+                Console.WriteLine("Initializing processes");
+                foreach (Process process in configurations.Processes)
                 {
-                    processCreator.startBrokerProcess(process.Name, process.Url, process.BrokersUrl, process.NeighbourBrokers, configurations.RoutingPolicy, configurations.Ordering, configurations.CentralPuppetMasterUrl, configurations.LoggingLevel, process.Site);
-                    puppetMaster.AddBroker(process.Name, process.Url);
+                    Console.WriteLine(process.Type);
+                    if (process.Type.Equals("broker"))
+                    {
+                        processCreator.startBrokerProcess(process.Name, process.Url, process.BrokersUrl, process.NeighbourBrokers, configurations.RoutingPolicy, configurations.Ordering, configurations.CentralPuppetMasterUrl, configurations.LoggingLevel, process.Site);
+                        puppetMaster.AddBroker(process.Name, process.Url);
+                    }
+                    else if (process.Type.Equals("publisher"))
+                    {
+                        processCreator.startPublisherProcess(process.Name, process.Url, process.BrokersUrl, configurations.CentralPuppetMasterUrl, configurations.LoggingLevel);
+                        puppetMaster.AddPublisher(process.Name, process.Url);
+                    }
+                    else if (process.Type.Equals("subscriber"))
+                    {
+                        processCreator.startSubscriberProcess(process.Name, process.Url, process.BrokersUrl, configurations.CentralPuppetMasterUrl, configurations.LoggingLevel);
+                        puppetMaster.AddSubscriber(process.Name, process.Url);
+                    }
+                    else
+                    {
+                        throw new UnknownProcessException("Unknown Process specified, aborting execution");
+                    }
+
                 }
-                else if (process.Type.Equals("publisher"))
-                {
-                    processCreator.startPublisherProcess(process.Name, process.Url, process.BrokersUrl, configurations.CentralPuppetMasterUrl, configurations.LoggingLevel);
-                    puppetMaster.AddPublisher(process.Name, process.Url);
-                }
-                else if (process.Type.Equals("subscriber"))
-                {
-                    processCreator.startSubscriberProcess(process.Name, process.Url, process.BrokersUrl, configurations.CentralPuppetMasterUrl, configurations.LoggingLevel);
-                    puppetMaster.AddSubscriber(process.Name, process.Url);                
-                }
-                else
-                {
-                    throw new UnknownProcessException("Unknown Process specified, aborting execution");
-                }
-                
             }
+            return isCentral;
 
         }
 

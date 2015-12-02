@@ -46,9 +46,7 @@ namespace PuppetMaster
             String ip = "";
             foreach (String puppet in puppetMastersUrl)
             {
-                Console.WriteLine(puppet);
                 ip = puppet.Split(delimiter)[3];
-                Console.WriteLine(ip);
                 if (!this.puppetMasters.Keys.Contains(ip))
                 {
                     this.puppetMasters.Add(ip, (IPuppetMasterURL)Activator.GetObject(typeof(IPuppetMasterURL), puppet));

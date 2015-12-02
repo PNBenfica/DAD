@@ -56,6 +56,12 @@ namespace PuppetMaster
                 }
             }
 
+            //no need to create processes
+            if (!createdPuppetMasterUrl.Equals(centralPuppetMasterURL))
+            {
+                return new Configurations(createdPuppetMasterUrl, routingPolicy, ordering, centralPuppetMasterURL, puppetMastersURL, sites, processes, loggingLevel, waitForProcessCreate);
+            }
+
             //saving config 
             foreach (string line in configLines)
             {

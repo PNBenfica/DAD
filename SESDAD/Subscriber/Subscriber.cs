@@ -120,7 +120,7 @@ namespace Subscriber
 
         public void PrintMessage(Event e)
         {
-            //puppetMaster.Log("SubEvent " + this.name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
+            puppetMaster.Log("SubEvent " + this.name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
             Console.WriteLine("Event ID: {0} | Publisher: {1} | Topic: {2} | Content: {3}", e.Id, e.PublisherId, e.Topic, e.Content);
         }
 

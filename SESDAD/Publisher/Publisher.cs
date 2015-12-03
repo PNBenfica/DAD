@@ -110,6 +110,7 @@ namespace Publisher
             {
                 bool published = false;
                 Event ev = ProduceEvent(topic, content);
+                puppetMaster.Log("PubEvent " + this.Name + ", " + this.Name + ", " + ev.Topic + ", " + this.NumberOfEvents);
                 while (!published)
                 {
                     try
@@ -117,7 +118,6 @@ namespace Publisher
                         PrimaryBroker().Publish(ev);
                         UpdatePreviousEvents(ev);
                         published = true;
-                        puppetMaster.Log("PubEvent " + this.Name + ", " + this.Name + ", " + ev.Topic + ", " + this.NumberOfEvents); // faz sentido meter duas vezes o nome do processo? no enunciado esta
                     }
                     catch (System.Net.Sockets.SocketException) // primary broker is down. lets ask to see if there is a new one
                     {

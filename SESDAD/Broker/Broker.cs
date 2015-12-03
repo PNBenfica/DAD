@@ -103,8 +103,8 @@ namespace Broker
         public void Log(Event e)
         {
             Console.WriteLine("Routing | Id: {0} | Pub: {1} | Topic: {2} | Content: {3}", e.Id, e.PublisherId, e.Topic, e.Content);
-            //if (fullLogging)
-            //    puppetMaster.Log("BroEvent " + Name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
+            if (fullLogging)
+                puppetMaster.Log("BroEvent " + Name + ", " + e.PublisherId + ", " + e.Topic + ", " + e.Id);
         }
 
 

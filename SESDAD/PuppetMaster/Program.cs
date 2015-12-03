@@ -61,12 +61,6 @@ namespace PuppetMaster
 
             bool isCentral = configurations.PuppetMasterUrl.Equals(configurations.CentralPuppetMasterUrl);
           
-            if (configurations.waitToCreateProcesses && isCentral)
-            {
-                Console.WriteLine("Press any key to proceed initialization");
-                Console.ReadLine();
-            }
-
             Console.WriteLine("puppetMaster running on {0} central puppet is {1}", url, configurations.CentralPuppetMasterUrl);
 
             if (isCentral)

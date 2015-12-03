@@ -81,14 +81,18 @@ namespace PuppetMaster
             if (type.Equals("broker"))
             {
                 processCreator.startBrokerProcess(processName, url, brokersUrl, brokerNeighbours, routingPolicy, ordering, centralPuppetMasterUrl, loggingLevel, site);
+                AddBroker(processName, url);
             }
             else if (type.Equals("publisher"))
             {
                 processCreator.startPublisherProcess(processName, url, brokersUrl, centralPuppetMasterUrl, loggingLevel);
+                AddPublisher(processName, url);
             }
             else if (type.Equals("subscriber"))
             {
                 processCreator.startSubscriberProcess(processName, url, brokersUrl, centralPuppetMasterUrl, loggingLevel);
+                AddSubscriber(processName, url);
+
             }
             else
             {

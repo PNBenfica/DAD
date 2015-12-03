@@ -27,8 +27,6 @@ namespace PuppetMaster
             char[] delimiter = { ' ' };
             String[] words;
 
-            bool waitForProcessCreate = false;
-
             //saving puppetMasters URL 
             foreach (string line in puppetMastersLines)
             {
@@ -50,16 +48,12 @@ namespace PuppetMaster
                     }
                     puppetMastersURL.Add(words[1]);
                 }
-                else if (words[0].ToLower().Equals("wait"))
-                {
-                    waitForProcessCreate = true;
-                }
             }
 
             //no need to create processes
             if (!createdPuppetMasterUrl.Equals(centralPuppetMasterURL))
             {
-                return new Configurations(createdPuppetMasterUrl, routingPolicy, ordering, centralPuppetMasterURL, puppetMastersURL, sites, processes, loggingLevel, waitForProcessCreate);
+                return new Configurations(createdPuppetMasterUrl, routingPolicy, ordering, centralPuppetMasterURL, puppetMastersURL, sites, processes, loggingLevel);
             }
 
             //saving config 
@@ -127,7 +121,7 @@ namespace PuppetMaster
                 }
             }
 
-            Configurations configurations = new Configurations(createdPuppetMasterUrl, routingPolicy, ordering, centralPuppetMasterURL, puppetMastersURL, sites, processes, loggingLevel, waitForProcessCreate);
+            Configurations configurations = new Configurations(createdPuppetMasterUrl, routingPolicy, ordering, centralPuppetMasterURL, puppetMastersURL, sites, processes, loggingLevel);
             return configurations;
         }
 

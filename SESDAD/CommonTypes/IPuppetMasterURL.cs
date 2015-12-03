@@ -10,7 +10,7 @@ namespace CommonTypes
     {
         void Notify(String processName, String message);
 
-        void CreateProcess(String type, String processName, String url, String[] brokersUrl, String site, String[] brokerNeighbours);
+        void CreateProcess(String type, String processName, String url, String site, String centralPuppetMaster, String[] brokersUrl, String[] brokerNeighbours, String routingPolicy, String ordering, String loggingLevel);
 
         void Log(String logMessage);
     }

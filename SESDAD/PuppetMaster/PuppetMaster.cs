@@ -63,7 +63,7 @@ namespace PuppetMaster
             Console.WriteLine(processName + " send: " + message);
         }
 
-        public void CreateProcess(String type, String processName, String url, String[] brokersUrl, String site, String[] brokerNeighbours)
+        public void CreateProcess(String type, String processName, String url, String site, String centralPuppetMaster, String[] brokersUrl, String[] brokerNeighbours, String routingPolicy, String ordering, String loggingLevel)
         {
             char[] delimiter = { ':', '/' };
             String processIp = url.Split(delimiter)[3];
@@ -74,21 +74,21 @@ namespace PuppetMaster
             //create in other puppetMaster
             if (puppetMasters.Keys.Contains(processIp) && !processIp.Equals(ip))
             {
-                puppetMasters[processIp].CreateProcess(type, processName, url, brokersUrl, site, brokerNeighbours);
+                puppetMasters[processIp].CreateProcess(type, processName, url, site, centralPuppetMaster, brokersUrl, brokerNeighbours, routingPolicy, ordering, loggingLevel);
                 return;
             }
             ProcessCreator processCreator = new ProcessCreator();
             if (type.Equals("broker"))
             {
-                processCreator.startBrokerProcess(processName, url, brokersUrl, brokerNeighbours, this.routingPolicy, this.ordering, this.loggingLevel, this.centralPuppetMasterUrl, site);
+                processCreator.startBrokerProcess(processName, url, brokersUrl, brokerNeighbours, routingPolicy, ordering, centralPuppetMasterUrl, loggingLevel, site);
             }
             else if (type.Equals("publisher"))
             {
-                processCreator.startPublisherProcess(processName, url, brokersUrl, this.loggingLevel, this.centralPuppetMasterUrl);
+                processCreator.startPublisherProcess(processName, url, brokersUrl, centralPuppetMasterUrl, loggingLevel);
             }
             else if (type.Equals("subscriber"))
             {
-                processCreator.startSubscriberProcess(processName, url, brokersUrl, this.loggingLevel, this.centralPuppetMasterUrl);
+                processCreator.startSubscriberProcess(processName, url, brokersUrl, centralPuppetMasterUrl, loggingLevel);
             }
             else
             {
@@ -228,5 +228,7 @@ namespace PuppetMaster
 
         #endregion
 
+
+       
     }
 }

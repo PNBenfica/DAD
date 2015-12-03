@@ -71,30 +71,13 @@ namespace PuppetMaster
 
             if (isCentral)
             {
+                
                 Console.WriteLine("Initializing processes");
                 foreach (Process process in configurations.Processes)
                 {
-                    Console.WriteLine(process.Type);
-                    if (process.Type.Equals("broker"))
-                    {
-                        processCreator.startBrokerProcess(process.Name, process.Url, process.BrokersUrl, process.NeighbourBrokers, configurations.RoutingPolicy, configurations.Ordering, configurations.CentralPuppetMasterUrl, configurations.LoggingLevel, process.Site);
-                        puppetMaster.AddBroker(process.Name, process.Url);
-                    }
-                    else if (process.Type.Equals("publisher"))
-                    {
-                        processCreator.startPublisherProcess(process.Name, process.Url, process.BrokersUrl, configurations.CentralPuppetMasterUrl, configurations.LoggingLevel);
-                        puppetMaster.AddPublisher(process.Name, process.Url);
-                    }
-                    else if (process.Type.Equals("subscriber"))
-                    {
-                        processCreator.startSubscriberProcess(process.Name, process.Url, process.BrokersUrl, configurations.CentralPuppetMasterUrl, configurations.LoggingLevel);
-                        puppetMaster.AddSubscriber(process.Name, process.Url);
-                    }
-                    else
-                    {
-                        throw new UnknownProcessException("Unknown Process specified, aborting execution");
-                    }
-
+                    puppetMaster.CreateProcess(process.Type, process.Name, process.Url, process.Site, 
+                                               configurations.CentralPuppetMasterUrl, process.BrokersUrl, process.NeighbourBrokers, 
+                                               configurations.RoutingPolicy, configurations.Ordering, configurations.LoggingLevel);
                 }
             }
             return isCentral;

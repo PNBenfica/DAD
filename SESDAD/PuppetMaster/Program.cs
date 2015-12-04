@@ -108,7 +108,7 @@ namespace PuppetMaster
 
         public static void createMenu()
         {
-            Thread.Sleep(2000);
+            Thread.Sleep(5000);
             Console.WriteLine("-----------------PuppetMaster Console-----------------");
             Console.Write(">");
             String command;

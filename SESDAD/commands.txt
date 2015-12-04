@@ -1,0 +1,9 @@
+Subscriber subscriber0 Subscribe /p00-0
+Subscriber subscriber1 Subscribe /p00-0
+Wait 500
+Publisher publisher00 Publish 132 Ontopic /p00-0 Interval 0
+Publisher publisher01 Publish 93 Ontopic /p00-0 Interval 50
+Wait 1500
+Crash broker12
+Wait 1300
+Crash broker02

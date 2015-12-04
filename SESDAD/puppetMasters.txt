@@ -1,2 +1,2 @@
-CentralPuppetMaster tcp://192.168.1.72:3000/puppet create
-PuppetMaster tcp://192.168.1.71:3000/puppet 
+CentralPuppetMaster tcp://localhost:3000/puppet create
+PuppetMaster tcp://localhost:3000/puppet 

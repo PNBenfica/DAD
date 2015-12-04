@@ -1,18 +1,15 @@
+RoutingPolicy flooding
+Ordering TOTAL
+LoggingLevel full
 Site site0 Parent none
 Site site1 Parent site0
-Site site2 Parent site1
-Site site3 Parent site2
-
-Process broker0 Is broker On site0 URL tcp://localhost:3333/broker
-Process broker1 Is broker On site1 URL tcp://localhost:3336/broker
-Process broker2 Is broker On site2 URL tcp://localhost:3337/broker
-Process broker3 Is broker On site3 URL tcp://localhost:3338/broker
-Process publisher0 Is publisher On site2 URL tcp://localhost:3334/pub
-Process subscriber1 Is subscriber On site3 URL tcp://localhost:3344/sub
-
-RoutingPolicy flooding
-
-Ordering FIFO
-
-LoggingLevel full
-
+Process broker00 is broker On site0 URL tcp://localhost:3330/broker
+Process broker01 is broker On site0 URL tcp://localhost:3331/broker
+Process broker02 is broker On site0 URL tcp://localhost:3332/broker
+Process publisher00 is publisher On site0 URL tcp://localhost:2220/pub
+Process subscriber0 is subscriber On site0 URL tcp://localhost:2221/sub
+Process broker10 is broker On site1 URL tcp://localhost:3333/broker
+Process broker11 is broker On site1 URL tcp://localhost:3334/broker
+Process broker12 is broker On site1 URL tcp://localhost:3335/broker
+Process subscriber1 is subscriber On site1 URL tcp://localhost:2222/sub
+Process publisher01 is publisher On site1 URL tcp://localhost:2223/pub

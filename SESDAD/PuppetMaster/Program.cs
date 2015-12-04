@@ -72,6 +72,7 @@ namespace PuppetMaster
                     puppetMaster.CreateProcess(process.Type, process.Name, process.Url, process.Site, 
                                                configurations.CentralPuppetMasterUrl, process.BrokersUrl, process.NeighbourBrokers, 
                                                configurations.RoutingPolicy, configurations.Ordering, configurations.LoggingLevel);
+                    puppetMaster.AddProcess(process.Type, process.Name, process.Url);
                 }
             }
             return isCentral;

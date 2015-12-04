@@ -117,6 +117,25 @@ namespace PuppetMaster
 
         #region localMethods
 
+        public void AddProcess(String type, String processName, String url)
+        {
+            if (type.Equals("broker"))
+            {
+                if (!brokers.ContainsKey(processName))
+                    AddBroker(processName, url);
+            }
+            else if (type.Equals("publisher"))
+            {
+                if (!publishers.ContainsKey(processName))
+                    AddPublisher(processName, url);
+            }
+            else if (type.Equals("subscriber"))
+            {
+                if (!subscribers.ContainsKey(processName))
+                    AddSubscriber(processName, url);
+            }
+        }
+
         public void AddBroker(String processName, String url)
         {
             IBroker broker = (IBroker)Activator.GetObject(typeof(IBroker), url);
